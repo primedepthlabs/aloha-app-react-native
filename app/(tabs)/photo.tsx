@@ -45,7 +45,7 @@ export default function PhotoUploadScreen() {
   };
 
   const handleContinue = () => {
-    router.replace("/(tabs)");
+    router.replace("/discover");
   };
 
   const handleSkip = () => {

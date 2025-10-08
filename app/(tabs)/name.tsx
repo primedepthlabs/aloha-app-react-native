@@ -19,7 +19,7 @@ export default function NameScreen() {
           <ChevronLeft size={24} color="#fff" />
         </TouchableOpacity>
         <View className="flex-1 h-1 bg-gray-800 mx-4 rounded-full">
-          <View className="w-full h-full bg-yellow-500 rounded-full" />
+          <View className="w-2/3 h-full bg-yellow-500 rounded-full" />
         </View>
       </View>
 
