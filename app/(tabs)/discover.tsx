@@ -193,9 +193,8 @@ export default function DiscoverScreen() {
   const navigateToReport = () => {
     console.log("Report pressed, closing menu and navigating to /report");
     setShowProfileMenu(false);
-    router.push({
-      pathname: "/report",
-    });
+    setSelectedUser(null); // Close the profile modal too
+    router.push("/(tabs)/report");
   };
 
   const applyFilter = () => {
@@ -746,24 +745,47 @@ export default function DiscoverScreen() {
                 {/* Profile Menu Dropdown */}
                 {showProfileMenu && (
                   <View
-                    className="absolute top-20 right-6 bg-[#19191B] rounded-xl overflow-hidden"
-                    style={{ width: 160 }}
+                    className="absolute rounded-xl overflow-hidden"
+                    style={{
+                      width: 333,
+                      height: 179,
+                      top: 211,
+                      left: 22,
+                      backgroundColor: "#19191B",
+                      opacity: 1,
+                    }}
                   >
+                    {/* Report Button */}
                     <TouchableOpacity
-                      className="flex-row items-center px-4 py-3 border-b border-[#3C3C3E]"
+                      className="flex-row items-center px-4"
+                      style={{
+                        width: 333,
+                        height: 48,
+                        borderTopWidth: 0.3,
+                        borderTopColor: "#29292C",
+                        backgroundColor: "#19191B",
+                      }}
                       onPress={navigateToReport}
                       activeOpacity={0.8}
                     >
                       <Image
                         source={require("../../assets/images/flag.png")}
-                        style={{ width: 20, height: 20, marginRight: 10 }}
+                        className="w-5 h-5 mr-2.5"
                         resizeMode="contain"
                       />
                       <Text className="text-white font-medium">Report</Text>
                     </TouchableOpacity>
 
+                    {/* Block Button */}
                     <TouchableOpacity
-                      className="flex-row items-center px-4 py-3"
+                      className="flex-row items-center px-4"
+                      style={{
+                        width: 333,
+                        height: 48,
+                        borderTopWidth: 0.3,
+                        borderTopColor: "#29292C",
+                        backgroundColor: "#19191B",
+                      }}
                       onPress={() => {
                         setShowProfileMenu(false);
                         Alert.alert(
@@ -774,9 +796,7 @@ export default function DiscoverScreen() {
                             {
                               text: "Block",
                               style: "destructive",
-                              onPress: () => {
-                                console.log("User blocked");
-                              },
+                              onPress: () => console.log("User blocked"),
                             },
                           ]
                         );
@@ -784,7 +804,7 @@ export default function DiscoverScreen() {
                     >
                       <Image
                         source={require("../../assets/images/cross.png")}
-                        style={{ width: 20, height: 20, marginRight: 10 }}
+                        className="w-5 h-5 mr-2.5"
                         resizeMode="contain"
                       />
                       <Text className="text-red-500 font-medium">Block</Text>
@@ -853,8 +873,13 @@ export default function DiscoverScreen() {
                         </Text>
                       </View>
                     </TouchableOpacity>
-
-                    <TouchableOpacity className="bg-transparent border-2 border-[#FCCD34] rounded-xl py-4 items-center justify-center">
+                    <TouchableOpacity
+                      className="bg-transparent border-2 border-[#FCCD34] rounded-xl py-4 items-center justify-center"
+                      onPress={() => {
+                        setSelectedUser(null);
+                        router.push("/donation");
+                      }}
+                    >
                       <View className="flex-row items-center">
                         <Image
                           source={require("../../assets/images/yellow-heart.png")}

@@ -5,113 +5,180 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  Modal,
+  Image,
 } from "react-native";
-import { router } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
+import { useRouter } from "expo-router";
 
-type ReportReason =
-  | "Hate speech or Harassment"
-  | "Scam/Fraud"
-  | "Impersonation"
-  | "Nudy or Sexual Content";
+interface ReportReason {
+  id: number;
+  label: string;
+}
+
+const REPORT_REASONS: ReportReason[] = [
+  { id: 1, label: "Hate speech or Harassment" },
+  { id: 2, label: "Scam/Fraud" },
+  { id: 3, label: "Impersonation" },
+  { id: 4, label: "Nudy or Sexual Content" },
+];
 
 export default function ReportScreen() {
-  const [selectedReason, setSelectedReason] = useState<ReportReason | null>(
-    "Hate speech or Harassment"
-  );
+  const router = useRouter();
+  const [selectedReason, setSelectedReason] = useState<number | null>(null);
   const [additionalDetails, setAdditionalDetails] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  const reportReasons: ReportReason[] = [
-    "Hate speech or Harassment",
-    "Scam/Fraud",
-    "Impersonation",
-    "Nudy or Sexual Content",
-  ];
-
-  const handleSubmit = () => {
-    if (!selectedReason) {
+  const handleSubmitReport = () => {
+    if (selectedReason === null) {
       return;
     }
+    setShowSuccessModal(true);
+  };
 
-    // Handle report submission
-    console.log("Report submitted:", {
-      reason: selectedReason,
-      details: additionalDetails,
-    });
-
-    // Navigate back or show confirmation
-    router.back();
+  const handleDone = () => {
+    setShowSuccessModal(false);
+    router.push("/report");
   };
 
   return (
     <View className="flex-1 bg-black">
-      <ScrollView className="flex-1 px-6 py-12">
-        {/* Header */}
-        <View className="flex-row items-center mb-8">
-          <TouchableOpacity onPress={() => router.back()}>
+      {/* Header */}
+      <View className="pt-12 pb-4 px-4">
+        <View className="flex-row items-center">
+          <TouchableOpacity
+            onPress={() => router.push("/discover")}
+            className="mr-4"
+          >
             <ChevronLeft size={24} color="#fff" />
           </TouchableOpacity>
-          <Text className="text-white text-xl font-bold flex-1 text-center mr-6">
+          <Text className="text-white font-semibold text-[18px] flex-1 text-center">
             Report Profile
           </Text>
         </View>
+      </View>
 
-        {/* Title */}
-        <Text className="text-white text-3xl font-bold mb-6">
-          Select a reason for reporting
-        </Text>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 40 }}
+      >
+        {/* Section Title */}
+        <View className="px-4 pt-4 pb-6">
+          <Text className="text-white text-[18px] font-medium leading-6">
+            Select a reason for reporting
+          </Text>
+        </View>
 
         {/* Report Reasons */}
-        <View className="mb-8">
-          {reportReasons.map((reason, index) => (
+        <View className="px-4 mb-6">
+          {REPORT_REASONS.map((reason, index) => (
             <TouchableOpacity
-              key={index}
-              onPress={() => setSelectedReason(reason)}
-              className="flex-row items-center justify-between bg-transparent border border-gray-700 rounded-2xl px-6 py-5 mb-4"
+              key={reason.id}
+              onPress={() => setSelectedReason(reason.id)}
+              className="flex-row items-center justify-between bg-transparent border border-[#808080] rounded-[15px] px-[14px] py-[13px]"
+              style={{
+                marginBottom: index < REPORT_REASONS.length - 1 ? 12 : 0,
+              }}
+              activeOpacity={0.7}
             >
-              <Text className="text-white text-base flex-1">{reason}</Text>
+              <Text className="text-white text-[16px] flex-1 font-normal">
+                {reason.label}
+              </Text>
               <View
-                className={`w-6 h-6 rounded-full border-2 ${
-                  selectedReason === reason
-                    ? "border-[#FCCD34] bg-transparent"
-                    : "border-gray-600"
+                className={`w-[24px] h-[24px] rounded-full ${
+                  selectedReason === reason.id
+                    ? "bg-[#FCCD34]"
+                    : "border-[2px] border-[#808080]"
                 } items-center justify-center`}
               >
-                {selectedReason === reason && (
-                  <View className="w-3 h-3 rounded-full bg-[#FCCD34]" />
+                {selectedReason === reason.id && (
+                  <View className="w-[10px] h-[10px] rounded-full bg-black" />
                 )}
               </View>
             </TouchableOpacity>
           ))}
         </View>
 
-        {/* Optional Details Section */}
-        <Text className="text-white text-2xl font-bold mb-4">
-          Tell us more (Optional)
-        </Text>
+        {/* Additional Details */}
+        <View className="px-4 pt-6">
+          <Text className="text-white text-[18px] font-medium mb-4 leading-6">
+            Tell us more (Optional)
+          </Text>
 
-        <TextInput
-          className="bg-gray-900 rounded-2xl px-6 py-4 text-white text-base min-h-[200px]"
-          placeholder="Peovide specific details that will help us review the report..."
-          placeholderTextColor="#666"
-          multiline
-          textAlignVertical="top"
-          value={additionalDetails}
-          onChangeText={setAdditionalDetails}
-        />
+          <View className="bg-[#19191B] border border-[#808080] rounded-[15px]  px-[14px] py-[14px] mb-8">
+            <TextInput
+              className="text-white text-[15px] min-h-[100px]"
+              placeholder="Provide specific details that will help us review the report..."
+              placeholderTextColor="#6E6E73"
+              multiline
+              textAlignVertical="top"
+              value={additionalDetails}
+              onChangeText={setAdditionalDetails}
+              style={{ fontFamily: "System" }}
+            />
+          </View>
+
+          {/* Submit Button */}
+          <TouchableOpacity
+            onPress={handleSubmitReport}
+            className={`rounded-[15px] py-[16px] items-center justify-center ${
+              selectedReason === null ? "bg-[#3C3C3E]" : "bg-[#FCCD34]"
+            }`}
+            disabled={selectedReason === null}
+            activeOpacity={0.8}
+          >
+            <Text
+              className={`text-[17px] font-semibold ${
+                selectedReason === null ? "text-[#6E6E73]" : "text-black"
+              }`}
+            >
+              Submit Report
+            </Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
 
-      {/* Submit Button - Fixed at bottom */}
-      <View className="px-6 pb-8">
-        <TouchableOpacity
-          className="bg-[#FCCD34] rounded-2xl py-4 px-8"
-          onPress={handleSubmit}
-        >
-          <Text className="text-black text-center text-lg font-bold">
-            Submit Report
-          </Text>
-        </TouchableOpacity>
-      </View>
+      {/* Success Modal */}
+      <Modal
+        visible={showSuccessModal}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={handleDone}
+      >
+        <View className="flex-1 bg-black/95 items-center justify-center px-6">
+          <View className="items-center w-full">
+            {/* Success Icon */}
+            <View className="mb-12 items-center justify-center">
+              <Image
+                source={require("../../assets/images/Check.png")}
+                style={{ width: 160, height: 160 }}
+                resizeMode="contain"
+              />
+            </View>
+
+            {/* Success Text */}
+            <Text className="text-white text-[32px] font-semibold mb-5 text-center">
+              Report Submitted
+            </Text>
+            <Text className="text-white text-[16px] text-center leading-6 px-6 mb-12">
+              Thank you for helping us keep the community safe. we will review
+              your report shortly.
+            </Text>
+
+            {/* Done Button - Same level as Submit Button */}
+            <TouchableOpacity
+              onPress={handleDone}
+              className="bg-[#FCCD34] rounded-[20px] py-[18px] w-full"
+              activeOpacity={0.8}
+            >
+              <Text className="text-black text-[18px] font-bold text-center">
+                Done
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
