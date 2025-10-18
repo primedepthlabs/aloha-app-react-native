@@ -387,7 +387,7 @@ const AddCard = () => {
               }}
             >
               <Image
-                source={require("../../assets/images/Check.png")}
+                source={require("../../../assets/images/Check.png")}
                 style={{ width: 120, height: 120 }}
                 resizeMode="contain"
               />

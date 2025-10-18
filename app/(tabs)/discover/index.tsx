@@ -46,7 +46,7 @@ const MOCK_USERS: User[] = [
     id: 1,
     name: "Bam Margera",
     role: "Actor",
-    image: require("../../assets/images/discover.png"),
+    image: require("../../../assets/images/discover.png"),
     isFavorite: false,
     location: "Chicago, IL United States",
     about:
@@ -65,7 +65,7 @@ const MOCK_USERS: User[] = [
     id: 2,
     name: "Sarah Johnson",
     role: "Influencer",
-    image: require("../../assets/images/discover.png"),
+    image: require("../../../assets/images/discover.png"),
     isFavorite: true,
     location: "Los Angeles, CA United States",
     about:
@@ -81,7 +81,7 @@ const MOCK_USERS: User[] = [
     id: 3,
     name: "Mike Chen",
     role: "Doctor",
-    image: require("../../assets/images/discover.png"),
+    image: require("../../../assets/images/discover.png"),
     isFavorite: false,
     location: "New York, NY United States",
     about:
@@ -96,7 +96,7 @@ const MOCK_USERS: User[] = [
     id: 4,
     name: "Emma Stone",
     role: "Youtuber",
-    image: require("../../assets/images/discover.png"),
+    image: require("../../../assets/images/discover.png"),
     isFavorite: false,
     location: "Miami, FL United States",
     about:
@@ -180,7 +180,7 @@ export default function DiscoverScreen() {
 
   const navigateToChat = (user: User) => {
     router.push({
-      pathname: "/chatScreen",
+      pathname: "/chats",
       params: {
         name: user.name,
         image:
@@ -194,7 +194,7 @@ export default function DiscoverScreen() {
     console.log("Report pressed, closing menu and navigating to /report");
     setShowProfileMenu(false);
     setSelectedUser(null); // Close the profile modal too
-    router.push("/(tabs)/report");
+    router.push("/report");
   };
 
   const applyFilter = () => {
@@ -237,7 +237,7 @@ export default function DiscoverScreen() {
         return (
           <View className="w-12 h-12 bg-[#19191B] rounded-2xl items-center justify-center">
             <Image
-              source={require("../../assets/images/mess-notification.png")}
+              source={require("../../../assets/images/mess-notification.png")}
               style={{ width: 24, height: 24 }}
               resizeMode="contain"
             />
@@ -247,7 +247,7 @@ export default function DiscoverScreen() {
         return (
           <View className="w-12 h-12 bg-[#19191B] rounded-2xl items-center justify-center">
             <Image
-              source={require("../../assets/images/heart-notification.png")}
+              source={require("../../../assets/images/heart-notification.png")}
               style={{ width: 24, height: 24 }}
               resizeMode="contain"
             />
@@ -257,7 +257,7 @@ export default function DiscoverScreen() {
         return (
           <View className="w-12 h-12 bg-[#19191B] rounded-2xl items-center justify-center">
             <Image
-              source={require("../../assets/images/settings-notification.png")}
+              source={require("../../../assets/images/settings-notification.png")}
               style={{ width: 24, height: 24 }}
               resizeMode="contain"
             />
@@ -267,7 +267,7 @@ export default function DiscoverScreen() {
         return (
           <View className="w-12 h-12 bg-[#19191B] rounded-2xl items-center justify-center">
             <Image
-              source={require("../../assets/images/videocall-notification.png")}
+              source={require("../../../assets/images/videocall-notification.png")}
               style={{ width: 24, height: 24 }}
               resizeMode="contain"
             />
@@ -289,7 +289,7 @@ export default function DiscoverScreen() {
           <Text className="text-white font-bold text-[18px]">Discover</Text>
           <TouchableOpacity onPress={() => setShowNotificationModal(true)}>
             <Image
-              source={require("../../assets/images/bell-notification.png")}
+              source={require("../../../assets/images/bell-notification.png")}
               style={{ width: 24, height: 28 }}
               resizeMode="contain"
             />
@@ -316,7 +316,7 @@ export default function DiscoverScreen() {
             className="w-[40px] h-[40px] items-center justify-center"
           >
             <Image
-              source={require("../../assets/images/filter-icon.png")}
+              source={require("../../../assets/images/filter-icon.png")}
               style={{ width: 24, height: 24 }}
               resizeMode="contain"
             />
@@ -557,7 +557,7 @@ export default function DiscoverScreen() {
               >
                 <View className="flex-row items-center pb-2">
                   <Image
-                    source={require("../../assets/images/bell-notification.png")}
+                    source={require("../../../assets/images/bell-notification.png")}
                     style={{ width: 18, height: 18, marginRight: 6 }}
                     resizeMode="contain"
                   />
@@ -582,7 +582,7 @@ export default function DiscoverScreen() {
               >
                 <View className="flex-row items-center pb-2">
                   <Image
-                    source={require("../../assets/images/white-message.png")}
+                    source={require("../../../assets/images/white-message.png")}
                     style={{ width: 18, height: 18, marginRight: 6 }}
                     resizeMode="contain"
                   />
@@ -607,7 +607,7 @@ export default function DiscoverScreen() {
               >
                 <View className="flex-row items-center pb-2">
                   <Image
-                    source={require("../../assets/images/heart-notification.png")}
+                    source={require("../../../assets/images/heart-notification.png")}
                     style={{ width: 18, height: 18, marginRight: 6 }}
                     resizeMode="contain"
                   />
@@ -676,7 +676,7 @@ export default function DiscoverScreen() {
                   <View className="mt-2 bg-[#2C2C2E] rounded-xl overflow-hidden">
                     <TouchableOpacity className="flex-row items-center px-4 py-3 border-b border-[#3C3C3E]">
                       <Image
-                        source={require("../../assets/images/notification-off.png")}
+                        source={require("../../../assets/images/notification-off.png")}
                         style={{ width: 20, height: 20, marginRight: 10 }}
                         resizeMode="contain"
                       />
@@ -686,7 +686,7 @@ export default function DiscoverScreen() {
                     </TouchableOpacity>
                     <TouchableOpacity className="flex-row items-center px-4 py-3">
                       <Image
-                        source={require("../../assets/images/delete-notification.png")}
+                        source={require("../../../assets/images/delete-notification.png")}
                         style={{ width: 20, height: 20, marginRight: 10 }}
                         resizeMode="contain"
                       />
@@ -769,7 +769,7 @@ export default function DiscoverScreen() {
                       activeOpacity={0.8}
                     >
                       <Image
-                        source={require("../../assets/images/flag.png")}
+                        source={require("../../../assets/images/flag.png")}
                         className="w-5 h-5 mr-2.5"
                         resizeMode="contain"
                       />
@@ -803,7 +803,7 @@ export default function DiscoverScreen() {
                       }}
                     >
                       <Image
-                        source={require("../../assets/images/cross.png")}
+                        source={require("../../../assets/images/cross.png")}
                         className="w-5 h-5 mr-2.5"
                         resizeMode="contain"
                       />
@@ -828,7 +828,7 @@ export default function DiscoverScreen() {
                         {selectedUser.name}
                       </Text>
                       <Image
-                        source={require("../../assets/images/verified-badge.png")}
+                        source={require("../../../assets/images/verified-badge.png")}
                         style={{ width: 20, height: 20 }}
                         resizeMode="contain"
                       />
@@ -864,7 +864,7 @@ export default function DiscoverScreen() {
                     >
                       <View className="flex-row items-center">
                         <Image
-                          source={require("../../assets/images/message.png")}
+                          source={require("../../../assets/images/message.png")}
                           style={{ width: 20, height: 20 }}
                           resizeMode="contain"
                         />
@@ -882,7 +882,7 @@ export default function DiscoverScreen() {
                     >
                       <View className="flex-row items-center">
                         <Image
-                          source={require("../../assets/images/yellow-heart.png")}
+                          source={require("../../../assets/images/yellow-heart.png")}
                           style={{ width: 20, height: 20, marginRight: 8 }}
                           resizeMode="contain"
                         />

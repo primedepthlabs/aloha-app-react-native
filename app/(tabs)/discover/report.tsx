@@ -47,7 +47,7 @@ export default function ReportScreen() {
       <View className="pt-12 pb-4 px-4">
         <View className="flex-row items-center">
           <TouchableOpacity
-            onPress={() => router.push("/discover")}
+            onPress={() => router.push("/index")}
             className="mr-4"
           >
             <ChevronLeft size={24} color="#fff" />
@@ -151,7 +151,7 @@ export default function ReportScreen() {
             {/* Success Icon */}
             <View className="mb-12 items-center justify-center">
               <Image
-                source={require("../../assets/images/Check.png")}
+                source={require("../../../assets/images/Check.png")}
                 style={{ width: 160, height: 160 }}
                 resizeMode="contain"
               />

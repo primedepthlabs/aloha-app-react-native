@@ -1,53 +1,7 @@
-// import FontAwesome from "@expo/vector-icons/FontAwesome";
-// import { Link, Tabs } from "expo-router";
-// import { Pressable, useColorScheme } from "react-native";
-
-// import Colors from "../../utils/colors";
-
-// /**
-//  * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
-//  */
-// function TabBarIcon(props: {
-//   name: React.ComponentProps<typeof FontAwesome>["name"];
-//   color: string;
-// }) {
-//   return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
-// }
-
-// export default function TabLayout() {
-//   const colorScheme = useColorScheme();
-
-//   return (
-//     <Tabs
-//       screenOptions={{
-//         tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
-//         tabBarStyle: { display: "none" }, // Hide the tab bar
-//         headerShown: false, // Hide the header
-//       }}
-//     >
-//       <Tabs.Screen
-//         name="index"
-//         options={{
-//           title: "Template App",
-//           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-//         }}
-//       />
-//     </Tabs>
-//   );
-// }
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Tabs } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { useColorScheme } from "react-native";
-import Colors from "../../utils/colors";
 
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>["name"];
-  color: string;
-}) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
-}
-
-// Ensure expo-router will try to open "discover" first inside this group
 export const unstable_settings = {
   initialRouteName: "discover",
 };
@@ -57,33 +11,214 @@ export default function TabLayout() {
 
   return (
     <Tabs
-      // also pass initialRouteName here to be explicit
       initialRouteName="discover"
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
-        tabBarStyle: { display: "none" }, // hide tab bar if you want
         headerShown: false,
+        tabBarShowLabel: true,
+        tabBarStyle: {
+          backgroundColor: "#111", // dark tab bar background
+          borderTopWidth: 0,
+
+          height: 70,
+          borderRadius: 30,
+          marginHorizontal: 20,
+          marginBottom: 10,
+          position: "absolute",
+          overflow: "hidden",
+          elevation: 5, // for Android shadow
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 5 },
+          shadowOpacity: 0.2,
+          shadowRadius: 10,
+        },
+        tabBarActiveTintColor: "#FACC15", // yellow active icon/text
+        tabBarInactiveTintColor: "#888", // grey inactive icons
       }}
     >
-      {/* Explicitly declare the discover screen */}
+      {/* Discover tab */}
       <Tabs.Screen
-        name="discover"
+        name="discover/index"
         options={{
           title: "Discover",
           tabBarIcon: ({ color }) => (
-            <TabBarIcon name="compass" color={color} />
+            <Ionicons name="location" size={22} color={color} />
           ),
         }}
       />
 
-      {/* Keep index if you still need it, but it won't be the initial */}
+      {/* Chats tab */}
       <Tabs.Screen
-        name="index"
+        name="chats/index"
         options={{
-          title: "Home",
-          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+          title: "Chats",
+          tabBarIcon: ({ color }) => (
+            <Ionicons
+              name="chatbubble-ellipses-outline"
+              size={22}
+              color={color}
+            />
+          ),
+        }}
+      />
+
+      {/* Profile tab */}
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="person-outline" size={22} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="discover/addCard"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="discover/donation"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="discover/report"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="chats/chatExclusive"
+        options={{
+          href: null,
         }}
       />
     </Tabs>
   );
 }
+// import { Tabs } from "expo-router";
+// import { Image } from "react-native";
+// import { useColorScheme } from "react-native";
+
+// export const unstable_settings = {
+//   initialRouteName: "discover",
+// };
+
+// export default function TabLayout() {
+//   const colorScheme = useColorScheme();
+
+//   return (
+//     <Tabs
+//       initialRouteName="discover"
+//       screenOptions={{
+//         headerShown: false,
+//         tabBarShowLabel: false,
+//         tabBarStyle: {
+//           backgroundColor: "#1A1A1A", // slightly lighter black for depth
+//           borderTopWidth: 0,
+//           height: 64,
+//           borderRadius: 30, // rounded corners like in the first image
+//           marginHorizontal: 26,
+//           marginBottom: 34,
+//           position: "absolute",
+//           left: 0,
+//           right: 0,
+//           overflow: "hidden",
+//           elevation: 5,
+//           shadowColor: "#000",
+//           shadowOffset: { width: 0, height: 5 },
+//           shadowOpacity: 0.3,
+//           shadowRadius: 10,
+//           paddingHorizontal: 20,
+//         },
+//         tabBarItemStyle: {
+//           paddingVertical: 8,
+//         },
+//       }}
+//     >
+//       {/* Discover tab */}
+//       <Tabs.Screen
+//         name="discover/index"
+//         options={{
+//           title: "Discover",
+//           tabBarIcon: ({ focused }) => (
+//             <Image
+//               source={require("../../assets/images/discover-bottom.png")}
+//               style={{
+//                 width: 40,
+//                 height: 40,
+//                 tintColor: focused ? "#FACC15" : "#808080", // yellow when active, gray when inactive
+//               }}
+//               resizeMode="contain"
+//             />
+//           ),
+//         }}
+//       />
+
+//       {/* Chats tab */}
+//       <Tabs.Screen
+//         name="chats/index"
+//         options={{
+//           title: "Chats",
+//           tabBarIcon: ({ focused }) => (
+//             <Image
+//               source={require("../../assets/images/chat-bottom.png")}
+//               style={{
+//                 width: 40,
+//                 height: 40,
+//                 tintColor: focused ? "#FACC15" : "#808080",
+//               }}
+//               resizeMode="contain"
+//             />
+//           ),
+//         }}
+//       />
+
+//       {/* Profile tab */}
+//       <Tabs.Screen
+//         name="profile"
+//         options={{
+//           title: "Profile",
+//           tabBarIcon: ({ focused }) => (
+//             <Image
+//               source={require("../../assets/images/profile-bottom.png")}
+//               style={{
+//                 width: 40,
+//                 height: 40,
+//                 tintColor: focused ? "#FACC15" : "#808080",
+//               }}
+//               resizeMode="contain"
+//             />
+//           ),
+//         }}
+//       />
+
+//       <Tabs.Screen
+//         name="discover/addCard"
+//         options={{
+//           href: null,
+//         }}
+//       />
+//       <Tabs.Screen
+//         name="discover/donation"
+//         options={{
+//           href: null,
+//         }}
+//       />
+//       <Tabs.Screen
+//         name="discover/report"
+//         options={{
+//           href: null,
+//         }}
+//       />
+//       <Tabs.Screen
+//         name="chats/chatExclusive"
+//         options={{
+//           href: null,
+//         }}
+//       />
+//     </Tabs>
+//   );
+// }

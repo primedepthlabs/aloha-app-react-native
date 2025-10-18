@@ -426,7 +426,7 @@ const Donation = () => {
             <StyledView className="flex-row items-center">
               <StyledView className="w-10 h-10 rounded-[8px] mr-3 items-center justify-center">
                 <Image
-                  source={require("../../assets/images/balance.png")}
+                  source={require("../../../assets/images/balance.png")}
                   className="w-6 h-6"
                   resizeMode="contain"
                 />
@@ -483,7 +483,7 @@ const Donation = () => {
             <StyledView className="flex-row items-center">
               <StyledView className="w-10 h-10 rounded-[8px] mr-3 items-center justify-center">
                 <Image
-                  source={require("../../assets/images/applepay.png")}
+                  source={require("../../../assets/images/applepay.png")}
                   className="w-7 h-7"
                   resizeMode="contain"
                 />
@@ -518,7 +518,7 @@ const Donation = () => {
             <StyledView className="flex-row items-center flex-1">
               <StyledView className="w-10 h-10 rounded-[8px] mr-3 items-center justify-center">
                 <Image
-                  source={require("../../assets/images/creditcard.png")}
+                  source={require("../../../assets/images/creditcard.png")}
                   className="w-6 h-6"
                   resizeMode="contain"
                 />
@@ -660,7 +660,7 @@ const Donation = () => {
               }}
             >
               <Image
-                source={require("../../assets/images/Check.png")}
+                source={require("../../../assets/images/Check.png")}
                 style={{ width: 120, height: 120 }}
                 resizeMode="contain"
               />
@@ -754,7 +754,7 @@ const Donation = () => {
               }}
             >
               <Image
-                source={require("../../assets/images/Failed.png")}
+                source={require("../../../assets/images/Failed.png")}
                 style={{ width: 80, height: 80 }}
                 resizeMode="contain"
               />
