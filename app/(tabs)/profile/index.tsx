@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   StatusBar,
   Image,
   ActivityIndicator,
+  Modal,
 } from "react-native";
 import { Svg, Path, Circle } from "react-native-svg";
 import { styled } from "nativewind";
@@ -47,6 +48,8 @@ const FONT = {
 const ProfileScreen = () => {
   const balance = 12;
   const userName = "Ellen smith";
+  const [selectedLanguage, setSelectedLanguage] = useState("English");
+  const [isLanguageModalVisible, setIsLanguageModalVisible] = useState(false);
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -129,6 +132,63 @@ const ProfileScreen = () => {
     </StyledTouchableOpacity>
   );
 
+  const LanguageOption = ({ flag, code, name, isSelected, onSelect }: any) => (
+    <StyledTouchableOpacity
+      onPress={onSelect}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingVertical: 16,
+        paddingHorizontal: 24,
+        borderBottomWidth: 1,
+        borderBottomColor: "#2C2C2E",
+      }}
+    >
+      <StyledView style={{ flexDirection: "row", alignItems: "center" }}>
+        <StyledText style={{ fontSize: 32, marginRight: 16 }}>
+          {flag}
+        </StyledText>
+        <StyledText
+          style={{
+            fontSize: 17,
+            fontFamily: FONT.Regular,
+            color: "#FFFFFF",
+          }}
+        >
+          {name}
+        </StyledText>
+      </StyledView>
+      <StyledView
+        style={{
+          width: 24,
+          height: 24,
+          borderRadius: 12,
+          borderWidth: 2,
+          borderColor: isSelected ? "#FCCD34" : "#8E8E93",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {isSelected && (
+          <StyledView
+            style={{
+              width: 12,
+              height: 12,
+              borderRadius: 6,
+              backgroundColor: "#FCCD34",
+            }}
+          />
+        )}
+      </StyledView>
+    </StyledTouchableOpacity>
+  );
+
+  const handleLanguageSelect = (language: string) => {
+    setSelectedLanguage(language);
+    setIsLanguageModalVisible(false);
+  };
+
   return (
     <StyledSafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
@@ -207,6 +267,7 @@ const ProfileScreen = () => {
           </StyledView>
           <StyledTouchableOpacity
             className="bg-[#FCCD34] items-center justify-center"
+            onPress={() => router.push("/(tabs)/profile/addFunds")}
             style={{
               width: 92,
               height: 29,
@@ -306,16 +367,86 @@ const ProfileScreen = () => {
             icon={ShieldCheck}
             title="Email verification"
             rightText="Unverified"
-            onPress={() => {}}
+            onPress={() => router.push("/(tabs)/profile/verification")}
           />
           <MenuItem
             icon={Globe}
             title="Language"
-            rightText="English"
-            onPress={() => {}}
+            rightText={selectedLanguage}
+            onPress={() => setIsLanguageModalVisible(true)}
           />
         </StyledView>
       </StyledScrollView>
+
+      {/* Language Selection Modal */}
+      <Modal
+        visible={isLanguageModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setIsLanguageModalVisible(false)}
+      >
+        <StyledTouchableOpacity
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            justifyContent: "flex-end",
+          }}
+          activeOpacity={1}
+          onPress={() => setIsLanguageModalVisible(false)}
+        >
+          <StyledTouchableOpacity
+            activeOpacity={1}
+            style={{
+              backgroundColor: "#1C1C1E",
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              paddingBottom: 34,
+            }}
+          >
+            {/* Handle Bar */}
+            <StyledView
+              style={{
+                width: 36,
+                height: 5,
+                backgroundColor: "#48484A",
+                borderRadius: 2.5,
+                alignSelf: "center",
+                marginTop: 12,
+                marginBottom: 20,
+              }}
+            />
+
+            {/* Title */}
+            <StyledText
+              style={{
+                fontSize: 17,
+                fontFamily: FONT.SemiBold,
+                color: "#FFFFFF",
+                textAlign: "center",
+                marginBottom: 24,
+              }}
+            >
+              Choose Language
+            </StyledText>
+
+            {/* Language Options */}
+            <LanguageOption
+              flag="🇬🇪"
+              code="geo"
+              name="Geo"
+              isSelected={selectedLanguage === "Georgian"}
+              onSelect={() => handleLanguageSelect("Georgian")}
+            />
+            <LanguageOption
+              flag="🇬🇧"
+              code="eng"
+              name="Eng"
+              isSelected={selectedLanguage === "English"}
+              onSelect={() => handleLanguageSelect("English")}
+            />
+          </StyledTouchableOpacity>
+        </StyledTouchableOpacity>
+      </Modal>
     </StyledSafeAreaView>
   );
 };

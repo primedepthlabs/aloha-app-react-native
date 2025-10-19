@@ -10,10 +10,16 @@ import {
   TextInput,
   Modal,
   Image,
+  FlatList,
+  Dimensions,
 } from "react-native";
 import { styled } from "nativewind";
-import { ChevronLeft, ChevronDown, ChevronUp } from "lucide-react-native";
-import { Svg, Path } from "react-native-svg";
+import {
+  ChevronLeft,
+  ChevronDown,
+  ChevronUp,
+  ChevronRight,
+} from "lucide-react-native";
 import {
   useFonts,
   Poppins_400Regular,
@@ -37,6 +43,8 @@ const FONT = {
   Bold: "Poppins_700Bold",
 };
 
+const SCREEN_WIDTH = Dimensions.get("window").width;
+
 const AccountSettingsScreen = () => {
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -50,11 +58,16 @@ const AccountSettingsScreen = () => {
   const [phone, setPhone] = useState("+995 598 *** 793");
   const [gender, setGender] = useState("Woman");
   const [genderDropdownOpen, setGenderDropdownOpen] = useState(false);
+
+  // modal states
   const [saveModalVisible, setSaveModalVisible] = useState(false);
   const [editProfileVisible, setEditProfileVisible] = useState(false);
   const [blockedPeopleVisible, setBlockedPeopleVisible] = useState(false);
   const [unblockModalVisible, setUnblockModalVisible] = useState(false);
-  const [selectedPerson, setSelectedPerson] = useState("");
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+
+  // saving lock to prevent double clicks
+  const [isSaving, setIsSaving] = useState(false);
 
   const blockedUsers = [
     {
@@ -82,11 +95,17 @@ const AccountSettingsScreen = () => {
     );
   }
 
-  const MenuItem = ({ icon, title, textColor = "white", onPress }: any) => (
+  const MenuItem = ({
+    iconSource,
+    title,
+    textColor = "white",
+    onPress,
+  }: any) => (
     <StyledTouchableOpacity
       onPress={onPress}
       style={{
-        width: 330,
+        // use responsive width rather than fixed 330
+        width: SCREEN_WIDTH - 48,
         height: 40,
         flexDirection: "row",
         alignItems: "center",
@@ -109,7 +128,15 @@ const AccountSettingsScreen = () => {
             marginRight: 12,
           }}
         >
-          {icon}
+          <Image
+            source={iconSource}
+            style={{
+              width: 24,
+              height: 24,
+              resizeMode: "contain",
+              backgroundColor: "#19191B",
+            }}
+          />
         </StyledView>
         <StyledText
           style={{
@@ -121,17 +148,90 @@ const AccountSettingsScreen = () => {
           {title}
         </StyledText>
       </StyledView>
-      <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <Path
-          d="M9 18L15 12L9 6"
-          stroke="#8E8E93"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </Svg>
+
+      <ChevronRight size={20} color="#8E8E93" strokeWidth={2} />
     </StyledTouchableOpacity>
   );
+
+  const renderBlockedUser = ({ item }: any) => {
+    return (
+      <StyledView
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingVertical: 14,
+          paddingHorizontal: 6,
+        }}
+      >
+        <StyledView style={{ flexDirection: "row", alignItems: "center" }}>
+          <Image
+            source={item.image}
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 24,
+              marginRight: 12,
+            }}
+          />
+          <StyledText
+            style={{
+              fontSize: 16,
+              fontFamily: FONT.Medium,
+              color: "#FFFFFF",
+            }}
+          >
+            {item.name}
+          </StyledText>
+        </StyledView>
+
+        <StyledTouchableOpacity
+          onPress={() => {
+            setSelectedUser(item);
+            setUnblockModalVisible(true);
+          }}
+          style={{
+            backgroundColor: "#FCCD34",
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+            borderRadius: 18,
+            minWidth: 88,
+            alignItems: "center",
+            justifyContent: "center",
+            elevation: 2,
+          }}
+        >
+          <StyledText
+            style={{
+              fontSize: 14,
+              fontFamily: FONT.Regular,
+              color: "#000000",
+            }}
+          >
+            Unblock
+          </StyledText>
+        </StyledTouchableOpacity>
+      </StyledView>
+    );
+  };
+
+  // simulated save function — replace with your API call
+  const saveProfile = async () => {
+    setIsSaving(true);
+    try {
+      // simulate network
+      await new Promise((res) => setTimeout(res, 800));
+      // TODO: call your API here with ({ firstName, lastName, phone, gender })
+      // on success:
+      setSaveModalVisible(false);
+      setEditProfileVisible(false);
+    } catch (e) {
+      // handle error (show toast/snackbar)
+      console.warn("save failed", e);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <StyledSafeAreaView className="flex-1 bg-black">
@@ -181,80 +281,26 @@ const AccountSettingsScreen = () => {
         }}
       >
         <MenuItem
-          icon={
-            <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <Path
-                d="M20 21C20 19.6044 20 18.9067 19.8278 18.3389C19.44 17.0605 18.4395 16.06 17.1611 15.6722C16.5933 15.5 15.8956 15.5 14.5 15.5H9.5C8.10444 15.5 7.40665 15.5 6.83886 15.6722C5.56045 16.06 4.56004 17.0605 4.17224 18.3389C4 18.9067 4 19.6044 4 21M16.5 7.5C16.5 9.98528 14.4853 12 12 12C9.51472 12 7.5 9.98528 7.5 7.5C7.5 5.01472 9.51472 3 12 3C14.4853 3 16.5 5.01472 16.5 7.5Z"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </Svg>
-          }
+          iconSource={require("../../../assets/images/profile/one-person.png")}
           title="Edit profile"
           onPress={() => setEditProfileVisible(true)}
         />
 
         <MenuItem
-          icon={
-            <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <Path
-                d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13M16 3.13C16.8604 3.3503 17.623 3.8507 18.1676 4.55231C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89317 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88M13 7C13 9.20914 11.2091 11 9 11C6.79086 11 5 9.20914 5 7C5 4.79086 6.79086 3 9 3C11.2091 3 13 4.79086 13 7Z"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </Svg>
-          }
+          iconSource={require("../../../assets/images/profile/two-person.png")}
           title="Blocked people"
           onPress={() => setBlockedPeopleVisible(true)}
         />
 
         <MenuItem
-          icon={
-            <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <Path
-                d="M3 6H21M5 6V20C5 20.5304 5.21071 21.0391 5.58579 21.4142C5.96086 21.7893 6.46957 22 7 22H17C17.5304 22 18.0391 21.7893 18.4142 21.4142C18.7893 21.0391 19 20.5304 19 20V6M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6"
-                stroke="#FF3B30"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </Svg>
-          }
+          iconSource={require("../../../assets/images/profile/dustbin.png")}
           title="Delete account"
           textColor="red"
-          onPress={() => {}}
+          onPress={() => router.push("/(tabs)/profile/delete-account")}
         />
 
         <MenuItem
-          icon={
-            <Svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <Path
-                d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <Path
-                d="M16 17L21 12L16 7"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <Path
-                d="M21 12H9"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </Svg>
-          }
+          iconSource={require("../../../assets/images/profile/logout.png")}
           title="Log Out"
           onPress={() => {}}
         />
@@ -266,6 +312,7 @@ const AccountSettingsScreen = () => {
         transparent={false}
         visible={editProfileVisible}
         onRequestClose={() => setEditProfileVisible(false)}
+        presentationStyle="overFullScreen"
       >
         <StyledSafeAreaView className="flex-1 bg-black">
           <StatusBar barStyle="light-content" />
@@ -285,6 +332,10 @@ const AccountSettingsScreen = () => {
               style={{
                 position: "absolute",
                 left: 20,
+                width: 40,
+                height: 40,
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
@@ -305,6 +356,7 @@ const AccountSettingsScreen = () => {
             contentContainerStyle={{
               paddingHorizontal: 24,
               paddingTop: 20,
+              paddingBottom: 40,
             }}
           >
             {/* First Name */}
@@ -313,7 +365,7 @@ const AccountSettingsScreen = () => {
                 style={{
                   backgroundColor: "#1C1C1E",
                   borderRadius: 12,
-                  height: 56,
+                  height: 48,
                   paddingHorizontal: 20,
                   flexDirection: "row",
                   alignItems: "center",
@@ -332,22 +384,15 @@ const AccountSettingsScreen = () => {
                     color: "#FFFFFF",
                   }}
                 />
-                <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <Path
-                    d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13"
-                    stroke="#6F6F70"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <Path
-                    d="M18.5 2.50001C18.8978 2.10219 19.4374 1.87869 20 1.87869C20.5626 1.87869 21.1022 2.10219 21.5 2.50001C21.8978 2.89784 22.1213 3.4374 22.1213 4.00001C22.1213 4.56262 21.8978 5.10219 21.5 5.50001L12 15L8 16L9 12L18.5 2.50001Z"
-                    stroke="#6F6F70"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </Svg>
+                <Image
+                  source={require("../../../assets/images/profile/edit.png")}
+                  style={{
+                    width: 20,
+                    height: 20,
+                    tintColor: "#6F6F70",
+                    resizeMode: "contain",
+                  }}
+                />
               </StyledView>
             </StyledView>
 
@@ -357,7 +402,7 @@ const AccountSettingsScreen = () => {
                 style={{
                   backgroundColor: "#1C1C1E",
                   borderRadius: 12,
-                  height: 56,
+                  height: 48,
                   paddingHorizontal: 20,
                   flexDirection: "row",
                   alignItems: "center",
@@ -376,22 +421,15 @@ const AccountSettingsScreen = () => {
                     color: "#FFFFFF",
                   }}
                 />
-                <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <Path
-                    d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13"
-                    stroke="#6F6F70"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <Path
-                    d="M18.5 2.50001C18.8978 2.10219 19.4374 1.87869 20 1.87869C20.5626 1.87869 21.1022 2.10219 21.5 2.50001C21.8978 2.89784 22.1213 3.4374 22.1213 4.00001C22.1213 4.56262 21.8978 5.10219 21.5 5.50001L12 15L8 16L9 12L18.5 2.50001Z"
-                    stroke="#6F6F70"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </Svg>
+                <Image
+                  source={require("../../../assets/images/profile/edit.png")}
+                  style={{
+                    width: 20,
+                    height: 20,
+                    tintColor: "#6F6F70",
+                    resizeMode: "contain",
+                  }}
+                />
               </StyledView>
             </StyledView>
 
@@ -401,7 +439,7 @@ const AccountSettingsScreen = () => {
                 style={{
                   backgroundColor: "#1C1C1E",
                   borderRadius: 12,
-                  height: 56,
+                  height: 48,
                   paddingHorizontal: 20,
                   flexDirection: "row",
                   alignItems: "center",
@@ -420,22 +458,15 @@ const AccountSettingsScreen = () => {
                     color: "#FFFFFF",
                   }}
                 />
-                <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <Path
-                    d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13"
-                    stroke="#6F6F70"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <Path
-                    d="M18.5 2.50001C18.8978 2.10219 19.4374 1.87869 20 1.87869C20.5626 1.87869 21.1022 2.10219 21.5 2.50001C21.8978 2.89784 22.1213 3.4374 22.1213 4.00001C22.1213 4.56262 21.8978 5.10219 21.5 5.50001L12 15L8 16L9 12L18.5 2.50001Z"
-                    stroke="#6F6F70"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </Svg>
+                <Image
+                  source={require("../../../assets/images/profile/edit.png")}
+                  style={{
+                    width: 20,
+                    height: 20,
+                    tintColor: "#6F6F70",
+                    resizeMode: "contain",
+                  }}
+                />
               </StyledView>
             </StyledView>
 
@@ -448,7 +479,7 @@ const AccountSettingsScreen = () => {
                     ? "transparent"
                     : "#1C1C1E",
                   borderRadius: 12,
-                  height: 56,
+                  height: 48,
                   paddingHorizontal: 20,
                   flexDirection: "row",
                   alignItems: "center",
@@ -511,64 +542,334 @@ const AccountSettingsScreen = () => {
               )}
             </StyledView>
 
-            {/* Save Button */}
+            {/* Save Button (disabled while saving) */}
             <StyledTouchableOpacity
               onPress={() => setSaveModalVisible(true)}
+              disabled={isSaving}
               style={{
-                backgroundColor: "#FCCD34",
-                borderRadius: 12,
-                height: 56,
+                backgroundColor: isSaving ? "#d9c85a" : "#FCCD34",
+                borderRadius: 28,
+                height: 48,
                 alignItems: "center",
                 justifyContent: "center",
                 marginBottom: 24,
+                width: SCREEN_WIDTH - 48,
+                alignSelf: "center",
+                opacity: isSaving ? 0.9 : 1,
               }}
             >
-              <StyledText
-                className="text-black"
-                style={{
-                  fontSize: 18,
-                  fontFamily: FONT.SemiBold,
-                }}
-              >
-                Save
-              </StyledText>
+              {isSaving ? (
+                <ActivityIndicator />
+              ) : (
+                <StyledText
+                  style={{
+                    fontSize: 18,
+                    fontFamily: FONT.SemiBold,
+                    color: "#FFFFFF",
+                  }}
+                >
+                  Save
+                </StyledText>
+              )}
             </StyledTouchableOpacity>
-
-            {/* Contact Support Link */}
+            {/* Bottom-fixed Contact Support */}
             <StyledView
               style={{
+                position: "absolute",
+                left: 0,
+                right: 0,
+                bottom: 20,
                 alignItems: "center",
-                marginBottom: 40,
+                paddingHorizontal: 24,
               }}
             >
-              <StyledText
+              <StyledView
                 style={{
-                  fontSize: 14,
-                  fontFamily: FONT.Regular,
-                  color: "#FFFFFF",
+                  alignItems: "center",
+                  marginBottom: 0,
                 }}
               >
-                Need Help?{" "}
-                <StyledText style={{ color: "#FCCD34" }}>
-                  Contact Support
+                <StyledText
+                  style={{
+                    fontSize: 14,
+                    fontFamily: FONT.Regular,
+                    color: "#FFFFFF",
+                  }}
+                >
+                  Need Help?{" "}
+                  <StyledText style={{ color: "#FCCD34" }}>
+                    Contact Support
+                  </StyledText>
                 </StyledText>
-              </StyledText>
+              </StyledView>
             </StyledView>
           </StyledScrollView>
+
+          <Modal
+            animationType="fade"
+            transparent={true}
+            visible={saveModalVisible}
+            onRequestClose={() => {
+              if (!isSaving) setSaveModalVisible(false);
+            }}
+          >
+            <StyledView
+              style={{
+                flex: 1,
+                backgroundColor: "rgba(0, 0, 0, 0.5)",
+                justifyContent: "center",
+                alignItems: "center",
+                paddingHorizontal: 40,
+              }}
+            >
+              <StyledView
+                style={{
+                  backgroundColor: "#2C2C2E",
+                  borderRadius: 20,
+                  padding: 24,
+                  width: "100%",
+                  maxWidth: 320,
+                }}
+              >
+                <StyledText
+                  className="text-white text-center"
+                  style={{
+                    fontSize: 16,
+                    fontFamily: FONT.Regular,
+                    marginBottom: 24,
+                    lineHeight: 24,
+                  }}
+                >
+                  Are you sure you want to save changes?
+                </StyledText>
+
+                <StyledTouchableOpacity
+                  onPress={async () => {
+                    if (isSaving) return; // guard
+                    await saveProfile();
+                  }}
+                  style={{
+                    paddingVertical: 12,
+                    borderBottomWidth: 1,
+                    borderBottomColor: "#3C3C3E",
+                    alignItems: "center",
+                  }}
+                >
+                  <StyledText
+                    className="text-center"
+                    style={{
+                      fontSize: 16,
+                      fontFamily: FONT.Regular,
+                      color: "#FCCD34",
+                    }}
+                  >
+                    {isSaving ? "Saving..." : "Save"}
+                  </StyledText>
+                </StyledTouchableOpacity>
+
+                <StyledTouchableOpacity
+                  onPress={() => {
+                    if (!isSaving) setSaveModalVisible(false);
+                  }}
+                  style={{
+                    paddingVertical: 12,
+                    alignItems: "center",
+                  }}
+                >
+                  <StyledText
+                    className="text-white text-center"
+                    style={{
+                      fontSize: 16,
+                      fontFamily: FONT.Regular,
+                    }}
+                  >
+                    Cancel
+                  </StyledText>
+                </StyledTouchableOpacity>
+              </StyledView>
+            </StyledView>
+          </Modal>
+          {/* -------------------------
+              End nested Save Confirmation Modal
+              ------------------------- */}
         </StyledSafeAreaView>
       </Modal>
 
-      {/* Save Confirmation Modal */}
+      {/* Blocked People Modal (updated — includes nested Unblock Confirmation Modal) */}
       <Modal
-        animationType="fade"
+        animationType="slide"
+        transparent={false}
+        visible={blockedPeopleVisible}
+        onRequestClose={() => setBlockedPeopleVisible(false)}
+        presentationStyle="overFullScreen"
+      >
+        <StyledSafeAreaView className="flex-1 bg-black">
+          <StatusBar barStyle="light-content" />
+          <StyledView
+            style={{
+              height: 60,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              paddingHorizontal: 20,
+              position: "relative",
+            }}
+          >
+            <StyledTouchableOpacity
+              onPress={() => setBlockedPeopleVisible(false)}
+              style={{
+                position: "absolute",
+                left: 20,
+                width: 40,
+                height: 40,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
+            </StyledTouchableOpacity>
+            <StyledText
+              className="text-white"
+              style={{
+                fontSize: 18,
+                fontFamily: FONT.SemiBold,
+              }}
+            >
+              Blocked People
+            </StyledText>
+          </StyledView>
+
+          <StyledView
+            style={{
+              paddingHorizontal: 24,
+              paddingTop: 8,
+              flex: 1,
+            }}
+          >
+            <FlatList
+              data={blockedUsers}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={renderBlockedUser}
+              ItemSeparatorComponent={() => (
+                <StyledView
+                  style={{
+                    height: 1,
+                    backgroundColor: "transparent",
+                  }}
+                />
+              )}
+            />
+          </StyledView>
+
+          {/* -------------------------
+        Nested Unblock Confirmation Modal
+        (now guaranteed to display above the blocked-people screen)
+        ------------------------- */}
+          <Modal
+            animationType="fade"
+            transparent={true}
+            visible={unblockModalVisible}
+            onRequestClose={() => setUnblockModalVisible(false)}
+          >
+            <StyledView
+              style={{
+                flex: 1,
+                backgroundColor: "rgba(0, 0, 0, 0.7)",
+                justifyContent: "center",
+                alignItems: "center",
+                paddingHorizontal: 40,
+              }}
+            >
+              <StyledView
+                style={{
+                  backgroundColor: "#2C2C2E",
+                  borderRadius: 20,
+                  padding: 24,
+                  width: "100%",
+                  maxWidth: 320,
+                }}
+              >
+                <StyledText
+                  className="text-white text-center"
+                  style={{
+                    fontSize: 16,
+                    fontFamily: FONT.Regular,
+                    marginBottom: 24,
+                    lineHeight: 24,
+                  }}
+                >
+                  Are you sure you want to{"\n"}Unblock{" "}
+                  <StyledText style={{ color: "#FCCD34" }}>
+                    {selectedUser?.name}
+                  </StyledText>
+                  ?
+                </StyledText>
+
+                <StyledTouchableOpacity
+                  onPress={() => {
+                    // Implement unblock logic here:
+                    // - remove user from blockedUsers source (call API / update state)
+                    // - optionally show a toast
+                    // then close modal(s)
+                    // example (if blockedUsers were in state): setBlockedUsers(prev => prev.filter(u => u.id !== selectedUser.id));
+                    setUnblockModalVisible(false);
+                  }}
+                  style={{
+                    paddingVertical: 12,
+                    borderBottomWidth: 1,
+                    borderBottomColor: "#3C3C3E",
+                    alignItems: "center",
+                  }}
+                >
+                  <StyledText
+                    className="text-center"
+                    style={{
+                      fontSize: 16,
+                      fontFamily: FONT.Regular,
+                      color: "#FCCD34",
+                    }}
+                  >
+                    Unblock
+                  </StyledText>
+                </StyledTouchableOpacity>
+
+                <StyledTouchableOpacity
+                  onPress={() => setUnblockModalVisible(false)}
+                  style={{
+                    paddingVertical: 12,
+                    alignItems: "center",
+                  }}
+                >
+                  <StyledText
+                    className="text-white text-center"
+                    style={{
+                      fontSize: 16,
+                      fontFamily: FONT.Regular,
+                    }}
+                  >
+                    Cancel
+                  </StyledText>
+                </StyledTouchableOpacity>
+              </StyledView>
+            </StyledView>
+          </Modal>
+          {/* -------------------------
+        End nested Unblock Confirmation Modal
+        ------------------------- */}
+        </StyledSafeAreaView>
+      </Modal>
+
+      {/* Unblock Confirmation Modal */}
+      <Modal
+        animationType="none"
         transparent={true}
-        visible={saveModalVisible}
-        onRequestClose={() => setSaveModalVisible(false)}
+        visible={unblockModalVisible}
+        onRequestClose={() => setUnblockModalVisible(false)}
       >
         <StyledView
           style={{
             flex: 1,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
             justifyContent: "center",
             alignItems: "center",
             paddingHorizontal: 40,
@@ -592,18 +893,23 @@ const AccountSettingsScreen = () => {
                 lineHeight: 24,
               }}
             >
-              Are you sure you want to save changes?
+              Are you sure you want to{"\n"}Unblock{" "}
+              <StyledText style={{ color: "#FCCD34" }}>
+                {selectedUser?.name}
+              </StyledText>
+              ?
             </StyledText>
 
             <StyledTouchableOpacity
               onPress={() => {
-                setSaveModalVisible(false);
-                setEditProfileVisible(false);
+                // Implement unblock logic here
+                setUnblockModalVisible(false);
               }}
               style={{
                 paddingVertical: 12,
                 borderBottomWidth: 1,
                 borderBottomColor: "#3C3C3E",
+                alignItems: "center",
               }}
             >
               <StyledText
@@ -622,6 +928,7 @@ const AccountSettingsScreen = () => {
               onPress={() => setUnblockModalVisible(false)}
               style={{
                 paddingVertical: 12,
+                alignItems: "center",
               }}
             >
               <StyledText
