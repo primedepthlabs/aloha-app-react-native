@@ -352,7 +352,11 @@ const ProfileScreen = () => {
             title="Notification settings"
             onPress={() => router.push("/(tabs)/profile/notificationSettings")}
           />
-          <MenuItem icon={Star} title="Join as talent" onPress={() => {}} />
+          <MenuItem
+            icon={Star}
+            title="Join as talent"
+            onPress={() => router.push("/(tabs)/profile/security-settings")}
+          />
           <MenuItem
             icon={CreditCard}
             title="Payment settings"
