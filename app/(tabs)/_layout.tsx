@@ -124,6 +124,12 @@ export default function TabLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="dashboard/Earnings"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
