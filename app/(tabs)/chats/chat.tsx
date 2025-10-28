@@ -26,6 +26,7 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 
 const { width } = Dimensions.get("window");
 
@@ -1451,6 +1452,7 @@ export default function Chat() {
           </View>
         </ImageBackground>
       </Modal>
+
       {/* Audio Call Modal */}
       <Modal
         visible={showAudioCall}
@@ -1463,7 +1465,12 @@ export default function Chat() {
       >
         <StatusBar barStyle="light-content" />
 
-        <View className="flex-1 bg-[#3A3A2E]">
+        <LinearGradient
+          colors={["#0F0F10", "#4A3B0A"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          className="flex-1"
+        >
           {/* Back Button - Top Left */}
           <View className="absolute top-12 left-5 z-20">
             <TouchableOpacity
@@ -1542,7 +1549,8 @@ export default function Chat() {
                 >
                   <Phone
                     size={28}
-                    color={audioCallStatus === "ended" ? "white" : "black"}
+                    color={audioCallStatus === "ended" ? "white" : "white"}
+                    fill="white"
                   />
                 </TouchableOpacity>
                 <Text
@@ -1644,7 +1652,7 @@ export default function Chat() {
               </View>
             </View>
           </View>
-        </View>
+        </LinearGradient>
       </Modal>
     </KeyboardAvoidingView>
   );

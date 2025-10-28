@@ -1,6 +1,7 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useColorScheme } from "react-native";
+import { Image } from "react-native";
 
 export const unstable_settings = {
   initialRouteName: "discover",
@@ -60,6 +61,27 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="dashboard/index"
+        options={{
+          title: "Dashboard",
+          tabBarIcon: ({ color, focused }) => (
+            <Image
+              source={
+                focused
+                  ? require("../../assets/images/dashboard/dashboardicon.png")
+                  : require("../../assets/images/dashboard/dashboard.png")
+              }
+              style={{
+                width: 19,
+                height: 19,
+                tintColor: color, // allows dynamic tab color (active/inactive)
+                resizeMode: "contain",
+              }}
+            />
+          ),
+        }}
+      />
 
       {/* Profile tab */}
       <Tabs.Screen
@@ -71,6 +93,7 @@ export default function TabLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
         name="discover/addCard"
         options={{
