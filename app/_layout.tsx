@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import { useColorScheme } from "react-native";
 import "../styles.css";
 import { NativeWindStyleSheet } from "nativewind";
+import { router } from "expo-router";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -42,6 +43,10 @@ export default function RootLayout() {
     if (loaded) {
       SplashScreen.hideAsync();
     }
+
+    setTimeout(() => {
+      router.push("/allroutes")
+    }, 200)
   }, [loaded]);
 
   if (!loaded) {

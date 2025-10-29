@@ -2,29 +2,23 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    "jsx": "react-jsx",
+    "allowJs": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@/app/*": [
-        "app/*"
-      ],
-      "@/assets/*": [
-        "assets/*"
-      ],
-      "@/components/*": [
-        "components/*"
-      ],
-      "@/utils/*": [
-        "utils/*"
-      ],
-      "@/state/*": [
-        "state/*"
-      ],
-      "@/types/*": [
-        "types/*"
-      ]
+      "@/app/*": ["app/*"],
+      "@/assets/*": ["assets/*"],
+      "@/components/*": ["components/*"],
+      "@/utils/*": ["utils/*"],
+      "@/state/*": ["state/*"],
+      "@/types/*": ["types/*"]
     }
   },
   "include": [
+    ".",
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
