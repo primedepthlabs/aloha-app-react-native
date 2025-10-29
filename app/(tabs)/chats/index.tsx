@@ -243,7 +243,7 @@ export default function ChatsPerson() {
               onPress={() => router.push("/(tabs)/chats/chat")}
             >
               {/* Profile Picture */}
-              <View className="relative mr-4">
+              <View className="relative mr-4 w-[60px] h-[60px]">
                 {chat.image ? (
                   <Image
                     source={{ uri: chat.image }}
@@ -252,7 +252,7 @@ export default function ChatsPerson() {
                     resizeMode="cover"
                   />
                 ) : (
-                  <View className="w-15 h-15 rounded-full bg-gray-600 items-center justify-center">
+                  <View className="w-[60px] h-[60px] rounded-full bg-gray-600 items-center justify-center">
                     <Text
                       className="text-white text-2xl"
                       style={{ fontFamily: FONT.SemiBold }}
@@ -306,9 +306,8 @@ export default function ChatsPerson() {
                     />
                   )}
                   <Text
-                    className={`text-sm ${
-                      chat.unreadCount ? "text-white" : "text-gray-500"
-                    }`}
+                    className={`text-sm ${chat.unreadCount ? "text-white" : "text-gray-500"
+                      }`}
                     style={{ fontFamily: FONT.Regular }}
                   >
                     {chat.time}

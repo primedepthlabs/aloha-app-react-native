@@ -45,7 +45,7 @@ export default function RootLayout() {
     }
 
     setTimeout(() => {
-      router.push("/allroutes")
+      router.push("/(auth)")
     }, 200)
   }, [loaded]);
 

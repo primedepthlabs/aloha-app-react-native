@@ -3,12 +3,11 @@ import {
   View,
   Text,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   ActivityIndicator,
   Image,
+  ScrollView,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft } from "lucide-react-native";
 import {
   useFonts,
@@ -19,12 +18,6 @@ import {
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
 
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledImage = styled(Image);
-
 const FONT = {
   Regular: "Poppins_400Regular",
   Medium: "Poppins_500Medium",
@@ -34,7 +27,7 @@ const FONT = {
 
 // ✅ Custom Toggle Switch Component
 const ToggleSwitch = ({ value, onValueChange }: any) => (
-  <StyledTouchableOpacity
+  <TouchableOpacity
     onPress={() => onValueChange(!value)}
     style={{
       width: 51,
@@ -44,8 +37,9 @@ const ToggleSwitch = ({ value, onValueChange }: any) => (
       justifyContent: "center",
       padding: 2,
     }}
+    activeOpacity={0.8}
   >
-    <StyledView
+    <View
       style={{
         width: 27,
         height: 27,
@@ -54,7 +48,7 @@ const ToggleSwitch = ({ value, onValueChange }: any) => (
         transform: [{ translateX: value ? 20 : 0 }],
       }}
     />
-  </StyledTouchableOpacity>
+  </TouchableOpacity>
 );
 
 const NotificationScreen = () => {
@@ -90,153 +84,133 @@ const NotificationScreen = () => {
     value,
     onValueChange,
   }: any) => (
-    <StyledView
-      style={{
-        height: 63,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        paddingHorizontal: 16,
-      }}
-    >
-      <StyledView className="flex-row items-center flex-1">
-        <StyledImage
-          source={imageSource}
-          style={{ width: 40, height: 40, marginRight: 16 }}
-          resizeMode="contain"
-        />
-        <StyledView className="flex-1">
-          <StyledText
-            className="text-white"
+    <View className="flex-row items-center justify-between px-5 py-4">
+      <View className="flex-row items-center flex-1">
+        <View className="w-12 h-12 bg-[#1C1C1E] rounded-2xl items-center justify-center mr-4">
+          <Image
+            source={imageSource}
+            style={{ width: 24, height: 24 }}
+            resizeMode="contain"
+          />
+        </View>
+        <View className="flex-1 pr-3">
+          <Text
+            className="text-white text-base mb-0.5"
             style={{
-              fontSize: 16,
-              fontFamily: FONT.Medium,
-              marginBottom: 2,
+              fontFamily: FONT.SemiBold,
             }}
           >
             {title}
-          </StyledText>
-          <StyledText
-            className="text-gray-400"
+          </Text>
+          <Text
+            className="text-gray-400 text-sm"
             style={{
-              fontSize: 13,
               fontFamily: FONT.Regular,
             }}
+            numberOfLines={1}
           >
             {subtitle}
-          </StyledText>
-        </StyledView>
-      </StyledView>
+          </Text>
+        </View>
+      </View>
       <ToggleSwitch value={value} onValueChange={onValueChange} />
-    </StyledView>
+    </View>
   );
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <View className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <StyledView
-        style={{
-          height: 60,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          paddingHorizontal: 20,
-          position: "relative",
-        }}
-      >
-        <StyledTouchableOpacity
-          onPress={() => router.push("/(tabs)/profile")}
-          style={{
-            position: "absolute",
-            left: 20,
-            width: 40,
-            height: 40,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <ChevronLeft size={26} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
-          className="text-white"
-          style={{
-            fontSize: 18,
-            fontFamily: FONT.SemiBold,
-          }}
-        >
-          Notification Settings
-        </StyledText>
-      </StyledView>
+      <View className="pt-12 pb-5 px-5">
+        <View className="flex-row items-center justify-between">
+          <TouchableOpacity
+            onPress={() => router.push("/(tabs)/profile")}
+            className="w-10 h-10 items-center justify-center -ml-2"
+          >
+            <ChevronLeft size={28} color="#FFFFFF" strokeWidth={2.5} />
+          </TouchableOpacity>
+          <Text
+            className="text-white text-xl flex-1 text-center -mr-8"
+            style={{
+              fontFamily: FONT.SemiBold,
+            }}
+          >
+            Notification Settings
+          </Text>
+          <View className="w-10" />
+        </View>
+      </View>
 
       {/* Notification Items */}
-      <StyledView style={{ paddingTop: 20, paddingHorizontal: 10 }}>
-        <NotificationItem
-          imageSource={require("../../../assets/images/profile/notification.png")}
-          title="New Message Replies"
-          subtitle="Replies to your messages"
-          value={notifications.messageReplies}
-          onValueChange={(val: boolean) =>
-            setNotifications({ ...notifications, messageReplies: val })
-          }
-        />
-        <NotificationItem
-          imageSource={require("../../../assets/images/profile/payment.png")}
-          title="Message Payment"
-          subtitle="Confirmations for message payments"
-          value={notifications.messagePayment}
-          onValueChange={(val: boolean) =>
-            setNotifications({ ...notifications, messagePayment: val })
-          }
-        />
-        <NotificationItem
-          imageSource={require("../../../assets/images/profile/video-call.png")}
-          title="Video & Audio Call Updates"
-          subtitle="Updates on video and audio calls"
-          value={notifications.videoAudioCall}
-          onValueChange={(val: boolean) =>
-            setNotifications({ ...notifications, videoAudioCall: val })
-          }
-        />
-        <NotificationItem
-          imageSource={require("../../../assets/images/profile/donation.png")}
-          title="Donation Receipts"
-          subtitle="Receipts for your donations"
-          value={notifications.donationReceipts}
-          onValueChange={(val: boolean) =>
-            setNotifications({ ...notifications, donationReceipts: val })
-          }
-        />
-        <NotificationItem
-          imageSource={require("../../../assets/images/profile/balance.png")}
-          title="Balance Updates"
-          subtitle="Updates on your balance"
-          value={notifications.balanceUpdates}
-          onValueChange={(val: boolean) =>
-            setNotifications({ ...notifications, balanceUpdates: val })
-          }
-        />
-        <NotificationItem
-          imageSource={require("../../../assets/images/profile/system-annoucement.png")}
-          title="System Announcements"
-          subtitle="System-wide announcements"
-          value={notifications.systemAnnouncements}
-          onValueChange={(val: boolean) =>
-            setNotifications({ ...notifications, systemAnnouncements: val })
-          }
-        />
-        <NotificationItem
-          imageSource={require("../../../assets/images/profile/promotion.png")}
-          title="Promotions & Offers"
-          subtitle="Promotions and special offers"
-          value={notifications.promotions}
-          onValueChange={(val: boolean) =>
-            setNotifications({ ...notifications, promotions: val })
-          }
-        />
-      </StyledView>
-    </StyledSafeAreaView>
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        <View className="pb-8">
+          <NotificationItem
+            imageSource={require("../../../assets/images/profile/notification.png")}
+            title="New Message Replies"
+            subtitle="Replies to your messages"
+            value={notifications.messageReplies}
+            onValueChange={(val: boolean) =>
+              setNotifications({ ...notifications, messageReplies: val })
+            }
+          />
+          <NotificationItem
+            imageSource={require("../../../assets/images/profile/payment.png")}
+            title="Message Payment"
+            subtitle="Confirmations for message payments"
+            value={notifications.messagePayment}
+            onValueChange={(val: boolean) =>
+              setNotifications({ ...notifications, messagePayment: val })
+            }
+          />
+          <NotificationItem
+            imageSource={require("../../../assets/images/profile/video-call.png")}
+            title="Video & Audio Call Updates"
+            subtitle="Updates on video and audio calls"
+            value={notifications.videoAudioCall}
+            onValueChange={(val: boolean) =>
+              setNotifications({ ...notifications, videoAudioCall: val })
+            }
+          />
+          <NotificationItem
+            imageSource={require("../../../assets/images/profile/donation.png")}
+            title="Donation Receipts"
+            subtitle="Receipts for your donations"
+            value={notifications.donationReceipts}
+            onValueChange={(val: boolean) =>
+              setNotifications({ ...notifications, donationReceipts: val })
+            }
+          />
+          <NotificationItem
+            imageSource={require("../../../assets/images/profile/balance.png")}
+            title="Balance Updates"
+            subtitle="Updates on your balance"
+            value={notifications.balanceUpdates}
+            onValueChange={(val: boolean) =>
+              setNotifications({ ...notifications, balanceUpdates: val })
+            }
+          />
+          <NotificationItem
+            imageSource={require("../../../assets/images/profile/system-annoucement.png")}
+            title="System Announcements"
+            subtitle="System-wide announcements"
+            value={notifications.systemAnnouncements}
+            onValueChange={(val: boolean) =>
+              setNotifications({ ...notifications, systemAnnouncements: val })
+            }
+          />
+          <NotificationItem
+            imageSource={require("../../../assets/images/profile/promotion.png")}
+            title="Promotions & Offers"
+            subtitle="Promotions and special offers"
+            value={notifications.promotions}
+            onValueChange={(val: boolean) =>
+              setNotifications({ ...notifications, promotions: val })
+            }
+          />
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 
