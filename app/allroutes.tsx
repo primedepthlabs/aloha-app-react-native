@@ -6,9 +6,15 @@ import { View } from 'react-native'
 export default function AllRoutes() {
     return (
         <View style={{ flex: 1, justifyContent: "center", alignContent: "center", alignItems: "center" }}>
-            <TouchableOpacity onPress={() => router.push("/auth/login")}>
+            <TouchableOpacity onPress={() => router.push("/auth/")}>
+                <Text>Welcome</Text>
+            </TouchableOpacity>
+
+
+            <TouchableOpacity onPress={() => router.replace("/login")}>
                 <Text>Login</Text>
             </TouchableOpacity>
+
         </View>
     )
 }

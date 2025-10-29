@@ -73,7 +73,7 @@ export default function VerificationScreen() {
   const handleContinue = () => {
     const enteredCode = code.join("");
     if (enteredCode === "122222") {
-      router.push("/gender");
+      router.push("/(auth)/gender");
     } else {
       setIsError(true);
     }

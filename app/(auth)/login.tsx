@@ -1,4 +1,4 @@
-// app/login.tsx - Login Screen with Country Picker
+// app/(auth)/login.tsx - Login Screen with Country Picker
 import React, { useState } from "react";
 import {
   View,
@@ -38,7 +38,7 @@ export default function LoginScreen() {
     // Clear error and navigate
     setError("");
     router.push({
-      pathname: "/verification",
+      pathname: "/(auth)/verification",
       params: {
         phoneNumber: phoneNumber,
         countryCode: selectedCountry.code,
