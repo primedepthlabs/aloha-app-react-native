@@ -45,11 +45,11 @@ export default function PhotoUploadScreen() {
   };
 
   const handleContinue = () => {
-    router.replace("/discover");
+    router.replace("/(tabs)/discover");
   };
 
   const handleSkip = () => {
-    router.replace("/(tabs)");
+    router.replace("/(tabs)/dashboard/");
   };
 
   return (

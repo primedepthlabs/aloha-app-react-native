@@ -65,7 +65,7 @@ export default function GenderScreen() {
         {/* Continue Button */}
         <TouchableOpacity
           className="bg-[#FCCD34] rounded-2xl py-4 px-8"
-          onPress={() => router.push("/name")}
+          onPress={() => router.push("/(auth)/name")}
         >
           <Text className="text-white text-center text-lg font-semibold">
             Continue

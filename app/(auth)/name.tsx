@@ -9,7 +9,7 @@ export default function NameScreen() {
   const [lastName, setLastName] = useState("");
 
   const handleContinue = () => {
-    router.push("/photo");
+    router.push("/(auth)/photo");
   };
   return (
     <View className="flex-1 bg-black px-6 py-12">
