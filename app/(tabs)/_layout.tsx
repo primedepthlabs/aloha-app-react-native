@@ -130,6 +130,60 @@ export default function TabLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="dashboard/withdrawl"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="dashboard/PaidMessages"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="dashboard/videocalls"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="dashboard/donation"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="dashboard/addbank"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="dashboard/payout"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="dashboard/blocked"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="dashboard/profilevisibility"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="dashboard/support"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

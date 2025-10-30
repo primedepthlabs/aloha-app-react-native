@@ -199,6 +199,7 @@ const Dashboard = () => {
 
           {/* Withdrawal Button */}
           <StyledTouchableOpacity
+            onPress={() => router.push("/(tabs)/dashboard/withdrawl")}
             style={{
               width: 164,
               height: 48,
@@ -298,6 +299,7 @@ const Dashboard = () => {
 
           {/* Paid messaging */}
           <StyledTouchableOpacity
+            onPress={() => router.push("/(tabs)/dashboard/PaidMessages")}
             style={{
               backgroundColor: "#19191B",
               borderRadius: 0, // No rounded corners
@@ -344,6 +346,7 @@ const Dashboard = () => {
 
           {/* Donation settings */}
           <StyledTouchableOpacity
+            onPress={() => router.push("/(tabs)/dashboard/donation")}
             style={{
               backgroundColor: "#19191B",
               borderRadius: 0, // No rounded corners
@@ -390,6 +393,7 @@ const Dashboard = () => {
 
           {/* Video/Audio settings */}
           <StyledTouchableOpacity
+            onPress={() => router.push("/(tabs)/dashboard/videocalls")}
             style={{
               backgroundColor: "#19191B",
               borderBottomLeftRadius: 16,
@@ -461,6 +465,7 @@ const Dashboard = () => {
 
           {/* Payout method rules */}
           <StyledTouchableOpacity
+            onPress={() => router.push("/(tabs)/dashboard/payout")}
             style={{
               backgroundColor: "#19191B",
               borderRadius: 16,
@@ -531,7 +536,7 @@ const Dashboard = () => {
 
           {/* Profile visibility */}
           <StyledTouchableOpacity
-            onPress={() => router.push("/(tabs)/dashboard/Earnings")}
+            onPress={() => router.push("/(tabs)/dashboard/profilevisibility")}
             style={{
               backgroundColor: "#19191B",
               borderTopLeftRadius: 16,
@@ -579,6 +584,7 @@ const Dashboard = () => {
 
           {/* Block list */}
           <StyledTouchableOpacity
+            onPress={() => router.push("/(tabs)/dashboard/blocked")}
             style={{
               backgroundColor: "#19191B",
               borderRadius: 0,
@@ -625,6 +631,7 @@ const Dashboard = () => {
 
           {/* Support */}
           <StyledTouchableOpacity
+            onPress={() => router.push("/(tabs)/dashboard/support")}
             style={{
               backgroundColor: "#19191B",
               borderBottomLeftRadius: 16,

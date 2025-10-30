@@ -241,7 +241,7 @@ const Donation = () => {
               value={customAmount}
               onChangeText={(text) => {
                 setCustomAmount(text);
-                setSelectedAmount(null);
+                setSelectedAmount(0);
               }}
               placeholder="Custom amount"
               placeholderTextColor="#8E8E93"
@@ -593,7 +593,7 @@ const Donation = () => {
 
           {/* Add Card Button */}
           <StyledTouchableOpacity
-            onPress={() => router.push("/addCard")}
+            onPress={() => router.push("/(tabs)/discover/addCard")}
             style={{
               width: 350,
               height: 48,

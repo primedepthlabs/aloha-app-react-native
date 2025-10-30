@@ -37,11 +37,12 @@ interface Chat {
   name: string;
   message: string;
   time: string;
-  image?: string;
+  image?: any;
   isVerified?: boolean;
   isOnline?: boolean;
   unreadCount?: number;
   isDoubleTick?: boolean;
+  isSupport?: boolean;
 }
 
 export default function ChatsPerson() {
@@ -89,6 +90,17 @@ export default function ChatsPerson() {
 
   const chats: Chat[] = [
     {
+      id: "support",
+      name: "Support",
+      message: "How to add my IBAN?",
+      time: "2:00",
+      image: require("../../../assets/images/dashboard/support-avatar.png"),
+      isVerified: true,
+      isOnline: false,
+      isDoubleTick: true,
+      isSupport: true,
+    },
+    {
       id: "1",
       name: "Gyllinton",
       message: "I don't know what you're ...",
@@ -97,6 +109,7 @@ export default function ChatsPerson() {
         "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100",
       isOnline: false,
       isDoubleTick: true,
+      isVerified: true,
     },
     {
       id: "2",
@@ -106,20 +119,10 @@ export default function ChatsPerson() {
       isVerified: true,
       isOnline: true,
       isDoubleTick: true,
-    },
-    {
-      id: "3",
-      name: "Gyllinton",
-      message: "I don't know what you're ...",
-      time: "2:00",
-      image:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100",
-      isVerified: true,
-      isOnline: true,
       unreadCount: 3,
     },
     {
-      id: "4",
+      id: "3",
       name: "Gyllinton",
       message: "Yass.😘",
       time: "Friday",
@@ -240,13 +243,23 @@ export default function ChatsPerson() {
               key={chat.id}
               className="flex-row items-center px-5 py-3"
               activeOpacity={0.7}
-              onPress={() => router.push("/(tabs)/chats/chat")}
+              onPress={() => {
+                if (chat.isSupport) {
+                  router.push("/(tabs)/dashboard/support");
+                } else {
+                  router.push("/(tabs)/chats/chat");
+                }
+              }}
             >
               {/* Profile Picture */}
               <View className="relative mr-4 w-[60px] h-[60px]">
                 {chat.image ? (
                   <Image
-                    source={{ uri: chat.image }}
+                    source={
+                      typeof chat.image === "string"
+                        ? { uri: chat.image }
+                        : chat.image
+                    }
                     style={{ width: 60, height: 60 }}
                     className="rounded-full"
                     resizeMode="cover"
@@ -306,8 +319,9 @@ export default function ChatsPerson() {
                     />
                   )}
                   <Text
-                    className={`text-sm ${chat.unreadCount ? "text-white" : "text-gray-500"
-                      }`}
+                    className={`text-sm ${
+                      chat.unreadCount ? "text-white" : "text-gray-500"
+                    }`}
                     style={{ fontFamily: FONT.Regular }}
                   >
                     {chat.time}
@@ -328,50 +342,6 @@ export default function ChatsPerson() {
           ))}
         </View>
       </ScrollView>
-
-      {/* Bottom Navigation */}
-      <View className="flex-row items-center justify-around bg-black border-t border-gray-800 pb-8 pt-3">
-        <TouchableOpacity
-          className="items-center"
-          onPress={() => router.push("/(tabs)/discover")}
-        >
-          <View className="w-6 h-6 rounded-full border-2 border-gray-500 mb-1" />
-          <Text
-            className="text-gray-500 text-xs"
-            style={{ fontFamily: FONT.Medium }}
-          >
-            Discover
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity className="items-center">
-          <View className="mb-1">
-            <View className="w-6 h-5 bg-[#FCCD34] rounded-md items-center justify-center">
-              <View className="w-4 h-0.5 bg-black mb-1" />
-              <View className="w-4 h-0.5 bg-black" />
-            </View>
-          </View>
-          <Text
-            className="text-[#FCCD34] text-xs"
-            style={{ fontFamily: FONT.Medium }}
-          >
-            Chats
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          className="items-center"
-          onPress={() => router.push("/(tabs)/profile")}
-        >
-          <View className="w-6 h-6 rounded-full bg-gray-600 mb-1" />
-          <Text
-            className="text-gray-500 text-xs"
-            style={{ fontFamily: FONT.Medium }}
-          >
-            Profile
-          </Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }

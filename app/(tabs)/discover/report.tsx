@@ -38,7 +38,7 @@ export default function ReportScreen() {
 
   const handleDone = () => {
     setShowSuccessModal(false);
-    router.push("/report");
+    router.push("/(tabs)/discover");
   };
 
   return (

@@ -194,7 +194,7 @@ export default function DiscoverScreen() {
     console.log("Report pressed, closing menu and navigating to /report");
     setShowProfileMenu(false);
     setSelectedUser(null); // Close the profile modal too
-    router.push("/report");
+    router.push("/(tabs)/discover/report");
   };
 
   const applyFilter = () => {
@@ -877,7 +877,7 @@ export default function DiscoverScreen() {
                       className="bg-transparent border-2 border-[#FCCD34] rounded-xl py-4 items-center justify-center"
                       onPress={() => {
                         setSelectedUser(null);
-                        router.push("/donation");
+                        router.push("/(tabs)/discover/donation");
                       }}
                     >
                       <View className="flex-row items-center">
