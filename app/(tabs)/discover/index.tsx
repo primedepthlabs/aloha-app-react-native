@@ -747,44 +747,51 @@ export default function DiscoverScreen() {
                   <View
                     className="absolute rounded-xl overflow-hidden"
                     style={{
-                      width: 333,
-                      height: 179,
-                      top: 211,
-                      left: 22,
+                      // Small, top-right aligned popup positioned under the More button
+                      position: "absolute",
+                      top: 56, // just below the More button (top-12)
+                      right: 16, // align to the right edge
+                      width: 160, // compact width
                       backgroundColor: "#19191B",
-                      opacity: 1,
+                      borderRadius: 12,
+                      paddingVertical: 6,
+                      elevation: 6, // android shadow
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 6 },
+                      shadowOpacity: 0.25,
+                      shadowRadius: 12,
                     }}
                   >
-                    {/* Report Button */}
+                    {/* Report */}
                     <TouchableOpacity
-                      className="flex-row items-center px-4"
+                      className="flex-row items-center px-3"
                       style={{
-                        width: 333,
-                        height: 48,
-                        borderTopWidth: 0.3,
-                        borderTopColor: "#29292C",
-                        backgroundColor: "#19191B",
+                        height: 44,
                       }}
                       onPress={navigateToReport}
                       activeOpacity={0.8}
                     >
                       <Image
                         source={require("../../../assets/images/flag.png")}
-                        className="w-5 h-5 mr-2.5"
+                        style={{ width: 16, height: 16, marginRight: 12 }}
                         resizeMode="contain"
                       />
                       <Text className="text-white font-medium">Report</Text>
                     </TouchableOpacity>
 
-                    {/* Block Button */}
-                    <TouchableOpacity
-                      className="flex-row items-center px-4"
+                    <View
                       style={{
-                        width: 333,
-                        height: 48,
-                        borderTopWidth: 0.3,
-                        borderTopColor: "#29292C",
-                        backgroundColor: "#19191B",
+                        height: 1,
+                        backgroundColor: "#29292C",
+                        marginHorizontal: 8,
+                      }}
+                    />
+
+                    {/* Block */}
+                    <TouchableOpacity
+                      className="flex-row items-center px-3"
+                      style={{
+                        height: 44,
                       }}
                       onPress={() => {
                         setShowProfileMenu(false);
@@ -801,10 +808,11 @@ export default function DiscoverScreen() {
                           ]
                         );
                       }}
+                      activeOpacity={0.8}
                     >
                       <Image
                         source={require("../../../assets/images/cross.png")}
-                        className="w-5 h-5 mr-2.5"
+                        style={{ width: 16, height: 16, marginRight: 12 }}
                         resizeMode="contain"
                       />
                       <Text className="text-red-500 font-medium">Block</Text>

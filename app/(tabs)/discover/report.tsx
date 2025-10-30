@@ -47,7 +47,7 @@ export default function ReportScreen() {
       <View className="pt-12 pb-4 px-4">
         <View className="flex-row items-center">
           <TouchableOpacity
-            onPress={() => router.push("/index")}
+            onPress={() => router.push("/(tabs)/discover")}
             className="mr-4"
           >
             <ChevronLeft size={24} color="#fff" />
