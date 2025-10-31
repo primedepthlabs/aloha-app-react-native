@@ -303,6 +303,24 @@ export default function ChatsPerson() {
     }
   };
 
+  const handleMarkAsRead = () => {
+    // TODO: Implement mark as read functionality
+    setShowUnreadModal(false);
+    setLongPressedChat(null);
+  };
+
+  const handlePinChat = () => {
+    // TODO: Implement pin functionality
+    setShowUnreadModal(false);
+    setLongPressedChat(null);
+  };
+
+  const handleDeleteChat = () => {
+    // TODO: Implement delete functionality
+    setShowUnreadModal(false);
+    setLongPressedChat(null);
+  };
+
   return (
     <View className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
@@ -414,28 +432,12 @@ export default function ChatsPerson() {
           {chats.map((chat) => {
             const anim = getSwipeAnim(chat.id);
             const panResponder = getPanResponder(chat);
-            const isSwipedChat = swipedChatId === chat.id;
-            const isSwipedLeft =
-              isSwipedChat &&
-              anim &&
-              true &&
-              /* left when value < 0 */ true &&
-              /* not pinned or pinned */ true &&
-              /* we will check value visually */ false;
-
-            // For showing conditional action buttons we will read the animated value via interpolation
-            // But because we can't synchronously read Animated.Value easily, we'll use swipedChatId to show buttons for the currently opened chat.
-            const openedLeft = swipedChatId === chat.id && true; // opened state
-            const openedRight = swipedChatId === chat.id && true; // same; we'll decide visually by anim value if needed
 
             return (
               <View key={chat.id} style={{ position: "relative" }}>
                 {/* Unpin Button (Left side - shown when swiping RIGHT on pinned chat) */}
-                {/* We'll show left-side unpin only if this chat is currently swiped open and its animated value > 0 */}
                 {swipedChatId === chat.id && (
                   <>
-                    {/* Determine whether to show left-side unpin or right-side actions by reading the animated value via interpolation */}
-                    {/* For simplicity: show Left unpin only if chat.isPinned and the animated value is > 10 (user swiped right) */}
                     {chat.isPinned ? (
                       <Animated.View
                         style={{
@@ -446,13 +448,11 @@ export default function ChatsPerson() {
                           justifyContent: "center",
                           transform: [
                             {
-                              // keep it fixed; it doesn't need to move
                               translateX: 0,
                             },
                           ],
                         }}
                       >
-                        {/* We'll conditionally render Unpin if anim > 0 (open to right) */}
                         <Animated.View
                           pointerEvents="box-none"
                           style={{
@@ -474,9 +474,6 @@ export default function ChatsPerson() {
                               justifyContent: "center",
                             }}
                             onPress={() => {
-                              // Unpin logic
-                              // TODO: call your unpin handler: update the chat in your state/source
-                              // For now we just close it.
                               Animated.spring(anim, {
                                 toValue: 0,
                                 useNativeDriver: true,
@@ -516,7 +513,6 @@ export default function ChatsPerson() {
                         bottom: 0,
                         flexDirection: "row",
                         alignItems: "center",
-                        // fade in depending on left swipe amount
                         opacity: anim.interpolate({
                           inputRange: [LEFT_SWIPE_MAX, 0],
                           outputRange: [1, 0],
@@ -534,7 +530,6 @@ export default function ChatsPerson() {
                           justifyContent: "center",
                         }}
                         onPress={() => {
-                          // Add to favorites
                           Animated.spring(anim, {
                             toValue: 0,
                             useNativeDriver: true,
@@ -580,7 +575,6 @@ export default function ChatsPerson() {
                           justifyContent: "center",
                         }}
                         onPress={() => {
-                          // Unmute
                           Animated.spring(anim, {
                             toValue: 0,
                             useNativeDriver: true,
@@ -617,7 +611,6 @@ export default function ChatsPerson() {
                           justifyContent: "center",
                         }}
                         onPress={() => {
-                          // Delete
                           Animated.spring(anim, {
                             toValue: 0,
                             useNativeDriver: true,
@@ -664,8 +657,6 @@ export default function ChatsPerson() {
                     className="flex-row items-center px-5 py-3"
                     activeOpacity={0.7}
                     onPress={() => {
-                      // If this chat is open, close it; otherwise navigate
-                      // We'll check if the animated value is non-zero by using swipedChatId
                       if (swipedChatId === chat.id) {
                         Animated.spring(anim, {
                           toValue: 0,
@@ -951,6 +942,373 @@ export default function ChatsPerson() {
             ))}
           </ScrollView>
         </View>
+      </Modal>
+
+      {/* Unread Messages Modal */}
+      <Modal
+        visible={showUnreadModal}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => {
+          setShowUnreadModal(false);
+          setLongPressedChat(null);
+        }}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          className="flex-1 bg-black"
+          onPress={() => {
+            setShowUnreadModal(false);
+            setLongPressedChat(null);
+          }}
+        >
+          <View
+            style={{
+              position: "absolute",
+              top: 221,
+              left: 6,
+              width: 364,
+              height: 370,
+              borderRadius: 15,
+            }}
+          >
+            {/* Header Section with Chat Info */}
+            <View
+              style={{
+                backgroundColor: "#000000",
+                borderTopLeftRadius: 15,
+                borderTopRightRadius: 15,
+                paddingTop: 16,
+                paddingBottom: 12,
+                paddingHorizontal: 20,
+                borderBottomWidth: 1,
+                borderBottomColor: "rgba(255, 255, 255, 0.1)",
+              }}
+            >
+              {/* Back button and profile */}
+              <View className="flex-row items-center mb-4">
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowUnreadModal(false);
+                    setLongPressedChat(null);
+                  }}
+                  className="mr-4"
+                >
+                  <ChevronLeft size={24} color="white" />
+                </TouchableOpacity>
+
+                <View className="relative w-12 h-12 rounded-full overflow-hidden mr-3">
+                  {longPressedChat?.image && (
+                    <Image
+                      source={
+                        typeof longPressedChat.image === "string"
+                          ? { uri: longPressedChat.image }
+                          : longPressedChat.image
+                      }
+                      style={{ width: "100%", height: "100%" }}
+                      resizeMode="cover"
+                    />
+                  )}
+                </View>
+
+                <View className="flex-1">
+                  <View className="flex-row items-center">
+                    <Text
+                      className="text-white text-lg mr-1"
+                      style={{ fontFamily: FONT.SemiBold }}
+                    >
+                      {longPressedChat?.name}
+                    </Text>
+                    {longPressedChat?.isVerified && (
+                      <View className="w-4 h-4 bg-[#FCCD34] rounded-full items-center justify-center">
+                        <Text className="text-black text-xs font-bold">✓</Text>
+                      </View>
+                    )}
+                  </View>
+                  <View className="flex-row items-center mt-1">
+                    <Text
+                      className="text-gray-400 text-sm"
+                      style={{ fontFamily: FONT.Regular }}
+                    >
+                      Active Now
+                    </Text>
+                    {longPressedChat?.isOnline && (
+                      <View className="w-2 h-2 rounded-full bg-green-500 ml-2" />
+                    )}
+                  </View>
+                </View>
+
+                <View className="flex-row items-center gap-3">
+                  <TouchableOpacity>
+                    <Image
+                      source={require("../../../assets/images/phone-icon.png")}
+                      style={{
+                        width: 18,
+                        height: 18,
+                        tintColor: "white",
+                      }}
+                      resizeMode="contain"
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity>
+                    <Image
+                      source={require("../../../assets/images/video-icon.png")}
+                      style={{
+                        width: 24,
+                        height: 24,
+                        tintColor: "white",
+                      }}
+                      resizeMode="contain"
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Unread Messages Label */}
+              <Text
+                className="text-gray-400 text-center text-sm"
+                style={{ fontFamily: FONT.Regular }}
+              >
+                Unread Messages
+              </Text>
+            </View>
+
+            {/* Messages Section with Background */}
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: "#0A0A0A",
+              }}
+            >
+              <ScrollView
+                className="flex-1 px-4 py-3"
+                contentContainerStyle={{ paddingBottom: 10 }}
+              >
+                {/* Sample unread messages */}
+                {[
+                  {
+                    id: "1",
+                    text: "I've been a fan of your movies for years",
+                    time: "2:00",
+                    isSent: false,
+                  },
+                  {
+                    id: "2",
+                    text: "I've been a fan of your movies for years I've been a fan of your movies",
+                    time: "2:00",
+                    isSent: true,
+                  },
+                  {
+                    id: "3",
+                    text: "I've been a fan of your movies for years",
+                    time: "2:00",
+                    isSent: false,
+                  },
+                  {
+                    id: "4",
+                    text: "I've been a fan of your movies for years",
+                    time: "2:00",
+                    isSent: false,
+                  },
+                ].map((msg) => (
+                  <View
+                    key={msg.id}
+                    style={{
+                      alignSelf: msg.isSent ? "flex-end" : "flex-start",
+                      maxWidth: "80%",
+                      marginBottom: 12,
+                    }}
+                  >
+                    <View
+                      style={{
+                        backgroundColor: msg.isSent ? "#B99F4A" : "#2D2D2F",
+                        borderRadius: 16,
+                        padding: 12,
+                        paddingHorizontal: 16,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: "white",
+                          fontSize: 15,
+                          fontFamily: FONT.Regular,
+                          lineHeight: 20,
+                        }}
+                      >
+                        {msg.text}
+                      </Text>
+
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          justifyContent: "flex-end",
+                          alignItems: "center",
+                          marginTop: 4,
+                          gap: 4,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color: "rgba(255,255,255,0.5)",
+                            fontSize: 11,
+                            fontFamily: FONT.Regular,
+                          }}
+                        >
+                          {msg.time}
+                        </Text>
+                        {msg.isSent && (
+                          <Image
+                            source={require("../../../assets/images/double-tick.png")}
+                            style={{
+                              width: 16,
+                              height: 12,
+                              marginLeft: 2,
+                            }}
+                            resizeMode="contain"
+                          />
+                        )}
+                      </View>
+                    </View>
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+
+            {/* Action Buttons at Bottom */}
+            <View
+              style={{
+                position: "absolute",
+                // exact numbers from your spec (numbers are pixels in RN)
+                width: 192,
+                height: 10,
+                top: 450,
+                left: 150,
+                borderRadius: 10.51,
+                borderWidth: 0.7,
+                borderColor: "rgba(255,255,255,0.06)",
+                backgroundColor: "#000000",
+                opacity: 1,
+                paddingTop: 3.5,
+                paddingBottom: 3.5,
+                // shadow for iOS
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.4,
+                shadowRadius: 10,
+                // elevation for Android
+                elevation: 10,
+                justifyContent: "center",
+              }}
+            >
+              {/* Top rounded small corner radius already applied by borderRadius */}
+              <TouchableOpacity
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingVertical: 8,
+                  paddingHorizontal: 14,
+                }}
+                onPress={handleMarkAsRead}
+              >
+                <Image
+                  source={require("../../../assets/images/double-tick.png")}
+                  style={{
+                    width: 18,
+                    height: 18,
+                    marginRight: 10,
+                    tintColor: "white",
+                  }}
+                  resizeMode="contain"
+                />
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontFamily: FONT.Regular,
+                    fontSize: 14,
+                  }}
+                >
+                  Mark as Read
+                </Text>
+              </TouchableOpacity>
+
+              <View
+                style={{
+                  height: 1,
+                  backgroundColor: "rgba(255,255,255,0.03)",
+                  marginHorizontal: 8,
+                }}
+              />
+
+              <TouchableOpacity
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingVertical: 8,
+                  paddingHorizontal: 14,
+                }}
+                onPress={handlePinChat}
+              >
+                <Image
+                  source={require("../../../assets/images/dashboard/star.png")}
+                  style={{
+                    width: 18,
+                    height: 18,
+                    marginRight: 10,
+                    tintColor: "white",
+                  }}
+                  resizeMode="contain"
+                />
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontFamily: FONT.Regular,
+                    fontSize: 14,
+                  }}
+                >
+                  Pin
+                </Text>
+              </TouchableOpacity>
+
+              <View
+                style={{
+                  height: 1,
+                  backgroundColor: "rgba(255,255,255,0.03)",
+                  marginHorizontal: 8,
+                }}
+              />
+
+              <TouchableOpacity
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingVertical: 8,
+                  paddingHorizontal: 14,
+                }}
+                onPress={handleDeleteChat}
+              >
+                <Image
+                  source={require("../../../assets/images/dashboard/dustbin.png")}
+                  style={{
+                    width: 18,
+                    height: 18,
+                    marginRight: 10,
+                    tintColor: "white",
+                  }}
+                  resizeMode="contain"
+                />
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontFamily: FONT.Regular,
+                    fontSize: 14,
+                  }}
+                >
+                  Delete
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableOpacity>
       </Modal>
     </View>
   );
