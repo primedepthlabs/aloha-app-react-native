@@ -1,4 +1,6 @@
+import "react-native-url-polyfill/auto";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+
 import {
   DarkTheme,
   DefaultTheme,
@@ -45,8 +47,8 @@ export default function RootLayout() {
     }
 
     setTimeout(() => {
-      router.push("/(auth)")
-    }, 200)
+      router.push("/login");
+    }, 200);
   }, [loaded]);
 
   if (!loaded) {

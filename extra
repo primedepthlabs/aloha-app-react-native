@@ -1,0 +1,730 @@
+//login
+// // app/(auth)/login.tsx - Login Screen with Country Picker
+// import React, { useState } from "react";
+// import {
+//   View,
+//   Text,
+//   TextInput,
+//   TouchableOpacity,
+//   Modal,
+//   ScrollView,
+//   Pressable,
+// } from "react-native";
+// import { router } from "expo-router";
+// import { ChevronLeft, ChevronDown, Search } from "lucide-react-native";
+// import { COUNTRIES, getDefaultCountry, Country } from "../../utils/countryData";
+
+// export default function LoginScreen() {
+//   const [phoneNumber, setPhoneNumber] = useState("");
+//   const [selectedCountry, setSelectedCountry] = useState<Country>(
+//     getDefaultCountry()
+//   );
+//   const [modalVisible, setModalVisible] = useState(false);
+//   const [searchQuery, setSearchQuery] = useState("");
+//   const [error, setError] = useState("");
+
+//   const handleCountrySelect = (country: Country) => {
+//     setSelectedCountry(country);
+//     setModalVisible(false);
+//     setSearchQuery("");
+//   };
+
+//   const handleContinue = () => {
+//     // Validate phone number
+//     if (!phoneNumber.trim()) {
+//       setError("Phone number is required");
+//       return;
+//     }
+
+//     // Clear error and navigate
+//     setError("");
+//     router.push({
+//       pathname: "/(auth)/verification",
+//       params: {
+//         phoneNumber: phoneNumber,
+//         countryCode: selectedCountry.code,
+//       },
+//     });
+//   };
+
+//   // Filter countries based on search query
+//   const filteredCountries = COUNTRIES.filter(
+//     (country) =>
+//       country.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
+//       country.code.includes(searchQuery)
+//   );
+
+//   return (
+//     <View className="flex-1 bg-black px-6 py-12">
+//       {/* Header */}
+//       <View className="flex-row items-center mb-12">
+//         <TouchableOpacity onPress={() => router.back()}>
+//           <ChevronLeft size={24} color="#fff" />
+//         </TouchableOpacity>
+//         <Text className="text-white text-2xl font-bold flex-1 text-center mr-6">
+//           ALOHA
+//         </Text>
+//       </View>
+
+//       {/* Content */}
+//       <View className="flex-1">
+//         <Text className="text-white text-3xl font-bold text-center mb-8">
+//           Let's start with your{"\n"}number
+//         </Text>
+
+//         {/* Phone Input */}
+//         <View className="mb-2">
+//           <View className="flex-row items-center bg-gray-900 rounded-2xl px-4 py-4">
+//             {/* Country Code Selector */}
+//             <TouchableOpacity
+//               onPress={() => setModalVisible(true)}
+//               className="flex-row items-center mr-3 pr-3 border-r border-gray-700"
+//             >
+//               <Text className="text-2xl mr-2">{selectedCountry.flag}</Text>
+//               <Text className="text-white text-base mr-1">
+//                 {selectedCountry.code}
+//               </Text>
+//               <ChevronDown size={16} color="#fff" />
+//             </TouchableOpacity>
+
+//             {/* Phone Number Input */}
+//             <TextInput
+//               className="flex-1 text-white text-base"
+//               placeholder="Enter phone number"
+//               placeholderTextColor="#666"
+//               keyboardType="phone-pad"
+//               value={phoneNumber}
+//               onChangeText={(text) => {
+//                 setPhoneNumber(text);
+//                 // Clear error when user starts typing
+//                 if (error) setError("");
+//               }}
+//             />
+//           </View>
+
+//           {/* Error Message */}
+//           {error ? (
+//             <Text className="text-red-500 text-sm mt-2 ml-4">{error}</Text>
+//           ) : null}
+//         </View>
+
+//         {/* Continue Button */}
+//         <TouchableOpacity
+//           className="bg-[#FCCD34] rounded-2xl py-4 px-8 mt-6"
+//           onPress={handleContinue}
+//         >
+//           <Text className="text-white text-center text-lg font-bold">
+//             Continue
+//           </Text>
+//         </TouchableOpacity>
+//       </View>
+
+//       {/* Country Picker Modal */}
+//       <Modal
+//         visible={modalVisible}
+//         transparent={true}
+//         animationType="slide"
+//         onRequestClose={() => {
+//           setModalVisible(false);
+//           setSearchQuery("");
+//         }}
+//       >
+//         <View className="flex-1 justify-end bg-black/50">
+//           <View className="bg-gray-900 rounded-t-3xl h-[80%]">
+//             {/* Modal Header */}
+//             <View className="p-6 border-b border-gray-800">
+//               <View className="flex-row items-center justify-between mb-4">
+//                 <Text className="text-white text-xl font-bold">
+//                   Select Country
+//                 </Text>
+//                 <TouchableOpacity
+//                   onPress={() => {
+//                     setModalVisible(false);
+//                     setSearchQuery("");
+//                   }}
+//                 >
+//                   <Text className="text-gray-400 text-2xl">✕</Text>
+//                 </TouchableOpacity>
+//               </View>
+
+//               {/* Search Bar */}
+//               <View className="flex-row items-center bg-gray-800 rounded-xl px-4 py-3">
+//                 <Search size={20} color="#666" />
+//                 <TextInput
+//                   className="flex-1 text-white text-base ml-2"
+//                   placeholder="Search country or code..."
+//                   placeholderTextColor="#666"
+//                   value={searchQuery}
+//                   onChangeText={setSearchQuery}
+//                 />
+//               </View>
+//             </View>
+
+//             {/* Country List */}
+//             <ScrollView className="flex-1">
+//               {filteredCountries.length > 0 ? (
+//                 filteredCountries.map((country, index) => (
+//                   <Pressable
+//                     key={index}
+//                     onPress={() => handleCountrySelect(country)}
+//                     className="flex-row items-center px-6 py-4 border-b border-gray-800"
+//                   >
+//                     <Text className="text-3xl mr-4">{country.flag}</Text>
+//                     <View className="flex-1">
+//                       <Text className="text-white text-base font-medium">
+//                         {country.country}
+//                       </Text>
+//                     </View>
+//                     <Text className="text-gray-400 text-base">
+//                       {country.code}
+//                     </Text>
+//                   </Pressable>
+//                 ))
+//               ) : (
+//                 <View className="items-center justify-center py-12">
+//                   <Text className="text-gray-500 text-base">
+//                     No countries found
+//                   </Text>
+//                 </View>
+//               )}
+//             </ScrollView>
+//           </View>
+//         </View>
+//       </Modal>
+//     </View>
+//   );
+// }
+
+//verification
+// // app/verification.tsx - Verification Screen
+// import React, { useState, useRef, useEffect } from "react";
+// import { View, Text, TextInput, TouchableOpacity } from "react-native";
+// import { router, useLocalSearchParams } from "expo-router";
+// import { ChevronLeft } from "lucide-react-native";
+
+// export default function VerificationScreen() {
+//   const params = useLocalSearchParams();
+//   const phoneNumber = (params.phoneNumber as string) || "";
+//   const countryCode = (params.countryCode as string) || "+995";
+
+//   const [code, setCode] = useState(["", "", "", "", "", ""]);
+//   const [isError, setIsError] = useState(false);
+//   const [timer, setTimer] = useState(120); // 2 minutes in seconds
+//   const [canResend, setCanResend] = useState(false);
+//   const inputRefs = useRef<any[]>([]);
+
+//   // Format phone number with masking (e.g., +995 598 *** ***)
+//   const formatPhoneNumber = (phone: string, code: string) => {
+//     if (!phone) return `${code} *** *** ***`;
+
+//     const cleanPhone = phone.replace(/\s/g, "");
+//     if (cleanPhone.length <= 3) return `${code} ${cleanPhone}`;
+
+//     const firstPart = cleanPhone.substring(0, 3);
+//     const masked = "*** ***";
+//     return `${code} ${firstPart} ${masked}`;
+//   };
+
+//   // Countdown timer effect
+//   useEffect(() => {
+//     if (timer > 0) {
+//       const interval = setInterval(() => {
+//         setTimer((prev) => {
+//           if (prev <= 1) {
+//             setCanResend(true);
+//             return 0;
+//           }
+//           return prev - 1;
+//         });
+//       }, 1000);
+
+//       return () => clearInterval(interval);
+//     }
+//   }, [timer]);
+
+//   // Format timer display (mm:ss)
+//   const formatTime = (seconds: number) => {
+//     const mins = Math.floor(seconds / 60);
+//     const secs = seconds % 60;
+//     return `${mins.toString().padStart(2, "0")}:${secs
+//       .toString()
+//       .padStart(2, "0")}`;
+//   };
+
+//   const handleCodeChange = (text: string, index: number) => {
+//     const newCode = [...code];
+//     newCode[index] = text;
+//     setCode(newCode);
+//     setIsError(false);
+
+//     if (text && index < 5) {
+//       inputRefs.current[index + 1]?.focus();
+//     }
+//   };
+
+//   const handleKeyPress = (e: any, index: number) => {
+//     if (e.nativeEvent.key === "Backspace" && !code[index] && index > 0) {
+//       inputRefs.current[index - 1]?.focus();
+//     }
+//   };
+
+//   const handleContinue = () => {
+//     const enteredCode = code.join("");
+//     if (enteredCode === "122222") {
+//       router.push("/(auth)/profile");
+//     } else {
+//       setIsError(true);
+//     }
+//   };
+
+//   const handleResend = () => {
+//     if (canResend) {
+//       // Reset timer and code
+//       setTimer(120);
+//       setCanResend(false);
+//       setCode(["", "", "", "", "", ""]);
+//       setIsError(false);
+//       // Here you would also trigger the API call to resend SMS
+//       console.log("Resending SMS to:", countryCode, phoneNumber);
+//     }
+//   };
+
+//   return (
+//     <View className="flex-1 bg-black px-6 py-12">
+//       {/* Header */}
+//       <View className="flex-row items-center mb-12">
+//         <TouchableOpacity onPress={() => router.back()}>
+//           <ChevronLeft size={24} color="#fff" />
+//         </TouchableOpacity>
+//         <View className="flex-1 h-1 bg-gray-800 mx-4 rounded-full">
+//           <View className="w-1/3 h-full bg-yellow-500 rounded-full" />
+//         </View>
+//       </View>
+
+//       {/* Content */}
+//       <View>
+//         <Text className="text-white text-3xl font-bold mb-4 text-center">
+//           Verification Code
+//         </Text>
+//         <Text className="text-gray-400 text-base mb-8 text-center">
+//           We've sent an SMS with an activation{"\n"}code to{" "}
+//           {formatPhoneNumber(phoneNumber, countryCode)}
+//         </Text>
+
+//         {/* Code Input */}
+//         <View className="flex-row justify-between mb-4">
+//           {code.map((digit, index) => (
+//             <TextInput
+//               key={index}
+//               ref={(ref) => (inputRefs.current[index] = ref)}
+//               className={`w-14 h-14 rounded-2xl text-white text-2xl text-center ${
+//                 isError
+//                   ? "border-2 border-red-500 bg-gray-800"
+//                   : "border-2 border-black-500 bg-gray-800"
+//               }`}
+//               maxLength={1}
+//               keyboardType="number-pad"
+//               value={digit}
+//               onChangeText={(text) => handleCodeChange(text, index)}
+//               onKeyPress={(e) => handleKeyPress(e, index)}
+//             />
+//           ))}
+//         </View>
+
+//         {/* Error Message */}
+//         {isError && (
+//           <Text className="text-red-500 text-sm mb-4">
+//             Wrong code, please try again
+//           </Text>
+//         )}
+
+//         {/* Continue Button */}
+//         <TouchableOpacity
+//           className="bg-[#FCCD34] rounded-2xl py-4 px-8 mb-8"
+//           onPress={handleContinue}
+//         >
+//           <Text className="text-white text-center text-lg font-semibold">
+//             Continue
+//           </Text>
+//         </TouchableOpacity>
+
+//         {/* Resend Options */}
+//         <View className="flex-row justify-between items-center">
+//           <Text className="text-gray-400">
+//             {canResend
+//               ? "Ready to resend"
+//               : `Send code again ${formatTime(timer)}`}
+//           </Text>
+//           <TouchableOpacity onPress={handleResend} disabled={!canResend}>
+//             <Text className={canResend ? "text-yellow-500" : "text-gray-600"}>
+//               Resend
+//             </Text>
+//           </TouchableOpacity>
+//         </View>
+//       </View>
+//     </View>
+//   );
+// }
+
+//profile
+// import React, { useState } from "react";
+// import {
+//   View,
+//   Text,
+//   TouchableOpacity,
+//   TextInput,
+//   Image,
+//   ScrollView,
+// } from "react-native";
+// import { router } from "expo-router";
+// import { ChevronLeft, Plus, X } from "lucide-react-native";
+// import * as ImagePicker from "expo-image-picker";
+
+// interface PhotoSlot {
+//   id: number;
+//   uri: string | null;
+//   size: "large" | "medium" | "small";
+// }
+
+// export default function ProfileScreen() {
+//   const [step, setStep] = useState<0 | 1 | 2>(0);
+
+//   // gender state
+//   const [selectedGender, setSelectedGender] = useState("Woman");
+
+//   // name state
+//   const [firstName, setFirstName] = useState("");
+//   const [lastName, setLastName] = useState("");
+
+//   // photos state
+//   const [photos, setPhotos] = useState<PhotoSlot[]>([
+//     { id: 1, uri: null, size: "large" },
+//     { id: 2, uri: null, size: "medium" },
+//     { id: 3, uri: null, size: "medium" },
+//     { id: 4, uri: null, size: "small" },
+//     { id: 5, uri: null, size: "small" },
+//     { id: 6, uri: null, size: "small" },
+//   ]);
+
+//   const goNext = () => {
+//     if (step === 0) return setStep(1);
+//     if (step === 1) return setStep(2);
+//   };
+
+//   const goBack = () => {
+//     if (step === 0) return router.back();
+//     if (step === 1) return setStep(0);
+//     if (step === 2) return setStep(1);
+//   };
+
+//   const handleFinish = () => {
+//     // You can do form submission here (send to API / store locally) before navigating
+//     router.replace("/(tabs)/discover");
+//   };
+
+//   const pickImage = async (id: number) => {
+//     // request permissions (best practice)
+//     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+//     if (!permission.granted) return;
+
+//     const result = await ImagePicker.launchImageLibraryAsync({
+//       mediaTypes: ImagePicker.MediaTypeOptions.Images,
+//       allowsEditing: true,
+//       aspect: [1, 1],
+//       quality: 1,
+//     });
+
+//     // expo-image-picker v14+ returns { canceled, assets }
+//     if (!result.canceled && result.assets?.length) {
+//       const uri = result.assets[0].uri;
+//       setPhotos((p) =>
+//         p.map((photo) => (photo.id === id ? { ...photo, uri } : photo))
+//       );
+//     }
+//   };
+
+//   const removeImage = (id: number) => {
+//     setPhotos((p) =>
+//       p.map((photo) => (photo.id === id ? { ...photo, uri: null } : photo))
+//     );
+//   };
+
+//   // simple progress width helper
+//   const progressWidth = () => {
+//     if (step === 0) return "w-1/3";
+//     if (step === 1) return "w-2/3";
+//     return "w-full";
+//   };
+
+//   return (
+//     <View className="flex-1 bg-black px-6 py-12">
+//       {/* Header */}
+//       <View className="flex-row items-center mb-8">
+//         <TouchableOpacity onPress={goBack}>
+//           <ChevronLeft size={24} color="#fff" />
+//         </TouchableOpacity>
+//         <View className="flex-1 h-1 bg-gray-800 mx-4 rounded-full">
+//           <View
+//             className={`${progressWidth()} h-full bg-yellow-500 rounded-full`}
+//           />
+//         </View>
+//       </View>
+
+//       {/* Content */}
+//       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+//         {step === 0 && (
+//           <View className="flex-1">
+//             <Text className="text-white text-3xl font-bold mb-2 text-center">
+//               What's Your Gender?
+//             </Text>
+//             <Text className="text-gray-400 text-base mb-8 text-center">
+//               Enter your gender
+//             </Text>
+
+//             <TouchableOpacity
+//               className={`rounded-2xl py-5 px-6 mb-4 ${
+//                 selectedGender === "Woman"
+//                   ? "border-2 border-yellow-500 bg-gray-900"
+//                   : "bg-gray-900"
+//               }`}
+//               onPress={() => setSelectedGender("Woman")}
+//             >
+//               <Text className="text-white text-lg">Woman</Text>
+//             </TouchableOpacity>
+
+//             <TouchableOpacity
+//               className={`rounded-2xl py-5 px-6 mb-4 ${
+//                 selectedGender === "Man"
+//                   ? "border-2 border-yellow-500 bg-gray-900"
+//                   : "bg-gray-900"
+//               }`}
+//               onPress={() => setSelectedGender("Man")}
+//             >
+//               <Text className="text-white text-lg">Man</Text>
+//             </TouchableOpacity>
+
+//             <TouchableOpacity
+//               className={`rounded-2xl py-5 px-6 mb-8 ${
+//                 selectedGender === "Other"
+//                   ? "border-2 border-yellow-500 bg-gray-900"
+//                   : "bg-gray-900"
+//               }`}
+//               onPress={() => setSelectedGender("Other")}
+//             >
+//               <Text className="text-white text-lg">Other</Text>
+//             </TouchableOpacity>
+
+//             <TouchableOpacity
+//               className="bg-[#FCCD34] rounded-2xl py-4 px-8"
+//               onPress={goNext}
+//             >
+//               <Text className="text-white text-center text-lg font-semibold">
+//                 Continue
+//               </Text>
+//             </TouchableOpacity>
+//           </View>
+//         )}
+
+//         {step === 1 && (
+//           <View className="flex-1">
+//             <Text className="text-white text-3xl font-bold mb-2 text-center">
+//               What's Your Name?
+//             </Text>
+//             <Text className="text-gray-400 text-base mb-8 text-center">
+//               Enter your first name and last name
+//             </Text>
+
+//             <TextInput
+//               className="bg-black rounded-3xl px-6 py-5 text-white text-lg mb-4 border-2 border-yellow-500"
+//               placeholder="First name"
+//               placeholderTextColor="#666"
+//               value={firstName}
+//               onChangeText={setFirstName}
+//             />
+
+//             <TextInput
+//               className="bg-black rounded-3xl px-6 py-5 text-white text-lg mb-5 border-2 border-yellow-500"
+//               placeholder="Last name"
+//               placeholderTextColor="#666"
+//               value={lastName}
+//               onChangeText={setLastName}
+//             />
+
+//             <TouchableOpacity
+//               className="bg-[#FCCD34] rounded-2xl py-4 px-8 mb-3"
+//               onPress={() => setStep(2)}
+//             >
+//               <Text className="text-white text-center text-lg font-semibold">
+//                 Continue
+//               </Text>
+//             </TouchableOpacity>
+
+//             <TouchableOpacity
+//               className="bg-gray-800 rounded-2xl py-4 px-8"
+//               onPress={() => setStep(0)}
+//             >
+//               <Text className="text-white text-center text-lg font-semibold">
+//                 Back
+//               </Text>
+//             </TouchableOpacity>
+//           </View>
+//         )}
+
+//         {step === 2 && (
+//           <View className="flex-1">
+//             <Text className="text-white text-3xl font-bold mb-2 text-center">
+//               Upload Your Photo
+//             </Text>
+//             <Text className="text-gray-400 text-base mb-6 text-center">
+//               Lorem ipsum dolor sit amet
+//             </Text>
+
+//             <View className="flex-1 justify-between">
+//               {/* Photo Grid */}
+//               <View className="mb-4">
+//                 <View className="flex-row mb-3" style={{ height: 240 }}>
+//                   <View className="flex-[1.4] mr-3">
+//                     <TouchableOpacity
+//                       className="flex-1"
+//                       onPress={() => pickImage(1)}
+//                     >
+//                       {photos[0].uri ? (
+//                         <View className="relative w-full h-full">
+//                           <Image
+//                             source={{ uri: photos[0].uri }}
+//                             className="w-full h-full rounded-3xl"
+//                             resizeMode="cover"
+//                           />
+//                           <TouchableOpacity
+//                             className="absolute top-2 right-2 w-8 h-8 bg-gray-900/80 rounded-full items-center justify-center"
+//                             onPress={() => removeImage(1)}
+//                           >
+//                             <X size={20} color="#fff" />
+//                           </TouchableOpacity>
+//                         </View>
+//                       ) : (
+//                         <View className="w-full h-full border-2 border-dashed border-yellow-500 rounded-3xl items-center justify-center">
+//                           <View className="w-16 h-16 bg-yellow-500 rounded-full items-center justify-center">
+//                             <Plus size={32} color="#000" strokeWidth={3} />
+//                           </View>
+//                         </View>
+//                       )}
+//                     </TouchableOpacity>
+//                   </View>
+
+//                   <View className="flex-1">
+//                     <TouchableOpacity
+//                       className="mb-3 flex-1"
+//                       onPress={() => pickImage(2)}
+//                     >
+//                       {photos[1].uri ? (
+//                         <View className="relative w-full h-full">
+//                           <Image
+//                             source={{ uri: photos[1].uri }}
+//                             className="w-full h-full rounded-3xl"
+//                             resizeMode="cover"
+//                           />
+//                           <TouchableOpacity
+//                             className="absolute top-2 right-2 w-8 h-8 bg-gray-900/80 rounded-full items-center justify-center"
+//                             onPress={() => removeImage(2)}
+//                           >
+//                             <X size={20} color="#fff" />
+//                           </TouchableOpacity>
+//                         </View>
+//                       ) : (
+//                         <View className="w-full h-full border-2 border-dashed border-yellow-500 rounded-3xl items-center justify-center">
+//                           <View className="w-12 h-12 bg-yellow-500 rounded-full items-center justify-center">
+//                             <Plus size={24} color="#000" strokeWidth={3} />
+//                           </View>
+//                         </View>
+//                       )}
+//                     </TouchableOpacity>
+
+//                     <TouchableOpacity
+//                       className="flex-1"
+//                       onPress={() => pickImage(3)}
+//                     >
+//                       {photos[2].uri ? (
+//                         <View className="relative w-full h-full">
+//                           <Image
+//                             source={{ uri: photos[2].uri }}
+//                             className="w-full h-full rounded-3xl"
+//                             resizeMode="cover"
+//                           />
+//                           <TouchableOpacity
+//                             className="absolute top-2 right-2 w-8 h-8 bg-gray-900/80 rounded-full items-center justify-center"
+//                             onPress={() => removeImage(3)}
+//                           >
+//                             <X size={20} color="#fff" />
+//                           </TouchableOpacity>
+//                         </View>
+//                       ) : (
+//                         <View className="w-full h-full border-2 border-dashed border-yellow-500 rounded-3xl items-center justify-center">
+//                           <View className="w-12 h-12 bg-yellow-500 rounded-full items-center justify-center">
+//                             <Plus size={24} color="#000" strokeWidth={3} />
+//                           </View>
+//                         </View>
+//                       )}
+//                     </TouchableOpacity>
+//                   </View>
+//                 </View>
+
+//                 <View className="flex-row" style={{ height: 115 }}>
+//                   {[4, 5, 6].map((index) => (
+//                     <TouchableOpacity
+//                       key={index}
+//                       className="flex-1 mx-1.5"
+//                       onPress={() => pickImage(index)}
+//                     >
+//                       {photos[index - 1].uri ? (
+//                         <View className="relative w-full h-full">
+//                           <Image
+//                             source={{ uri: photos[index - 1].uri }}
+//                             className="w-full h-full rounded-3xl"
+//                             resizeMode="cover"
+//                           />
+//                           <TouchableOpacity
+//                             className="absolute top-2 right-2 w-8 h-8 bg-gray-900/80 rounded-full items-center justify-center"
+//                             onPress={() => removeImage(index)}
+//                           >
+//                             <X size={20} color="#fff" />
+//                           </TouchableOpacity>
+//                         </View>
+//                       ) : (
+//                         <View className="w-full h-full border-2 border-dashed border-yellow-500 rounded-3xl items-center justify-center">
+//                           <View className="w-12 h-12 bg-yellow-500 rounded-full items-center justify-center">
+//                             <Plus size={24} color="#000" strokeWidth={3} />
+//                           </View>
+//                         </View>
+//                       )}
+//                     </TouchableOpacity>
+//                   ))}
+//                 </View>
+//               </View>
+
+//               <View>
+//                 <TouchableOpacity
+//                   className="bg-[#FCCD34] rounded-2xl py-4 px-8 mb-4"
+//                   onPress={handleFinish}
+//                 >
+//                   <Text className="text-white text-center text-lg font-semibold">
+//                     Continue
+//                   </Text>
+//                 </TouchableOpacity>
+
+//                 <TouchableOpacity
+//                   className="bg-gray-800 rounded-2xl py-4 px-8"
+//                   onPress={() => setStep(1)}
+//                 >
+//                   <Text className="text-white text-center text-lg font-semibold">
+//                     Skip
+//                   </Text>
+//                 </TouchableOpacity>
+//               </View>
+//             </View>
+//           </View>
+//         )}
+//       </ScrollView>
+//     </View>
+//   );
+// }

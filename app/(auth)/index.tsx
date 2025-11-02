@@ -1,5 +1,6 @@
 // app/index.tsx - Onboarding Screen
 import React from "react";
+import "react-native-url-polyfill/auto";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { router } from "expo-router";
 import { useFonts } from "expo-font";
