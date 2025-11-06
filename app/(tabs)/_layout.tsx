@@ -184,6 +184,24 @@ export default function TabLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="dashboard/photo"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="dashboard/welcome-dashboard"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="dashboard/about"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

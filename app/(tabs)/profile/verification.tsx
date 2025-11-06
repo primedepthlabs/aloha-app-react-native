@@ -673,7 +673,7 @@ const VerificationScreen = () => {
               onPress={() => {
                 setSuccessModalVisible(false);
                 // Navigate to settings
-                // router.replace("/settings");
+                router.replace("/(tabs)/profile");
               }}
               style={{
                 backgroundColor: "#FCCD34",

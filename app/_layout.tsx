@@ -47,7 +47,7 @@ export default function RootLayout() {
     }
 
     setTimeout(() => {
-      router.push("/login");
+      router.push("/(auth)");
     }, 200);
   }, [loaded]);
 

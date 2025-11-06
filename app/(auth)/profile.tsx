@@ -128,7 +128,7 @@ export default function ProfileScreen() {
 
       const row = {
         id: finalUserId,
-        email: authUser?.email || `${phoneNumberFromParams}@temp.com`,
+
         full_name: fullName,
         phone_number: phoneNumberFromParams || null,
         avatar_url: avatarUrl,
