@@ -1,13 +1,10 @@
-// app/(auth)/about.tsx
+// app/(auth)/donations.tsx
 import React, { useState } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
-  TextInput,
   StatusBar,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
   ActivityIndicator,
 } from "react-native";
@@ -30,9 +27,8 @@ const FONT = {
   Bold: "Poppins_700Bold",
 };
 
-export default function AboutScreen() {
-  const [bio, setBio] = useState("");
-  const maxChars = 200;
+export default function DonationsScreen() {
+  const [isEnabled, setIsEnabled] = useState(false);
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -42,11 +38,11 @@ export default function AboutScreen() {
   });
 
   const handleNext = () => {
-    router.push("/(tabs)/dashboard/messages");
+    router.push("/(tabs)/dashboard/premium-calls");
   };
 
   const handleSkip = () => {
-    router.push("/discover");
+    router.push("/(tabs)/dashboard/premium-calls");
   };
 
   if (!fontsLoaded) {
@@ -63,20 +59,11 @@ export default function AboutScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1 }}
-    >
+    <View style={{ flex: 1 }}>
       <StatusBar barStyle="light-content" />
 
       <LinearGradient
-        colors={[
-          "#0A0A0A", // very dark gray top
-          "#000000", // soft dark middle
-          "#1C1B2F", // bluish tone mid-lower
-          "#2A1E10", // warm brownish tone lower
-          "#3B2A12", // golden brown tint
-        ]}
+        colors={["#0A0A0A", "#000000", "#1C1B2F", "#2A1E10", "#3B2A12"]}
         locations={[0, 0.25, 0.5, 0.75, 1]}
         style={{ flex: 1 }}
       >
@@ -88,14 +75,14 @@ export default function AboutScreen() {
           <View className="pt-12 px-6">
             <View className="flex-row items-center justify-between mb-10">
               <TouchableOpacity
-                onPress={() => router.push("/(tabs)/dashboard/photo")}
+                onPress={() => router.push("/(tabs)/dashboard/messages")}
               >
                 <ChevronLeft size={24} color="#fff" />
               </TouchableOpacity>
 
               {/* Progress Bar */}
               <View className="flex-1 h-1 bg-gray-800 mx-4 rounded-full">
-                <View className="w-full h-full bg-[#FCCD34] rounded-full" />
+                <View className="w-2/4 h-full bg-[#FCCD34] rounded-full" />
               </View>
 
               <TouchableOpacity onPress={handleSkip}>
@@ -113,62 +100,68 @@ export default function AboutScreen() {
               style={{ fontFamily: FONT.SemiBold }}
               className="text-white text-[24px] text-center leading-[38px] mb-3"
             >
-              What else do fans{"\n"}know you for?
+              Would You Like to{"\n"}Accept Fan Donations?
             </Text>
 
             {/* Subtitle */}
             <Text
               style={{ fontFamily: FONT.Regular }}
-              className="text-[#FFFFFF80] text-[14px] text-center leading-[22px] px-2 mb-8"
+              className="text-[#FFFFFF80] text-[14px] text-center leading-[22px] px-2 mb-12"
             >
-              Fill out a short bio highlighting your major achievements and
-              unique expertise. This description will display prominently and
-              increase the rate of paid messages and video calls.
+              Enable this feature to allow your most dedicated fans to send
+              direct tips and financial support, instantly increasing your
+              revenue potential.
             </Text>
           </View>
 
-          {/* Form Section */}
+          {/* Toggle Section */}
+          {/* Toggle Section */}
           <View className="flex-1 px-6">
             <Text
               style={{ fontFamily: FONT.Medium }}
-              className="text-white text-[15px] mb-3"
+              className="text-white text-[18px] mb-3"
             >
-              About
+              Allow users to send donations
             </Text>
 
-            <View style={{ position: "relative" }}>
-              <TextInput
-                style={{
-                  backgroundColor: "#1A1A1A",
-                  borderRadius: 16,
-                  paddingHorizontal: 20,
-                  paddingVertical: 16,
-                  color: "#FFFFFF",
-                  fontSize: 16,
-                  minHeight: 180,
-                  fontFamily: FONT.Regular,
-                }}
-                placeholder="Type"
-                placeholderTextColor="#666"
-                multiline
-                textAlignVertical="top"
-                maxLength={maxChars}
-                value={bio}
-                onChangeText={setBio}
-              />
-
+            {/* Subtitle + Toggle in One Row */}
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
               <Text
-                style={{
-                  position: "absolute",
-                  right: 20,
-                  bottom: 12,
-                  color: "#9CA3AF",
-                  fontSize: 12,
-                  fontFamily: FONT.Regular,
-                }}
+                style={{ fontFamily: FONT.Regular, flex: 1 }}
+                className="text-[#FCCD34] text-[12px] pr-4"
               >
-                {bio.length}/{maxChars} Chars...
+                When enabled, users will see a Donation button on your profile.
               </Text>
+
+              {/* Toggle Switch */}
+              <TouchableOpacity
+                style={{
+                  width: 48,
+                  height: 29,
+                  borderRadius: 20,
+                  backgroundColor: isEnabled ? "#FCCD34" : "#19191B",
+                  justifyContent: "center",
+                  padding: 2,
+                }}
+                onPress={() => setIsEnabled(!isEnabled)}
+                activeOpacity={0.8}
+              >
+                <View
+                  style={{
+                    width: 27,
+                    height: 27,
+                    borderRadius: 13.5,
+                    backgroundColor: "#fff",
+                    alignSelf: isEnabled ? "flex-end" : "flex-start",
+                  }}
+                />
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -199,6 +192,6 @@ export default function AboutScreen() {
           </View>
         </ScrollView>
       </LinearGradient>
-    </KeyboardAvoidingView>
+    </View>
   );
 }

@@ -1,4 +1,4 @@
-// app/(auth)/about.tsx
+// app/(auth)/iban.tsx
 import React, { useState } from "react";
 import {
   View,
@@ -30,9 +30,9 @@ const FONT = {
   Bold: "Poppins_700Bold",
 };
 
-export default function AboutScreen() {
-  const [bio, setBio] = useState("");
-  const maxChars = 200;
+export default function IbanScreen() {
+  const [ownerName, setOwnerName] = useState("");
+  const [iban, setIban] = useState("");
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -42,7 +42,7 @@ export default function AboutScreen() {
   });
 
   const handleNext = () => {
-    router.push("/(tabs)/dashboard/messages");
+    router.push("/(tabs)/dashboard/identity");
   };
 
   const handleSkip = () => {
@@ -70,13 +70,7 @@ export default function AboutScreen() {
       <StatusBar barStyle="light-content" />
 
       <LinearGradient
-        colors={[
-          "#0A0A0A", // very dark gray top
-          "#000000", // soft dark middle
-          "#1C1B2F", // bluish tone mid-lower
-          "#2A1E10", // warm brownish tone lower
-          "#3B2A12", // golden brown tint
-        ]}
+        colors={["#0A0A0A", "#000000", "#1C1B2F", "#2A1E10", "#3B2A12"]}
         locations={[0, 0.25, 0.5, 0.75, 1]}
         style={{ flex: 1 }}
       >
@@ -88,7 +82,7 @@ export default function AboutScreen() {
           <View className="pt-12 px-6">
             <View className="flex-row items-center justify-between mb-10">
               <TouchableOpacity
-                onPress={() => router.push("/(tabs)/dashboard/photo")}
+                onPress={() => router.push("/(tabs)/dashboard/premium-calls")}
               >
                 <ChevronLeft size={24} color="#fff" />
               </TouchableOpacity>
@@ -113,7 +107,7 @@ export default function AboutScreen() {
               style={{ fontFamily: FONT.SemiBold }}
               className="text-white text-[24px] text-center leading-[38px] mb-3"
             >
-              What else do fans{"\n"}know you for?
+              Enter your primary IBAN
             </Text>
 
             {/* Subtitle */}
@@ -121,9 +115,11 @@ export default function AboutScreen() {
               style={{ fontFamily: FONT.Regular }}
               className="text-[#FFFFFF80] text-[14px] text-center leading-[22px] px-2 mb-8"
             >
-              Fill out a short bio highlighting your major achievements and
-              unique expertise. This description will display prominently and
-              increase the rate of paid messages and video calls.
+              This account will receive your automatic weekly withdrawals.{" "}
+              <Text style={{ color: "#FCCD3480" }}>
+                You can add up to two more bank accounts later via your
+                dashboard Settings.
+              </Text>
             </Text>
           </View>
 
@@ -131,45 +127,73 @@ export default function AboutScreen() {
           <View className="flex-1 px-6">
             <Text
               style={{ fontFamily: FONT.Medium }}
-              className="text-white text-[15px] mb-3"
+              className="text-white text-[18px] mb-2"
             >
-              About
+              Account holder details
             </Text>
 
-            <View style={{ position: "relative" }}>
-              <TextInput
-                style={{
-                  backgroundColor: "#1A1A1A",
-                  borderRadius: 16,
-                  paddingHorizontal: 20,
-                  paddingVertical: 16,
-                  color: "#FFFFFF",
-                  fontSize: 16,
-                  minHeight: 180,
-                  fontFamily: FONT.Regular,
-                }}
-                placeholder="Type"
-                placeholderTextColor="#666"
-                multiline
-                textAlignVertical="top"
-                maxLength={maxChars}
-                value={bio}
-                onChangeText={setBio}
-              />
+            <Text
+              style={{ fontFamily: FONT.Regular }}
+              className="text-[#FFFFFF80] text-[12px] mb-6"
+            >
+              Please provide the account holder's details as they appear on the
+              bank statement.
+            </Text>
 
-              <Text
-                style={{
-                  position: "absolute",
-                  right: 20,
-                  bottom: 12,
-                  color: "#9CA3AF",
-                  fontSize: 12,
-                  fontFamily: FONT.Regular,
-                }}
-              >
-                {bio.length}/{maxChars} Chars...
-              </Text>
-            </View>
+            <Text
+              style={{ fontFamily: FONT.Medium }}
+              className="text-white text-[15px] mb-3"
+            >
+              IBAN owner name
+            </Text>
+
+            <TextInput
+              style={{
+                backgroundColor: "#19191B",
+                borderRadius: 16,
+                paddingHorizontal: 20,
+                paddingVertical: 16,
+                color: "#808080",
+                fontSize: 16,
+                fontFamily: FONT.Regular,
+                marginBottom: 24,
+              }}
+              placeholder="Enter full name"
+              placeholderTextColor="#666"
+              value={ownerName}
+              onChangeText={setOwnerName}
+            />
+
+            <Text
+              style={{ fontFamily: FONT.Medium }}
+              className="text-white text-[15px] mb-3"
+            >
+              Bank (IBAN)
+            </Text>
+
+            <TextInput
+              style={{
+                backgroundColor: "#19191B",
+                borderRadius: 16,
+                paddingHorizontal: 20,
+                paddingVertical: 16,
+                color: "#808080",
+                fontSize: 16,
+                fontFamily: FONT.Regular,
+                marginBottom: 12,
+              }}
+              placeholder="Enter IBAN"
+              placeholderTextColor="#666"
+              value={iban}
+              onChangeText={setIban}
+            />
+
+            <Text
+              style={{ fontFamily: FONT.Regular }}
+              className="text-[#FCCD34] text-[12px]"
+            >
+              Your bank details are securely encrypted and stored.
+            </Text>
           </View>
 
           {/* Bottom Button */}

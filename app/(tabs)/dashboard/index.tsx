@@ -255,7 +255,7 @@ const Dashboard = () => {
 
           {/* Profile */}
           <StyledTouchableOpacity
-            onPress={() => router.push("/(tabs)/dashboard/Earnings")}
+            onPress={() => router.push("/(tabs)/dashboard/welcome-dashboard")}
             style={{
               backgroundColor: "#19191B",
               borderTopLeftRadius: 16,

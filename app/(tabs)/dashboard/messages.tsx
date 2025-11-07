@@ -1,4 +1,4 @@
-// app/(auth)/about.tsx
+// app/(auth)/paid-message.tsx
 import React, { useState } from "react";
 import {
   View,
@@ -12,7 +12,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { router } from "expo-router";
-import { ChevronLeft } from "lucide-react-native";
+import { ChevronLeft, Lock } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 
 import {
@@ -30,9 +30,9 @@ const FONT = {
   Bold: "Poppins_700Bold",
 };
 
-export default function AboutScreen() {
-  const [bio, setBio] = useState("");
-  const maxChars = 200;
+export default function PaidMessageScreen() {
+  const [price, setPrice] = useState("0.50");
+  const [isEnabled, setIsEnabled] = useState(true);
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -42,11 +42,16 @@ export default function AboutScreen() {
   });
 
   const handleNext = () => {
-    router.push("/(tabs)/dashboard/messages");
+    router.push("/(tabs)/dashboard/fan-donation");
   };
 
   const handleSkip = () => {
-    router.push("/discover");
+    router.push("/(tabs)/dashboard/fan-donation");
+  };
+
+  const isValidPrice = () => {
+    const numPrice = parseFloat(price);
+    return numPrice >= 0.5 && numPrice <= 100;
   };
 
   if (!fontsLoaded) {
@@ -70,13 +75,7 @@ export default function AboutScreen() {
       <StatusBar barStyle="light-content" />
 
       <LinearGradient
-        colors={[
-          "#0A0A0A", // very dark gray top
-          "#000000", // soft dark middle
-          "#1C1B2F", // bluish tone mid-lower
-          "#2A1E10", // warm brownish tone lower
-          "#3B2A12", // golden brown tint
-        ]}
+        colors={["#0A0A0A", "#000000", "#1C1B2F", "#2A1E10", "#3B2A12"]}
         locations={[0, 0.25, 0.5, 0.75, 1]}
         style={{ flex: 1 }}
       >
@@ -88,14 +87,14 @@ export default function AboutScreen() {
           <View className="pt-12 px-6">
             <View className="flex-row items-center justify-between mb-10">
               <TouchableOpacity
-                onPress={() => router.push("/(tabs)/dashboard/photo")}
+                onPress={() => router.push("/(tabs)/dashboard/about")}
               >
                 <ChevronLeft size={24} color="#fff" />
               </TouchableOpacity>
 
               {/* Progress Bar */}
               <View className="flex-1 h-1 bg-gray-800 mx-4 rounded-full">
-                <View className="w-full h-full bg-[#FCCD34] rounded-full" />
+                <View className="w-1/4 h-full bg-[#FCCD34] rounded-full" />
               </View>
 
               <TouchableOpacity onPress={handleSkip}>
@@ -113,7 +112,7 @@ export default function AboutScreen() {
               style={{ fontFamily: FONT.SemiBold }}
               className="text-white text-[24px] text-center leading-[38px] mb-3"
             >
-              What else do fans{"\n"}know you for?
+              Set Your Paid{"\n"}Message Rate
             </Text>
 
             {/* Subtitle */}
@@ -121,55 +120,112 @@ export default function AboutScreen() {
               style={{ fontFamily: FONT.Regular }}
               className="text-[#FFFFFF80] text-[14px] text-center leading-[22px] px-2 mb-8"
             >
-              Fill out a short bio highlighting your major achievements and
-              unique expertise. This description will display prominently and
-              increase the rate of paid messages and video calls.
+              Set your premium rate. This ensures your private chat becomes an
+              efficient monetization channel.{" "}
+              <Text style={{ color: "#FBCC3480" }}>
+                You can adjust this price anytime from your dashboard Settings
+              </Text>
             </Text>
           </View>
 
           {/* Form Section */}
           <View className="flex-1 px-6">
+            {/* Enable Toggle */}
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginBottom: 32,
+              }}
+            >
+              <Lock size={20} color="#fff" style={{ marginRight: 12 }} />
+              <Text
+                style={{ fontFamily: FONT.Regular, flex: 1 }}
+                className="text-white text-[15px]"
+              >
+                Enable Paid Message
+              </Text>
+              <TouchableOpacity
+                style={{
+                  width: 48,
+                  height: 29,
+                  borderRadius: 20,
+                  backgroundColor: isEnabled ? "#FCCD34" : "#4B5563",
+                  justifyContent: "center",
+                  padding: 2,
+                }}
+                onPress={() => setIsEnabled(!isEnabled)}
+                activeOpacity={0.8}
+              >
+                <View
+                  style={{
+                    width: 27,
+                    height: 27,
+                    borderRadius: 13.5,
+                    backgroundColor: "#fff",
+                    alignSelf: isEnabled ? "flex-end" : "flex-start",
+                  }}
+                />
+              </TouchableOpacity>
+            </View>
+
+            {/* Price Input */}
             <Text
               style={{ fontFamily: FONT.Medium }}
               className="text-white text-[15px] mb-3"
             >
-              About
+              Price for first 60 characters (GEL)
             </Text>
 
-            <View style={{ position: "relative" }}>
+            <View style={{ marginBottom: 12 }}>
               <TextInput
                 style={{
-                  backgroundColor: "#1A1A1A",
+                  backgroundColor: "#19191B",
                   borderRadius: 16,
                   paddingHorizontal: 20,
                   paddingVertical: 16,
-                  color: "#FFFFFF",
+                  color: "#808080",
                   fontSize: 16,
-                  minHeight: 180,
                   fontFamily: FONT.Regular,
+                  borderWidth: !isValidPrice() ? 1 : 0,
+                  borderColor: !isValidPrice() ? "#EF4444" : "transparent",
                 }}
-                placeholder="Type"
+                placeholder="0.50"
                 placeholderTextColor="#666"
-                multiline
-                textAlignVertical="top"
-                maxLength={maxChars}
-                value={bio}
-                onChangeText={setBio}
+                keyboardType="decimal-pad"
+                value={price}
+                onChangeText={setPrice}
               />
-
-              <Text
-                style={{
-                  position: "absolute",
-                  right: 20,
-                  bottom: 12,
-                  color: "#9CA3AF",
-                  fontSize: 12,
-                  fontFamily: FONT.Regular,
-                }}
-              >
-                {bio.length}/{maxChars} Chars...
-              </Text>
             </View>
+
+            {/* Info Text */}
+            <Text
+              style={{
+                fontFamily: FONT.Regular,
+                color: !isValidPrice() ? "#EF4444" : "#FCCD34",
+                fontSize: 12,
+                marginBottom: 8,
+              }}
+            >
+              {!isValidPrice()
+                ? "The minimum fee is 0.50 GEL"
+                : "The minimum fee is 0.50 GEL. Maximum-100GEL"}
+            </Text>
+
+            <Text
+              style={{ fontFamily: FONT.Regular }}
+              className="text-[#9CA3AF] text-[12px] mb-2"
+            >
+              Users are charged this fee only when you send a reply.
+            </Text>
+
+            <Text
+              style={{ fontFamily: FONT.Regular }}
+              className="text-[#9CA3AF] text-[12px]"
+            >
+              If you do not reply within 24 hours, the user will be refunded
+              automatically.
+            </Text>
           </View>
 
           {/* Bottom Button */}

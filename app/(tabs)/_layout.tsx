@@ -202,6 +202,48 @@ export default function TabLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="dashboard/premium-calls"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="dashboard/messages"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="dashboard/fan-donation"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="dashboard/iban"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="dashboard/identity"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="dashboard/identity-select"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="dashboard/document"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
