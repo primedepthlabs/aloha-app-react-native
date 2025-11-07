@@ -162,6 +162,10 @@ const Dashboard = () => {
         >
           {/* Followers Button */}
           <StyledTouchableOpacity
+            onPress={() => {
+              console.log("Followers pressed");
+              router.push("/dashboard/followers");
+            }}
             style={{
               width: 164,
               height: 48,

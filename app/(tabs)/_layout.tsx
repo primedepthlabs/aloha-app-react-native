@@ -244,6 +244,12 @@ export default function TabLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="dashboard/followers"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

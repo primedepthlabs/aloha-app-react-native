@@ -42,7 +42,9 @@ export default function WelcomeDashboard() {
               }}
             >
               {/* Back Button */}
-              <TouchableOpacity onPress={() => router.back()}>
+              <TouchableOpacity
+                onPress={() => router.push("/(tabs)/dashboard")}
+              >
                 <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
               </TouchableOpacity>
 
