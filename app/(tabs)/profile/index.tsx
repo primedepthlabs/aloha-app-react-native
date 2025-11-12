@@ -204,22 +204,29 @@ const ProfileScreen = () => {
             alignItems: "center",
           }}
         >
-          <StyledView
-            style={{
-              width: 70,
-              height: 70,
-              borderRadius: 35,
-              overflow: "hidden",
-              marginRight: 16,
-              backgroundColor: "#2C2C2E",
-            }}
+          {/* Profile Image with onPress */}
+          <TouchableOpacity
+            onPress={() => router.push("/(tabs)/profile/edit-profile")}
+            activeOpacity={0.8}
           >
-            <StyledImage
-              source={require("../../../assets/images/profile-placeholder.png")}
-              style={{ width: 70, height: 70 }}
-              resizeMode="cover"
-            />
-          </StyledView>
+            <StyledView
+              style={{
+                width: 70,
+                height: 70,
+                borderRadius: 35,
+                overflow: "hidden",
+                marginRight: 16,
+                backgroundColor: "#2C2C2E",
+              }}
+            >
+              <StyledImage
+                source={require("../../../assets/images/profile-placeholder.png")}
+                style={{ width: 70, height: 70 }}
+                resizeMode="cover"
+              />
+            </StyledView>
+          </TouchableOpacity>
+
           <StyledText
             className="text-white"
             style={{

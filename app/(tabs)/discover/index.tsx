@@ -180,7 +180,7 @@ export default function DiscoverScreen() {
 
   const navigateToChat = (user: User) => {
     router.push({
-      pathname: "/chats",
+      pathname: "/(tabs)/chats/chat",
       params: {
         name: user.name,
         image:

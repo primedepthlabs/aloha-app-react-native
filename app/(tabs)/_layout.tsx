@@ -250,6 +250,12 @@ export default function TabLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="dashboard/success"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
