@@ -1,29 +1,56 @@
-import { Link } from 'expo-router';
-import { StyleSheet } from 'react-native';
-
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { StatusBar } from "expo-status-bar";
+import { Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import * as Linking from "expo-linking";
 
 export default function ModalScreen() {
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText type="title">This is a modal</ThemedText>
-      <Link href="/" dismissTo style={styles.link}>
-        <ThemedText type="link">Go to home screen</ThemedText>
-      </Link>
-    </ThemedView>
+    <View style={styles.container}>
+      <Text style={styles.title}>Samuel Wyndham | Sign365</Text>
+      <View
+        style={styles.separator}
+        lightColor="#eee"
+        darkColor="rgba(255,255,255,0.1)"
+      />
+      <TouchableOpacity
+        className=" text-light-tint mb-8"
+        onPress={() => Linking.openURL("https://github.com/mrwyndham")}
+      >
+        Github
+      </TouchableOpacity>
+      <TouchableOpacity
+        className=" text-light-tint mb-8"
+        onPress={() =>
+          Linking.openURL("https://au.linkedin.com/in/samuel-wyndham-172416115")
+        }
+      >
+        LinkedIn
+      </TouchableOpacity>
+      <TouchableOpacity
+        className=" text-light-tint mb-8"
+        onPress={() => Linking.openURL("https://sign365.com.au/")}
+      >
+        Website
+      </TouchableOpacity>
+
+      {/* Use a light status bar on iOS to account for the black space above the modal */}
+      <StatusBar style={Platform.OS === "ios" ? "light" : "auto"} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  link: {
-    marginTop: 15,
-    paddingVertical: 15,
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  separator: {
+    marginVertical: 30,
+    height: 1,
+    width: "80%",
   },
 });
