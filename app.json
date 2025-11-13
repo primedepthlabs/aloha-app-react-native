@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "my-expo-nativewind-app",
-    "slug": "my-expo-nativewind-app",
+    "name": "aloha-app",
+    "slug": "aloha-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
