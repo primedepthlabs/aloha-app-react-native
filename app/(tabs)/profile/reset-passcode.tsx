@@ -12,7 +12,6 @@ import {
   TextInput,
   Keyboard,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft } from "lucide-react-native";
 import {
   useFonts,
@@ -22,11 +21,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { useRouter } from "expo-router";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -98,11 +92,11 @@ const ResetPasswordScreen = () => {
   const isPhoneNumberValid = phoneNumber.length >= 9;
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <StyledView
+      <View
         style={{
           height: 60,
           flexDirection: "row",
@@ -112,7 +106,7 @@ const ResetPasswordScreen = () => {
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => (step > 1 ? setStep(step - 1) : router.back())}
           style={{
             position: "absolute",
@@ -124,17 +118,17 @@ const ResetPasswordScreen = () => {
           }}
         >
           <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
+        </TouchableOpacity>
+        <Text
           className="text-white"
           style={{ fontSize: 18, fontFamily: FONT.SemiBold }}
         >
           Reset Passcode
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
-      <StyledView style={{ flex: 1, justifyContent: "space-between" }}>
-        <StyledView
+      <View style={{ flex: 1, justifyContent: "space-between" }}>
+        <View
           style={{
             paddingHorizontal: 24,
             paddingTop: 30,
@@ -144,7 +138,7 @@ const ResetPasswordScreen = () => {
           {/* Step 1: Phone Number */}
           {step === 1 && (
             <>
-              <StyledText
+              <Text
                 style={{
                   fontSize: 24,
                   fontFamily: FONT.SemiBold,
@@ -155,9 +149,9 @@ const ResetPasswordScreen = () => {
                 }}
               >
                 Forgot Password?
-              </StyledText>
+              </Text>
 
-              <StyledText
+              <Text
                 style={{
                   fontSize: 14,
                   fontFamily: FONT.Regular,
@@ -169,9 +163,9 @@ const ResetPasswordScreen = () => {
               >
                 Please enter your phone number to get{"\n"}the reset password
                 code
-              </StyledText>
+              </Text>
 
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
@@ -183,22 +177,22 @@ const ResetPasswordScreen = () => {
                   width: SCREEN_WIDTH - 48,
                 }}
               >
-                <StyledView
+                <View
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
                     marginRight: 12,
                   }}
                 >
-                  <StyledText
+                  <Text
                     style={{
                       fontSize: 24,
                       marginRight: 6,
                     }}
                   >
                     🇬🇪
-                  </StyledText>
-                  <StyledText
+                  </Text>
+                  <Text
                     style={{
                       fontSize: 16,
                       fontFamily: FONT.Regular,
@@ -206,8 +200,8 @@ const ResetPasswordScreen = () => {
                     }}
                   >
                     (+995)
-                  </StyledText>
-                </StyledView>
+                  </Text>
+                </View>
                 <TextInput
                   value={phoneNumber}
                   onChangeText={setPhoneNumber}
@@ -221,9 +215,9 @@ const ResetPasswordScreen = () => {
                     color: "#FFFFFF",
                   }}
                 />
-              </StyledView>
+              </View>
 
-              <StyledTouchableOpacity
+              <TouchableOpacity
                 onPress={() => setStep(2)}
                 disabled={!isPhoneNumberValid}
                 style={{
@@ -236,7 +230,7 @@ const ResetPasswordScreen = () => {
                   opacity: !isPhoneNumberValid ? 0.6 : 1,
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 18,
                     fontFamily: FONT.SemiBold,
@@ -244,15 +238,15 @@ const ResetPasswordScreen = () => {
                   }}
                 >
                   Send
-                </StyledText>
-              </StyledTouchableOpacity>
+                </Text>
+              </TouchableOpacity>
             </>
           )}
 
           {/* Step 2: Verification Code */}
           {step === 2 && (
             <>
-              <StyledText
+              <Text
                 style={{
                   fontSize: 24,
                   fontFamily: FONT.SemiBold,
@@ -263,9 +257,9 @@ const ResetPasswordScreen = () => {
                 }}
               >
                 Verification Code
-              </StyledText>
+              </Text>
 
-              <StyledText
+              <Text
                 style={{
                   fontSize: 14,
                   fontFamily: FONT.Regular,
@@ -275,14 +269,14 @@ const ResetPasswordScreen = () => {
                 }}
               >
                 We've sent an SMS with an activation{"\n"}code to{" "}
-                <StyledText
+                <Text
                   style={{ color: "#FFFFFF", fontFamily: FONT.Medium }}
                 >
                   +995 598 *** 323
-                </StyledText>
-              </StyledText>
+                </Text>
+              </Text>
 
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "center",
@@ -292,7 +286,7 @@ const ResetPasswordScreen = () => {
                 }}
               >
                 {verificationCode.map((digit, index) => (
-                  <StyledView
+                  <View
                     key={index}
                     style={{
                       width: 50,
@@ -321,7 +315,7 @@ const ResetPasswordScreen = () => {
                         fontSize: 23,
                       }}
                     />
-                    <StyledText
+                    <Text
                       style={{
                         fontSize: 23,
                         fontFamily: FONT.SemiBold,
@@ -330,12 +324,12 @@ const ResetPasswordScreen = () => {
                       }}
                     >
                       {digit}
-                    </StyledText>
-                  </StyledView>
+                    </Text>
+                  </View>
                 ))}
-              </StyledView>
+              </View>
 
-              <StyledTouchableOpacity
+              <TouchableOpacity
                 onPress={() => setStep(3)}
                 disabled={!isPasscodeComplete}
                 style={{
@@ -349,7 +343,7 @@ const ResetPasswordScreen = () => {
                   opacity: !isPasscodeComplete ? 0.6 : 1,
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 18,
                     fontFamily: FONT.SemiBold,
@@ -357,17 +351,17 @@ const ResetPasswordScreen = () => {
                   }}
                 >
                   Verify
-                </StyledText>
-              </StyledTouchableOpacity>
+                </Text>
+              </TouchableOpacity>
 
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
                   gap: 8,
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 15,
                     fontFamily: FONT.Regular,
@@ -375,9 +369,9 @@ const ResetPasswordScreen = () => {
                   }}
                 >
                   I didn't receive a code
-                </StyledText>
-                <StyledTouchableOpacity>
-                  <StyledText
+                </Text>
+                <TouchableOpacity>
+                  <Text
                     style={{
                       fontSize: 15,
                       fontFamily: FONT.Regular,
@@ -385,16 +379,16 @@ const ResetPasswordScreen = () => {
                     }}
                   >
                     Resend
-                  </StyledText>
-                </StyledTouchableOpacity>
-              </StyledView>
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </>
           )}
 
           {/* Step 3 & 4: Same as Update Password */}
           {(step === 3 || step === 4) && (
             <>
-              <StyledText
+              <Text
                 style={{
                   fontSize: 24,
                   fontFamily: FONT.SemiBold,
@@ -407,9 +401,9 @@ const ResetPasswordScreen = () => {
                 {step === 3
                   ? "Create a new 4 digit\npasscode"
                   : "Confirm a new 4 digit\npasscode"}
-              </StyledText>
+              </Text>
 
-              <StyledText
+              <Text
                 style={{
                   fontSize: 14,
                   fontFamily: FONT.Regular,
@@ -419,9 +413,9 @@ const ResetPasswordScreen = () => {
                 }}
               >
                 This will replace your previous{"\n"}security code
-              </StyledText>
+              </Text>
 
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "center",
@@ -431,7 +425,7 @@ const ResetPasswordScreen = () => {
                 }}
               >
                 {getCurrentPasscode().map((digit, index) => (
-                  <StyledView
+                  <View
                     key={index}
                     style={{
                       width: 60,
@@ -460,7 +454,7 @@ const ResetPasswordScreen = () => {
                         fontSize: 28,
                       }}
                     />
-                    <StyledText
+                    <Text
                       style={{
                         fontSize: 23,
                         fontFamily: FONT.SemiBold,
@@ -469,12 +463,12 @@ const ResetPasswordScreen = () => {
                       }}
                     >
                       {digit}
-                    </StyledText>
-                  </StyledView>
+                    </Text>
+                  </View>
                 ))}
-              </StyledView>
+              </View>
 
-              <StyledTouchableOpacity
+              <TouchableOpacity
                 onPress={() => {
                   if (step === 3 && isPasscodeComplete) setStep(4);
                   else if (step === 4 && isPasscodeComplete)
@@ -491,7 +485,7 @@ const ResetPasswordScreen = () => {
                   opacity: !isPasscodeComplete ? 0.6 : 1,
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 18,
                     fontFamily: FONT.SemiBold,
@@ -499,16 +493,16 @@ const ResetPasswordScreen = () => {
                   }}
                 >
                   Continue
-                </StyledText>
-              </StyledTouchableOpacity>
+                </Text>
+              </TouchableOpacity>
             </>
           )}
-        </StyledView>
-      </StyledView>
+        </View>
+      </View>
 
       {/* Success Modal */}
       <Modal visible={successModalVisible} transparent animationType="fade">
-        <StyledView
+        <View
           style={{
             flex: 1,
             backgroundColor: "#000000",
@@ -517,8 +511,8 @@ const ResetPasswordScreen = () => {
             paddingHorizontal: 10,
           }}
         >
-          <StyledView style={{ alignItems: "center", width: "100%" }}>
-            <StyledView
+          <View style={{ alignItems: "center", width: "100%" }}>
+            <View
               style={{
                 width: 82,
                 height: 82,
@@ -532,9 +526,9 @@ const ResetPasswordScreen = () => {
                 style={{ width: 120, height: 120 }}
                 resizeMode="contain"
               />
-            </StyledView>
+            </View>
 
-            <StyledText
+            <Text
               style={{
                 fontSize: 24,
                 fontFamily: FONT.Medium,
@@ -545,9 +539,9 @@ const ResetPasswordScreen = () => {
               }}
             >
               Passcode reset{"\n"}successfully
-            </StyledText>
+            </Text>
 
-            <StyledText
+            <Text
               style={{
                 fontSize: 15,
                 fontFamily: FONT.Regular,
@@ -559,9 +553,9 @@ const ResetPasswordScreen = () => {
             >
               Your new 4-digit passcode has been{"\n"}set. You can now use it to
               unlock your{"\n"}application.
-            </StyledText>
+            </Text>
 
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => {
                 setSuccessModalVisible(false);
                 router.back();
@@ -575,7 +569,7 @@ const ResetPasswordScreen = () => {
                 borderRadius: 15,
               }}
             >
-              <StyledText
+              <Text
                 style={{
                   fontSize: 15,
                   fontFamily: FONT.Bold,
@@ -583,12 +577,12 @@ const ResetPasswordScreen = () => {
                 }}
               >
                 Done
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledView>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
-    </StyledSafeAreaView>
+    </SafeAreaView>
   );
 };
 

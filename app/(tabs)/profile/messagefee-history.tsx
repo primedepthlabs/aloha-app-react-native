@@ -10,7 +10,6 @@ import {
   Modal,
   Image,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft, Calendar, Copy } from "lucide-react-native";
 import { Svg, Circle, Path } from "react-native-svg";
 import {
@@ -21,12 +20,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledScrollView = styled(ScrollView);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -154,7 +147,7 @@ const MessageFeeHistoryScreen = () => {
   };
 
   const MessageFeeItem = ({ fee }: any) => (
-    <StyledTouchableOpacity
+    <TouchableOpacity
       onPress={() => {
         setSelectedFee(fee);
         setReceiptVisible(true);
@@ -168,7 +161,7 @@ const MessageFeeHistoryScreen = () => {
         alignItems: "center",
       }}
     >
-      <StyledView
+      <View
         style={{
           marginRight: 12,
           width: 40,
@@ -186,10 +179,10 @@ const MessageFeeHistoryScreen = () => {
           style={{ width: 28, height: 28 }}
           resizeMode="contain"
         />
-      </StyledView>
+      </View>
 
-      <StyledView style={{ flex: 1 }}>
-        <StyledText
+      <View style={{ flex: 1 }}>
+        <Text
           className="text-white"
           style={{
             fontSize: 16,
@@ -198,8 +191,8 @@ const MessageFeeHistoryScreen = () => {
           }}
         >
           {fee.type} ({fee.recipient})
-        </StyledText>
-        <StyledText
+        </Text>
+        <Text
           className="text-gray-400"
           style={{
             fontSize: 13,
@@ -207,10 +200,10 @@ const MessageFeeHistoryScreen = () => {
           }}
         >
           {fee.date}
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
-      <StyledText
+      <Text
         style={{
           fontSize: 16,
           fontFamily: FONT.SemiBold,
@@ -218,16 +211,16 @@ const MessageFeeHistoryScreen = () => {
         }}
       >
         {fee.amount}
-      </StyledText>
-    </StyledTouchableOpacity>
+      </Text>
+    </TouchableOpacity>
   );
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <StyledView
+      <View
         style={{
           height: 60,
           flexDirection: "row",
@@ -237,7 +230,7 @@ const MessageFeeHistoryScreen = () => {
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.back()}
           style={{
             position: "absolute",
@@ -249,8 +242,8 @@ const MessageFeeHistoryScreen = () => {
           }}
         >
           <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
+        </TouchableOpacity>
+        <Text
           className="text-white"
           style={{
             fontSize: 18,
@@ -258,8 +251,8 @@ const MessageFeeHistoryScreen = () => {
           }}
         >
           Message Fee History
-        </StyledText>
-        <StyledTouchableOpacity
+        </Text>
+        <TouchableOpacity
           onPress={() => setFilterVisible(true)}
           style={{
             position: "absolute",
@@ -278,11 +271,11 @@ const MessageFeeHistoryScreen = () => {
               strokeLinecap="round"
             />
           </Svg>
-        </StyledTouchableOpacity>
-      </StyledView>
+        </TouchableOpacity>
+      </View>
 
       {/* Message Fees List */}
-      <StyledScrollView
+      <ScrollView
         style={{
           flex: 1,
           paddingHorizontal: 20,
@@ -292,7 +285,7 @@ const MessageFeeHistoryScreen = () => {
         {messageFees.map((fee) => (
           <MessageFeeItem key={fee.id} fee={fee} />
         ))}
-      </StyledScrollView>
+      </ScrollView>
 
       <Modal
         animationType="slide"
@@ -300,11 +293,11 @@ const MessageFeeHistoryScreen = () => {
         visible={filterVisible}
         onRequestClose={() => setFilterVisible(false)}
       >
-        <StyledSafeAreaView className="flex-1 bg-black">
+        <SafeAreaView className="flex-1 bg-black">
           <StatusBar barStyle="light-content" />
 
           {/* Filter Header */}
-          <StyledView
+          <View
             style={{
               height: 60,
               flexDirection: "row",
@@ -314,7 +307,7 @@ const MessageFeeHistoryScreen = () => {
               position: "relative",
             }}
           >
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setFilterVisible(false)}
               style={{
                 position: "absolute",
@@ -322,8 +315,8 @@ const MessageFeeHistoryScreen = () => {
               }}
             >
               <ChevronLeft size={28} color="#FFFFFF" strokeWidth={2} />
-            </StyledTouchableOpacity>
-            <StyledText
+            </TouchableOpacity>
+            <Text
               className="text-white"
               style={{
                 fontSize: 20,
@@ -331,8 +324,8 @@ const MessageFeeHistoryScreen = () => {
               }}
             >
               Filter
-            </StyledText>
-            <StyledTouchableOpacity
+            </Text>
+            <TouchableOpacity
               onPress={() => {
                 setSelectedPeriod("");
                 setSelectedSource([]);
@@ -343,7 +336,7 @@ const MessageFeeHistoryScreen = () => {
                 right: 20,
               }}
             >
-              <StyledText
+              <Text
                 style={{
                   color: "#FCCD34",
                   fontSize: 16,
@@ -351,13 +344,13 @@ const MessageFeeHistoryScreen = () => {
                 }}
               >
                 Reset
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
+              </Text>
+            </TouchableOpacity>
+          </View>
 
-          <StyledScrollView style={{ flex: 1, paddingHorizontal: 20 }}>
+          <ScrollView style={{ flex: 1, paddingHorizontal: 20 }}>
             {/* Date Range */}
-            <StyledText
+            <Text
               className="text-gray-400"
               style={{
                 fontSize: 14,
@@ -367,13 +360,13 @@ const MessageFeeHistoryScreen = () => {
               }}
             >
               Date Range
-            </StyledText>
+            </Text>
 
-            <StyledView
+            <View
               style={{ flexDirection: "row", gap: 12, marginBottom: 16 }}
             >
-              <StyledView style={{ flex: 1 }}>
-                <StyledText
+              <View style={{ flex: 1 }}>
+                <Text
                   className="text-gray-400"
                   style={{
                     fontSize: 13,
@@ -382,8 +375,8 @@ const MessageFeeHistoryScreen = () => {
                   }}
                 >
                   From
-                </StyledText>
-                <StyledView
+                </Text>
+                <View
                   style={{
                     backgroundColor: "#1C1C1E",
                     borderRadius: 12,
@@ -396,7 +389,7 @@ const MessageFeeHistoryScreen = () => {
                     justifyContent: "space-between",
                   }}
                 >
-                  <StyledText
+                  <Text
                     className="text-white"
                     style={{
                       fontSize: 14,
@@ -404,13 +397,13 @@ const MessageFeeHistoryScreen = () => {
                     }}
                   >
                     {fromDate}
-                  </StyledText>
+                  </Text>
                   <Calendar size={20} color="#555E67" />
-                </StyledView>
-              </StyledView>
+                </View>
+              </View>
 
-              <StyledView style={{ flex: 1 }}>
-                <StyledText
+              <View style={{ flex: 1 }}>
+                <Text
                   className="text-gray-400"
                   style={{
                     fontSize: 13,
@@ -419,8 +412,8 @@ const MessageFeeHistoryScreen = () => {
                   }}
                 >
                   To
-                </StyledText>
-                <StyledView
+                </Text>
+                <View
                   style={{
                     backgroundColor: "#1C1C1E",
                     borderRadius: 12,
@@ -431,7 +424,7 @@ const MessageFeeHistoryScreen = () => {
                     justifyContent: "space-between",
                   }}
                 >
-                  <StyledText
+                  <Text
                     className="text-gray-400"
                     style={{
                       fontSize: 14,
@@ -439,18 +432,18 @@ const MessageFeeHistoryScreen = () => {
                     }}
                   >
                     {toDate}
-                  </StyledText>
+                  </Text>
                   <Calendar size={20} color="#555E67" />
-                </StyledView>
-              </StyledView>
-            </StyledView>
+                </View>
+              </View>
+            </View>
 
             {/* Period Buttons */}
-            <StyledView
+            <View
               style={{ flexDirection: "row", gap: 12, marginBottom: 24 }}
             >
               {["Today", "This Week", "This Month"].map((period) => (
-                <StyledTouchableOpacity
+                <TouchableOpacity
                   key={period}
                   onPress={() => setSelectedPeriod(period)}
                   style={{
@@ -463,7 +456,7 @@ const MessageFeeHistoryScreen = () => {
                       selectedPeriod === period ? "#FCCD34" : "transparent",
                   }}
                 >
-                  <StyledText
+                  <Text
                     style={{
                       color: selectedPeriod === period ? "#FCCD34" : "#555E67",
                       fontSize: 14,
@@ -471,13 +464,13 @@ const MessageFeeHistoryScreen = () => {
                     }}
                   >
                     {period}
-                  </StyledText>
-                </StyledTouchableOpacity>
+                  </Text>
+                </TouchableOpacity>
               ))}
-            </StyledView>
+            </View>
 
             {/* Payment Source */}
-            <StyledText
+            <Text
               className="text-gray-400"
               style={{
                 fontSize: 14,
@@ -486,12 +479,12 @@ const MessageFeeHistoryScreen = () => {
               }}
             >
               Transaction Type
-            </StyledText>
-            <StyledView
+            </Text>
+            <View
               style={{ flexDirection: "row", gap: 12, marginBottom: 24 }}
             >
               {["Fee Paid(Deduction)", "Refund(Return)"].map((source) => (
-                <StyledTouchableOpacity
+                <TouchableOpacity
                   key={source}
                   onPress={() => toggleSource(source)}
                   style={{
@@ -506,7 +499,7 @@ const MessageFeeHistoryScreen = () => {
                       : "transparent",
                   }}
                 >
-                  <StyledText
+                  <Text
                     style={{
                       color: selectedSource.includes(source)
                         ? "#FCCD34"
@@ -516,13 +509,13 @@ const MessageFeeHistoryScreen = () => {
                     }}
                   >
                     {source}
-                  </StyledText>
-                </StyledTouchableOpacity>
+                  </Text>
+                </TouchableOpacity>
               ))}
-            </StyledView>
+            </View>
 
             {/* Payment Status */}
-            <StyledText
+            <Text
               className="text-gray-400"
               style={{
                 fontSize: 14,
@@ -531,12 +524,12 @@ const MessageFeeHistoryScreen = () => {
               }}
             >
               Payment Status
-            </StyledText>
-            <StyledView
+            </Text>
+            <View
               style={{ flexDirection: "row", gap: 12, marginBottom: 32 }}
             >
               {["Success", "Failed", "Refunded"].map((status) => (
-                <StyledTouchableOpacity
+                <TouchableOpacity
                   key={status}
                   onPress={() => toggleStatus(status)}
                   style={{
@@ -551,7 +544,7 @@ const MessageFeeHistoryScreen = () => {
                       : "transparent",
                   }}
                 >
-                  <StyledText
+                  <Text
                     style={{
                       color: selectedStatus.includes(status)
                         ? "#FCCD34"
@@ -561,17 +554,17 @@ const MessageFeeHistoryScreen = () => {
                     }}
                   >
                     {status}
-                  </StyledText>
-                </StyledTouchableOpacity>
+                  </Text>
+                </TouchableOpacity>
               ))}
-            </StyledView>
-          </StyledScrollView>
+            </View>
+          </ScrollView>
 
           {/* Apply Button */}
-          <StyledView
+          <View
             style={{ paddingHorizontal: 20, paddingBottom: 34, paddingTop: 20 }}
           >
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setFilterVisible(false)}
               style={{
                 backgroundColor: "#FCCD34",
@@ -581,7 +574,7 @@ const MessageFeeHistoryScreen = () => {
                 justifyContent: "center",
               }}
             >
-              <StyledText
+              <Text
                 className="text-black"
                 style={{
                   fontSize: 17,
@@ -589,10 +582,10 @@ const MessageFeeHistoryScreen = () => {
                 }}
               >
                 Apply Filters({getActiveFiltersCount()})
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledSafeAreaView>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
       </Modal>
 
       {/* Receipt Modal */}
@@ -602,11 +595,11 @@ const MessageFeeHistoryScreen = () => {
         visible={receiptVisible}
         onRequestClose={() => setReceiptVisible(false)}
       >
-        <StyledSafeAreaView className="flex-1 bg-black">
+        <SafeAreaView className="flex-1 bg-black">
           <StatusBar barStyle="light-content" />
 
           {/* Receipt Header */}
-          <StyledView
+          <View
             style={{
               height: 60,
               flexDirection: "row",
@@ -616,7 +609,7 @@ const MessageFeeHistoryScreen = () => {
               position: "relative",
             }}
           >
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setReceiptVisible(false)}
               style={{
                 position: "absolute",
@@ -624,8 +617,8 @@ const MessageFeeHistoryScreen = () => {
               }}
             >
               <ChevronLeft size={28} color="#FFFFFF" strokeWidth={2} />
-            </StyledTouchableOpacity>
-            <StyledText
+            </TouchableOpacity>
+            <Text
               className="text-white"
               style={{
                 fontSize: 18,
@@ -633,12 +626,12 @@ const MessageFeeHistoryScreen = () => {
               }}
             >
               Message Fee Receipt
-            </StyledText>
-          </StyledView>
+            </Text>
+          </View>
 
-          <StyledScrollView style={{ flex: 1, paddingHorizontal: 20 }}>
+          <ScrollView style={{ flex: 1, paddingHorizontal: 20 }}>
             {/* Success Icon */}
-            <StyledView
+            <View
               style={{ alignItems: "center", marginTop: 10, marginBottom: 24 }}
             >
               <Svg width="45" height="45" viewBox="0 0 80 80" fill="none">
@@ -650,8 +643,8 @@ const MessageFeeHistoryScreen = () => {
                     selectedFee?.status === "refunded"
                       ? "#5AC8FA"
                       : selectedFee?.status === "failed"
-                      ? "#FF736F"
-                      : "#FCCD34"
+                        ? "#FF736F"
+                        : "#FCCD34"
                   }
                   strokeWidth="3"
                   fill="transparent"
@@ -682,10 +675,10 @@ const MessageFeeHistoryScreen = () => {
                   />
                 )}
               </Svg>
-            </StyledView>
+            </View>
 
             {/* Amount */}
-            <StyledText
+            <Text
               className="text-white text-center"
               style={{
                 fontSize: 24,
@@ -694,8 +687,8 @@ const MessageFeeHistoryScreen = () => {
               }}
             >
               {selectedFee?.amount}
-            </StyledText>
-            <StyledText
+            </Text>
+            <Text
               className="text-center"
               style={{
                 fontSize: 14,
@@ -704,20 +697,20 @@ const MessageFeeHistoryScreen = () => {
                   selectedFee?.status === "refunded"
                     ? "#5AC8FA"
                     : selectedFee?.status === "failed"
-                    ? "#FF736F"
-                    : "#FCCD34",
+                      ? "#FF736F"
+                      : "#FCCD34",
                 marginBottom: 32,
               }}
             >
               {selectedFee?.status === "refunded"
                 ? "Successfully Refunded"
                 : selectedFee?.status === "failed"
-                ? "Payment Failed"
-                : "Payment Successfully"}
-            </StyledText>
+                  ? "Payment Failed"
+                  : "Payment Successfully"}
+            </Text>
 
             {/* Service Details */}
-            <StyledText
+            <Text
               className="text-white"
               style={{
                 fontSize: 14,
@@ -726,9 +719,9 @@ const MessageFeeHistoryScreen = () => {
               }}
             >
               Service Details
-            </StyledText>
+            </Text>
 
-            <StyledView
+            <View
               style={{
                 backgroundColor: "#1C1C1E",
                 borderRadius: 12,
@@ -736,7 +729,7 @@ const MessageFeeHistoryScreen = () => {
                 marginBottom: 24,
               }}
             >
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
@@ -745,7 +738,7 @@ const MessageFeeHistoryScreen = () => {
                   borderBottomColor: "#2C2C2E",
                 }}
               >
-                <StyledText
+                <Text
                   className="text-[#6F6F70]"
                   style={{
                     fontSize: 14,
@@ -753,8 +746,8 @@ const MessageFeeHistoryScreen = () => {
                   }}
                 >
                   Recipient of Payment:
-                </StyledText>
-                <StyledText
+                </Text>
+                <Text
                   className="text-white"
                   style={{
                     fontSize: 14,
@@ -762,10 +755,10 @@ const MessageFeeHistoryScreen = () => {
                   }}
                 >
                   {selectedFee?.recipient}
-                </StyledText>
-              </StyledView>
+                </Text>
+              </View>
 
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
@@ -774,7 +767,7 @@ const MessageFeeHistoryScreen = () => {
                   borderBottomColor: "#2C2C2E",
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 14,
                     fontFamily: FONT.Regular,
@@ -782,8 +775,8 @@ const MessageFeeHistoryScreen = () => {
                   }}
                 >
                   Fee Type:
-                </StyledText>
-                <StyledText
+                </Text>
+                <Text
                   className="text-white"
                   style={{
                     fontSize: 14,
@@ -791,17 +784,17 @@ const MessageFeeHistoryScreen = () => {
                   }}
                 >
                   {selectedFee?.feeType}
-                </StyledText>
-              </StyledView>
+                </Text>
+              </View>
 
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
                   paddingVertical: 12,
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 14,
                     fontFamily: FONT.Regular,
@@ -809,8 +802,8 @@ const MessageFeeHistoryScreen = () => {
                   }}
                 >
                   Payment Activated By:
-                </StyledText>
-                <StyledText
+                </Text>
+                <Text
                   className="text-white"
                   style={{
                     fontSize: 14,
@@ -818,12 +811,12 @@ const MessageFeeHistoryScreen = () => {
                   }}
                 >
                   {selectedFee?.activatedBy}
-                </StyledText>
-              </StyledView>
-            </StyledView>
+                </Text>
+              </View>
+            </View>
 
             {/* Transaction Info */}
-            <StyledText
+            <Text
               className="text-white"
               style={{
                 fontSize: 14,
@@ -832,9 +825,9 @@ const MessageFeeHistoryScreen = () => {
               }}
             >
               Transaction Info
-            </StyledText>
+            </Text>
 
-            <StyledView
+            <View
               style={{
                 backgroundColor: "#1C1C1E",
                 borderRadius: 12,
@@ -842,7 +835,7 @@ const MessageFeeHistoryScreen = () => {
                 marginBottom: 32,
               }}
             >
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
@@ -851,7 +844,7 @@ const MessageFeeHistoryScreen = () => {
                   borderBottomColor: "#2C2C2E",
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 14,
                     fontFamily: FONT.Regular,
@@ -859,8 +852,8 @@ const MessageFeeHistoryScreen = () => {
                   }}
                 >
                   Paid From:
-                </StyledText>
-                <StyledText
+                </Text>
+                <Text
                   className="text-white"
                   style={{
                     fontSize: 14,
@@ -868,10 +861,10 @@ const MessageFeeHistoryScreen = () => {
                   }}
                 >
                   {selectedFee?.paidFrom}
-                </StyledText>
-              </StyledView>
+                </Text>
+              </View>
 
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
@@ -880,7 +873,7 @@ const MessageFeeHistoryScreen = () => {
                   borderBottomColor: "#2C2C2E",
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 14,
                     fontFamily: FONT.Regular,
@@ -888,8 +881,8 @@ const MessageFeeHistoryScreen = () => {
                   }}
                 >
                   Date/Time:
-                </StyledText>
-                <StyledText
+                </Text>
+                <Text
                   className="text-white"
                   style={{
                     fontSize: 14,
@@ -897,10 +890,10 @@ const MessageFeeHistoryScreen = () => {
                   }}
                 >
                   {selectedFee?.date}
-                </StyledText>
-              </StyledView>
+                </Text>
+              </View>
 
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
@@ -908,7 +901,7 @@ const MessageFeeHistoryScreen = () => {
                   paddingVertical: 12,
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 14,
                     fontFamily: FONT.Regular,
@@ -916,11 +909,11 @@ const MessageFeeHistoryScreen = () => {
                   }}
                 >
                   Transaction ID:
-                </StyledText>
-                <StyledView
+                </Text>
+                <View
                   style={{ flexDirection: "row", alignItems: "center" }}
                 >
-                  <StyledText
+                  <Text
                     className="text-white"
                     style={{
                       fontSize: 14,
@@ -929,16 +922,16 @@ const MessageFeeHistoryScreen = () => {
                     }}
                   >
                     {selectedFee?.transactionId}
-                  </StyledText>
+                  </Text>
                   <Copy size={16} color="#FCCD34" />
-                </StyledView>
-              </StyledView>
-            </StyledView>
-          </StyledScrollView>
+                </View>
+              </View>
+            </View>
+          </ScrollView>
 
           {/* Action Buttons */}
-          <StyledView style={{ paddingHorizontal: 20, paddingBottom: 20 }}>
-            <StyledTouchableOpacity
+          <View style={{ paddingHorizontal: 20, paddingBottom: 20 }}>
+            <TouchableOpacity
               style={{
                 backgroundColor: "#FCCD34",
                 borderRadius: 12,
@@ -948,7 +941,7 @@ const MessageFeeHistoryScreen = () => {
                 marginBottom: 8,
               }}
             >
-              <StyledText
+              <Text
                 className="text-black"
                 style={{
                   fontSize: 16,
@@ -956,10 +949,10 @@ const MessageFeeHistoryScreen = () => {
                 }}
               >
                 Share Receipt
-              </StyledText>
-            </StyledTouchableOpacity>
+              </Text>
+            </TouchableOpacity>
 
-            <StyledTouchableOpacity
+            <TouchableOpacity
               style={{
                 backgroundColor: "transparent",
                 borderRadius: 12,
@@ -970,7 +963,7 @@ const MessageFeeHistoryScreen = () => {
                 justifyContent: "center",
               }}
             >
-              <StyledText
+              <Text
                 className="text-white"
                 style={{
                   fontSize: 16,
@@ -978,12 +971,12 @@ const MessageFeeHistoryScreen = () => {
                 }}
               >
                 Get Support
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledSafeAreaView>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
       </Modal>
-    </StyledSafeAreaView>
+    </SafeAreaView>
   );
 };
 

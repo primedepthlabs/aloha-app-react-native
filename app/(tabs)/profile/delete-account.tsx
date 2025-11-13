@@ -12,7 +12,6 @@ import {
   Dimensions,
   Image,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft } from "lucide-react-native";
 import {
   useFonts,
@@ -22,13 +21,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledScrollView = styled(ScrollView);
-const StyledTextInput = styled(TextInput);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -53,7 +45,6 @@ const DeleteAccountScreen = () => {
   const [successModalVisible, setSuccessModalVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Verification code state
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef<Array<TextInput | null>>([]);
 
@@ -70,7 +61,6 @@ const DeleteAccountScreen = () => {
     newCode[index] = text;
     setCode(newCode);
 
-    // Auto-focus next input
     if (text && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -94,9 +84,7 @@ const DeleteAccountScreen = () => {
   const handleVerifyAndDelete = async () => {
     setIsDeleting(true);
     try {
-      // Simulate API call to verify code and delete account
       await new Promise((res) => setTimeout(res, 1000));
-
       setVerificationModalVisible(false);
       setSuccessModalVisible(true);
     } catch (e) {
@@ -107,18 +95,17 @@ const DeleteAccountScreen = () => {
   };
 
   const handleResendCode = () => {
-    // Implement resend code logic
     console.log("Resending code...");
   };
 
   const isCodeComplete = code.every((digit) => digit.length === 1);
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <StyledView
+      <View
         style={{
           height: 60,
           flexDirection: "row",
@@ -128,7 +115,7 @@ const DeleteAccountScreen = () => {
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.back()}
           style={{
             position: "absolute",
@@ -140,8 +127,8 @@ const DeleteAccountScreen = () => {
           }}
         >
           <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
+        </TouchableOpacity>
+        <Text
           className="text-white"
           style={{
             fontSize: 18,
@@ -149,10 +136,10 @@ const DeleteAccountScreen = () => {
           }}
         >
           Delete Account
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
-      <StyledScrollView
+      <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
           paddingHorizontal: 24,
@@ -160,7 +147,7 @@ const DeleteAccountScreen = () => {
           paddingBottom: 40,
         }}
       >
-        <StyledText
+        <Text
           style={{
             fontSize: 15,
             fontFamily: FONT.Regular,
@@ -172,10 +159,10 @@ const DeleteAccountScreen = () => {
           Any outstanding orders on your account will be cancelled. You will no
           longer be able to use any credits in your account or access content
           such as your Direct Messages.
-        </StyledText>
+        </Text>
 
         {/* Delete Button */}
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={handleDeleteClick}
           style={{
             backgroundColor: "#FCCD34",
@@ -186,7 +173,7 @@ const DeleteAccountScreen = () => {
             marginBottom: 16,
           }}
         >
-          <StyledText
+          <Text
             style={{
               fontSize: 18,
               fontFamily: FONT.SemiBold,
@@ -194,11 +181,11 @@ const DeleteAccountScreen = () => {
             }}
           >
             Delete
-          </StyledText>
-        </StyledTouchableOpacity>
+          </Text>
+        </TouchableOpacity>
 
         {/* Cancel Button */}
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.back()}
           style={{
             backgroundColor: "#1C1C1E",
@@ -208,7 +195,7 @@ const DeleteAccountScreen = () => {
             justifyContent: "center",
           }}
         >
-          <StyledText
+          <Text
             style={{
               fontSize: 18,
               fontFamily: FONT.SemiBold,
@@ -216,9 +203,9 @@ const DeleteAccountScreen = () => {
             }}
           >
             Cancel
-          </StyledText>
-        </StyledTouchableOpacity>
-      </StyledScrollView>
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
 
       {/* Confirmation Modal */}
       <Modal
@@ -227,7 +214,7 @@ const DeleteAccountScreen = () => {
         visible={confirmModalVisible}
         onRequestClose={() => setConfirmModalVisible(false)}
       >
-        <StyledView
+        <View
           style={{
             flex: 1,
             backgroundColor: "rgba(0, 0, 0, 0.7)",
@@ -236,7 +223,7 @@ const DeleteAccountScreen = () => {
             paddingHorizontal: 40,
           }}
         >
-          <StyledView
+          <View
             style={{
               backgroundColor: "#2C2C2E",
               borderRadius: 20,
@@ -245,7 +232,7 @@ const DeleteAccountScreen = () => {
               maxWidth: 320,
             }}
           >
-            <StyledText
+            <Text
               className="text-white text-center"
               style={{
                 fontSize: 16,
@@ -255,9 +242,9 @@ const DeleteAccountScreen = () => {
               }}
             >
               Are you sure you want to{"\n"}Delete your account?
-            </StyledText>
+            </Text>
 
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={handleConfirmDelete}
               style={{
                 paddingVertical: 12,
@@ -266,7 +253,7 @@ const DeleteAccountScreen = () => {
                 alignItems: "center",
               }}
             >
-              <StyledText
+              <Text
                 className="text-center"
                 style={{
                   fontSize: 16,
@@ -275,17 +262,17 @@ const DeleteAccountScreen = () => {
                 }}
               >
                 Delete
-              </StyledText>
-            </StyledTouchableOpacity>
+              </Text>
+            </TouchableOpacity>
 
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setConfirmModalVisible(false)}
               style={{
                 paddingVertical: 12,
                 alignItems: "center",
               }}
             >
-              <StyledText
+              <Text
                 className="text-white text-center"
                 style={{
                   fontSize: 16,
@@ -293,10 +280,10 @@ const DeleteAccountScreen = () => {
                 }}
               >
                 Cancel
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledView>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
 
       {/* Verification Code Modal */}
@@ -307,11 +294,11 @@ const DeleteAccountScreen = () => {
         onRequestClose={() => setVerificationModalVisible(false)}
         presentationStyle="overFullScreen"
       >
-        <StyledSafeAreaView className="flex-1 bg-black">
+        <SafeAreaView className="flex-1 bg-black">
           <StatusBar barStyle="light-content" />
 
           {/* Header */}
-          <StyledView
+          <View
             style={{
               height: 60,
               flexDirection: "row",
@@ -321,7 +308,7 @@ const DeleteAccountScreen = () => {
               position: "relative",
             }}
           >
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setVerificationModalVisible(false)}
               style={{
                 position: "absolute",
@@ -333,8 +320,8 @@ const DeleteAccountScreen = () => {
               }}
             >
               <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-            </StyledTouchableOpacity>
-            <StyledText
+            </TouchableOpacity>
+            <Text
               className="text-white"
               style={{
                 fontSize: 18,
@@ -342,10 +329,10 @@ const DeleteAccountScreen = () => {
               }}
             >
               Confirm Account Deletion
-            </StyledText>
-          </StyledView>
+            </Text>
+          </View>
 
-          <StyledScrollView
+          <ScrollView
             style={{ flex: 1 }}
             contentContainerStyle={{
               paddingHorizontal: 24,
@@ -353,7 +340,7 @@ const DeleteAccountScreen = () => {
               paddingBottom: 40,
             }}
           >
-            <StyledText
+            <Text
               style={{
                 fontSize: 24,
                 fontFamily: FONT.SemiBold,
@@ -363,9 +350,9 @@ const DeleteAccountScreen = () => {
               }}
             >
               Enter verification Code
-            </StyledText>
+            </Text>
 
-            <StyledText
+            <Text
               style={{
                 fontSize: 14,
                 fontFamily: FONT.Regular,
@@ -377,15 +364,15 @@ const DeleteAccountScreen = () => {
             >
               To ensure security, we have sent a 6-digit code to your registered
               number:{" "}
-              <StyledText
+              <Text
                 style={{ color: "#FFFFFF", fontFamily: FONT.Regular }}
               >
                 +995 598 *** 323
-              </StyledText>
-            </StyledText>
+              </Text>
+            </Text>
 
             {/* Code Input Boxes */}
-            <StyledView
+            <View
               style={{
                 flexDirection: "row",
                 justifyContent: "center",
@@ -394,7 +381,7 @@ const DeleteAccountScreen = () => {
               }}
             >
               {code.map((digit, index) => (
-                <StyledView
+                <View
                   key={index}
                   style={{
                     width: 48,
@@ -407,7 +394,7 @@ const DeleteAccountScreen = () => {
                     justifyContent: "center",
                   }}
                 >
-                  <StyledTextInput
+                  <TextInput
                     ref={(ref) => (inputRefs.current[index] = ref)}
                     value={digit}
                     onChangeText={(text) => handleCodeChange(text, index)}
@@ -423,12 +410,12 @@ const DeleteAccountScreen = () => {
                       height: "100%",
                     }}
                   />
-                </StyledView>
+                </View>
               ))}
-            </StyledView>
+            </View>
 
             {/* Confirm Deletion Button */}
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={handleVerifyAndDelete}
               disabled={!isCodeComplete || isDeleting}
               style={{
@@ -445,7 +432,7 @@ const DeleteAccountScreen = () => {
               {isDeleting ? (
                 <ActivityIndicator color="#000000" />
               ) : (
-                <StyledText
+                <Text
                   style={{
                     fontSize: 18,
                     fontFamily: FONT.SemiBold,
@@ -453,19 +440,19 @@ const DeleteAccountScreen = () => {
                   }}
                 >
                   Confirm Deletion
-                </StyledText>
+                </Text>
               )}
-            </StyledTouchableOpacity>
+            </TouchableOpacity>
 
             {/* Resend Code */}
-            <StyledView
+            <View
               style={{
                 flexDirection: "row",
                 justifyContent: "center",
                 alignItems: "center",
               }}
             >
-              <StyledText
+              <Text
                 style={{
                   fontSize: 14,
                   fontFamily: FONT.Regular,
@@ -473,9 +460,9 @@ const DeleteAccountScreen = () => {
                 }}
               >
                 I didn't receive a code{" "}
-              </StyledText>
-              <StyledTouchableOpacity onPress={handleResendCode}>
-                <StyledText
+              </Text>
+              <TouchableOpacity onPress={handleResendCode}>
+                <Text
                   style={{
                     fontSize: 14,
                     fontFamily: FONT.SemiBold,
@@ -483,11 +470,11 @@ const DeleteAccountScreen = () => {
                   }}
                 >
                   Resend
-                </StyledText>
-              </StyledTouchableOpacity>
-            </StyledView>
-          </StyledScrollView>
-        </StyledSafeAreaView>
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
       </Modal>
 
       {/* Success Modal */}
@@ -497,7 +484,7 @@ const DeleteAccountScreen = () => {
         animationType="fade"
         onRequestClose={() => {}}
       >
-        <StyledView
+        <View
           style={{
             flex: 1,
             backgroundColor: "#000000",
@@ -506,8 +493,8 @@ const DeleteAccountScreen = () => {
             paddingHorizontal: 20,
           }}
         >
-          <StyledView style={{ alignItems: "center", width: "100%" }}>
-            <StyledView
+          <View style={{ alignItems: "center", width: "100%" }}>
+            <View
               style={{
                 width: 120,
                 height: 120,
@@ -521,9 +508,9 @@ const DeleteAccountScreen = () => {
                 style={{ width: 120, height: 120 }}
                 resizeMode="contain"
               />
-            </StyledView>
+            </View>
 
-            <StyledText
+            <Text
               style={{
                 fontSize: 24,
                 fontFamily: FONT.SemiBold,
@@ -533,9 +520,9 @@ const DeleteAccountScreen = () => {
               }}
             >
               Account Deleted{"\n"}Successfully!
-            </StyledText>
+            </Text>
 
-            <StyledText
+            <Text
               style={{
                 fontSize: 15,
                 fontFamily: FONT.Regular,
@@ -547,13 +534,11 @@ const DeleteAccountScreen = () => {
             >
               Your account has been permanently{"\n"}deleted. We're sad to see
               you go.
-            </StyledText>
+            </Text>
 
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => {
                 setSuccessModalVisible(false);
-                // Navigate to login or onboarding screen
-                // router.replace("/login");
               }}
               style={{
                 backgroundColor: "#FCCD34",
@@ -564,7 +549,7 @@ const DeleteAccountScreen = () => {
                 borderRadius: 28,
               }}
             >
-              <StyledText
+              <Text
                 style={{
                   fontSize: 18,
                   fontFamily: FONT.SemiBold,
@@ -572,12 +557,12 @@ const DeleteAccountScreen = () => {
                 }}
               >
                 Done
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledView>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
-    </StyledSafeAreaView>
+    </SafeAreaView>
   );
 };
 

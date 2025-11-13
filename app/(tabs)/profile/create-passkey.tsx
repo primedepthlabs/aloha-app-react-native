@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -11,7 +11,6 @@ import {
   Image,
   ScrollView,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft, X } from "lucide-react-native";
 import {
   useFonts,
@@ -21,11 +20,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { useRouter } from "expo-router";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -45,7 +39,7 @@ const PasskeyScreen = () => {
     Poppins_700Bold,
   });
 
-  const [step, setStep] = useState(1); // 1: Info, 2: Confirmation Modal, 3: Face ID, 4: Success
+  const [step, setStep] = useState(1);
   const [confirmationModalVisible, setConfirmationModalVisible] =
     useState(false);
   const [faceIdModalVisible, setFaceIdModalVisible] = useState(false);
@@ -78,11 +72,11 @@ const PasskeyScreen = () => {
   };
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <StyledView
+      <View
         style={{
           height: 60,
           flexDirection: "row",
@@ -92,7 +86,7 @@ const PasskeyScreen = () => {
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.back()}
           style={{
             position: "absolute",
@@ -104,14 +98,14 @@ const PasskeyScreen = () => {
           }}
         >
           <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
+        </TouchableOpacity>
+        <Text
           className="text-white"
           style={{ fontSize: 18, fontFamily: FONT.SemiBold }}
         >
           Passkey
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
       {/* Main Content */}
       <ScrollView
@@ -124,7 +118,7 @@ const PasskeyScreen = () => {
         showsVerticalScrollIndicator={false}
       >
         {/* Icon */}
-        <StyledView
+        <View
           style={{
             width: 40,
             height: 40,
@@ -138,10 +132,10 @@ const PasskeyScreen = () => {
             style={{ width: 56, height: 56 }}
             resizeMode="cover"
           />
-        </StyledView>
+        </View>
 
         {/* Title */}
-        <StyledText
+        <Text
           style={{
             fontSize: 18,
             fontFamily: FONT.Bold,
@@ -152,10 +146,10 @@ const PasskeyScreen = () => {
           }}
         >
           Create a passkey
-        </StyledText>
+        </Text>
 
         {/* Info Sections */}
-        <StyledView
+        <View
           style={{
             width: "100%",
             marginBottom: 32,
@@ -165,8 +159,8 @@ const PasskeyScreen = () => {
           }}
         >
           {/* What are passkeys for? */}
-          <StyledView style={{ marginBottom: 32 }}>
-            <StyledText
+          <View style={{ marginBottom: 32 }}>
+            <Text
               style={{
                 fontSize: 18,
                 fontFamily: FONT.Bold,
@@ -175,8 +169,8 @@ const PasskeyScreen = () => {
               }}
             >
               What are passkeys for?
-            </StyledText>
-            <StyledText
+            </Text>
+            <Text
               style={{
                 fontSize: 15,
                 fontFamily: FONT.Regular,
@@ -186,12 +180,12 @@ const PasskeyScreen = () => {
             >
               Passkeys let you log in quickly and securely using this device's
               fingerprint, face recognition, or PIN.
-            </StyledText>
-          </StyledView>
+            </Text>
+          </View>
 
           {/* Why are passkeys safe? */}
-          <StyledView style={{ marginBottom: 32 }}>
-            <StyledText
+          <View style={{ marginBottom: 32 }}>
+            <Text
               style={{
                 fontSize: 18,
                 fontFamily: FONT.Bold,
@@ -200,8 +194,8 @@ const PasskeyScreen = () => {
               }}
             >
               Why are passkeys safe?
-            </StyledText>
-            <StyledText
+            </Text>
+            <Text
               style={{
                 fontSize: 15,
                 fontFamily: FONT.Regular,
@@ -210,12 +204,12 @@ const PasskeyScreen = () => {
               }}
             >
               Passkeys are encrypted digital keys that cannot be stolen.
-            </StyledText>
-          </StyledView>
+            </Text>
+          </View>
 
           {/* Where are passkeys stored? */}
-          <StyledView>
-            <StyledText
+          <View>
+            <Text
               style={{
                 fontSize: 18,
                 fontFamily: FONT.Bold,
@@ -224,8 +218,8 @@ const PasskeyScreen = () => {
               }}
             >
               Where are passkeys stored?
-            </StyledText>
-            <StyledText
+            </Text>
+            <Text
               style={{
                 fontSize: 15,
                 fontFamily: FONT.Regular,
@@ -235,14 +229,14 @@ const PasskeyScreen = () => {
             >
               Passkeys are saved to your Password Manager/iCloud KeyChain, so
               you can sign in on other devices.
-            </StyledText>
-          </StyledView>
-        </StyledView>
+            </Text>
+          </View>
+        </View>
       </ScrollView>
 
       {/* Continue Button */}
-      <StyledView style={{ paddingHorizontal: 24, paddingBottom: 80 }}>
-        <StyledTouchableOpacity
+      <View style={{ paddingHorizontal: 24, paddingBottom: 80 }}>
+        <TouchableOpacity
           onPress={handleContinueFromInfo}
           style={{
             backgroundColor: "#FCCD34",
@@ -253,7 +247,7 @@ const PasskeyScreen = () => {
             justifyContent: "center",
           }}
         >
-          <StyledText
+          <Text
             style={{
               fontSize: 18,
               fontFamily: FONT.SemiBold,
@@ -261,9 +255,9 @@ const PasskeyScreen = () => {
             }}
           >
             Continue
-          </StyledText>
-        </StyledTouchableOpacity>
-      </StyledView>
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Confirmation Modal */}
       <Modal
@@ -271,7 +265,7 @@ const PasskeyScreen = () => {
         transparent
         animationType="fade"
       >
-        <StyledView
+        <View
           style={{
             flex: 1,
             backgroundColor: "rgba(0, 0, 0, 0.8)",
@@ -279,7 +273,7 @@ const PasskeyScreen = () => {
             justifyContent: "flex-end",
           }}
         >
-          <StyledView
+          <View
             style={{
               backgroundColor: "#1C1C1E",
               borderTopLeftRadius: 24,
@@ -292,7 +286,7 @@ const PasskeyScreen = () => {
             }}
           >
             {/* Close Button */}
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setConfirmationModalVisible(false)}
               style={{
                 position: "absolute",
@@ -305,11 +299,10 @@ const PasskeyScreen = () => {
               }}
             >
               <X size={24} color="#FFFFFF" strokeWidth={2} />
-            </StyledTouchableOpacity>
+            </TouchableOpacity>
 
             {/* Icon */}
-            {/* Icon */}
-            <StyledView
+            <View
               style={{
                 width: 40,
                 height: 40,
@@ -323,10 +316,10 @@ const PasskeyScreen = () => {
                 style={{ width: 56, height: 56 }}
                 resizeMode="cover"
               />
-            </StyledView>
+            </View>
 
             {/* Title */}
-            <StyledText
+            <Text
               style={{
                 fontSize: 20,
                 fontFamily: FONT.Bold,
@@ -336,10 +329,10 @@ const PasskeyScreen = () => {
               }}
             >
               Create passkey?
-            </StyledText>
+            </Text>
 
             {/* Description */}
-            <StyledText
+            <Text
               style={{
                 fontSize: 15,
                 fontFamily: FONT.Regular,
@@ -351,10 +344,10 @@ const PasskeyScreen = () => {
             >
               A passkey for "EllenSmith@mail.com" will be saved in iCloud
               Keychain and available on all your devices.
-            </StyledText>
+            </Text>
 
             {/* Continue Button */}
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={handleContinueFromConfirmation}
               style={{
                 backgroundColor: "#FCCD34",
@@ -365,23 +358,23 @@ const PasskeyScreen = () => {
                 justifyContent: "center",
               }}
             >
-              <StyledText
+              <Text
                 style={{
                   fontSize: 16,
                   fontFamily: FONT.SemiBold,
                   color: "#000000",
                 }}
-              >
+                >
                 Continue
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledView>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
 
       {/* Face ID Modal */}
       <Modal visible={faceIdModalVisible} transparent animationType="fade">
-        <StyledView
+        <View
           style={{
             flex: 1,
             backgroundColor: "rgba(0, 0, 0, 0.95)",
@@ -389,7 +382,7 @@ const PasskeyScreen = () => {
             justifyContent: "center",
           }}
         >
-          <StyledView
+          <View
             style={{
               backgroundColor: "#1C1C1E",
               borderRadius: 24,
@@ -400,7 +393,7 @@ const PasskeyScreen = () => {
             }}
           >
             {/* Face ID Icon */}
-            <StyledView
+            <View
               style={{
                 width: 100,
                 height: 100,
@@ -412,7 +405,7 @@ const PasskeyScreen = () => {
                 marginBottom: 24,
               }}
             >
-              <StyledView
+              <View
                 style={{
                   width: 40,
                   height: 40,
@@ -421,7 +414,7 @@ const PasskeyScreen = () => {
                   marginBottom: 8,
                 }}
               />
-              <StyledView
+              <View
                 style={{
                   width: 60,
                   height: 20,
@@ -432,10 +425,10 @@ const PasskeyScreen = () => {
                   borderColor: "#FFFFFF",
                 }}
               />
-            </StyledView>
+            </View>
 
             {/* Text */}
-            <StyledText
+            <Text
               style={{
                 fontSize: 18,
                 fontFamily: FONT.Medium,
@@ -444,8 +437,8 @@ const PasskeyScreen = () => {
               }}
             >
               Face ID
-            </StyledText>
-          </StyledView>
+            </Text>
+          </View>
 
           {/* Simulate Face ID completion after 2 seconds */}
           {setTimeout(() => {
@@ -453,12 +446,12 @@ const PasskeyScreen = () => {
               handleFaceIdComplete();
             }
           }, 2000)}
-        </StyledView>
+        </View>
       </Modal>
 
       {/* Success Modal */}
       <Modal visible={successModalVisible} transparent animationType="fade">
-        <StyledView
+        <View
           style={{
             flex: 1,
             backgroundColor: "#000000",
@@ -467,8 +460,8 @@ const PasskeyScreen = () => {
             paddingHorizontal: 10,
           }}
         >
-          <StyledView style={{ alignItems: "center", width: "100%" }}>
-            <StyledView
+          <View style={{ alignItems: "center", width: "100%" }}>
+            <View
               style={{
                 width: 82,
                 height: 82,
@@ -482,9 +475,9 @@ const PasskeyScreen = () => {
                 style={{ width: 120, height: 120 }}
                 resizeMode="contain"
               />
-            </StyledView>
+            </View>
 
-            <StyledText
+            <Text
               style={{
                 fontSize: 24,
                 fontFamily: FONT.Medium,
@@ -495,9 +488,9 @@ const PasskeyScreen = () => {
               }}
             >
               Passkey successfully{"\n"}created!
-            </StyledText>
+            </Text>
 
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => {
                 setSuccessModalVisible(false);
                 router.back();
@@ -511,7 +504,7 @@ const PasskeyScreen = () => {
                 borderRadius: 15,
               }}
             >
-              <StyledText
+              <Text
                 style={{
                   fontSize: 15,
                   fontFamily: FONT.Bold,
@@ -519,12 +512,12 @@ const PasskeyScreen = () => {
                 }}
               >
                 Done
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledView>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
-    </StyledSafeAreaView>
+    </SafeAreaView>
   );
 };
 

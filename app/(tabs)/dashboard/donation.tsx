@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
   Switch,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft } from "lucide-react-native";
 import {
   useFonts,
@@ -18,11 +17,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -50,11 +44,11 @@ const Donation = () => {
   }
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <StyledView
+      <View
         style={{
           height: 60,
           flexDirection: "row",
@@ -64,7 +58,7 @@ const Donation = () => {
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.back()}
           style={{
             position: "absolute",
@@ -76,8 +70,9 @@ const Donation = () => {
           }}
         >
           <ChevronLeft size={26} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
+        </TouchableOpacity>
+
+        <Text
           style={{
             fontSize: 15,
             fontFamily: FONT.SemiBold,
@@ -85,13 +80,13 @@ const Donation = () => {
           }}
         >
           Donation Settings
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
-      <StyledView style={{ flex: 1, paddingHorizontal: 20, paddingTop: 30 }}>
+      <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 30 }}>
         {/* Allow Donations Section */}
-        <StyledView style={{ marginBottom: 32 }}>
-          <StyledText
+        <View style={{ marginBottom: 32 }}>
+          <Text
             style={{
               fontSize: 18,
               fontFamily: FONT.Medium,
@@ -100,16 +95,17 @@ const Donation = () => {
             }}
           >
             Allow users to send donations
-          </StyledText>
-          <StyledView
+          </Text>
+
+          <View
             style={{
               flexDirection: "row",
               alignItems: "flex-start",
               justifyContent: "space-between",
             }}
           >
-            <StyledView style={{ flex: 1, marginRight: 16 }}>
-              <StyledText
+            <View style={{ flex: 1, marginRight: 16 }}>
+              <Text
                 style={{
                   fontSize: 12,
                   fontFamily: FONT.Regular,
@@ -118,8 +114,9 @@ const Donation = () => {
                 }}
               >
                 When enabled, users will see a Donation button on your profile.
-              </StyledText>
-            </StyledView>
+              </Text>
+            </View>
+
             <Switch
               trackColor={{ false: "#19191B", true: "#FCCD34" }}
               thumbColor="#FFFFFF"
@@ -127,18 +124,18 @@ const Donation = () => {
               onValueChange={setIsEnabled}
               value={isEnabled}
             />
-          </StyledView>
-        </StyledView>
-      </StyledView>
+          </View>
+        </View>
+      </View>
 
       {/* Save Button */}
-      <StyledView
+      <View
         style={{
           paddingHorizontal: 20,
           paddingBottom: 80,
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           style={{
             width: 332,
             height: 45,
@@ -149,7 +146,7 @@ const Donation = () => {
             alignSelf: "center",
           }}
         >
-          <StyledText
+          <Text
             style={{
               fontSize: 17,
               fontFamily: FONT.SemiBold,
@@ -157,10 +154,10 @@ const Donation = () => {
             }}
           >
             Save changes
-          </StyledText>
-        </StyledTouchableOpacity>
-      </StyledView>
-    </StyledSafeAreaView>
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 };
 

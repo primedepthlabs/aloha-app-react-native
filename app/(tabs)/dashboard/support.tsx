@@ -11,7 +11,6 @@ import {
   TextInput,
   ImageBackground,
 } from "react-native";
-import { styled } from "nativewind";
 import {
   ChevronLeft,
   ChevronDown,
@@ -26,15 +25,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledScrollView = styled(ScrollView);
-const StyledTextInput = styled(TextInput);
-const StyledImage = styled(Image);
-const StyledImageBackground = styled(ImageBackground);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -80,7 +70,7 @@ const Support = () => {
 
   if (!fontsLoaded) {
     return (
-      <View className="flex-1 items-center justify-center bg-black">
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "black" }}>
         <ActivityIndicator color="#FCCD34" />
       </View>
     );
@@ -91,7 +81,7 @@ const Support = () => {
       id: "q1",
       question: "How to add my IBAN?",
       answer:
-        'Go to Dashboard, "Payout method rules, tap "Add Card" or "Change Bank Account", Enter your Full Name on Account and Bank (IBAN), tap "Save bank Account" to confirm.',
+        'Go to Dashboard, "Payout method rules", tap "Add Card" or "Change Bank Account", enter your Details, then Save.',
     },
     {
       id: "q2",
@@ -102,13 +92,13 @@ const Support = () => {
       id: "q3",
       question: "How to set prices for messages?",
       answer:
-        "Go to Dashboard, then Paid Messaging settings to set your message prices.",
+        "Visit Dashboard > Paid Messaging settings to set your message prices.",
     },
     {
       id: "q4",
       question: "How to make my profile visible?",
       answer:
-        "Go to Profile Settings, then Profile Visibility to adjust your visibility settings.",
+        "Go to Profile Settings > Profile Visibility to modify your visibility options.",
     },
   ];
 
@@ -133,13 +123,14 @@ const Support = () => {
     }
   };
 
+  /* --------------------------- CHAT SCREEN --------------------------- */
   if (showChat) {
     return (
-      <StyledSafeAreaView className="flex-1 bg-black">
+      <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
         <StatusBar barStyle="light-content" />
 
         {/* Chat Header */}
-        <StyledView
+        <View
           style={{
             height: 60,
             flexDirection: "row",
@@ -148,7 +139,7 @@ const Support = () => {
             position: "relative",
           }}
         >
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => setShowChat(false)}
             style={{
               width: 40,
@@ -158,65 +149,38 @@ const Support = () => {
             }}
           >
             <ChevronLeft size={26} color="#FFFFFF" strokeWidth={2} />
-          </StyledTouchableOpacity>
+          </TouchableOpacity>
 
-          <StyledView
-            style={{
-              flex: 1,
-              flexDirection: "row",
-              alignItems: "center",
-              marginLeft: 8,
-            }}
-          >
-            <StyledImage
+          <View style={{ flex: 1, flexDirection: "row", alignItems: "center", marginLeft: 8 }}>
+            <Image
               source={require("../../../assets/images/dashboard/support-avatar.png")}
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
-                marginRight: 12,
-              }}
+              style={{ width: 40, height: 40, borderRadius: 20, marginRight: 12 }}
               resizeMode="cover"
             />
-            <StyledText
-              style={{
-                fontSize: 15,
-                fontFamily: FONT.SemiBold,
-                color: "#FFFFFF",
-              }}
-            >
+            <Text style={{ fontSize: 15, fontFamily: FONT.SemiBold, color: "#FFFFFF" }}>
               Support
-            </StyledText>
-          </StyledView>
+            </Text>
+          </View>
 
-          <StyledTouchableOpacity
-            style={{
-              width: 40,
-              height: 40,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
+          <TouchableOpacity style={{ width: 40, height: 40, alignItems: "center", justifyContent: "center" }}>
             <Search size={24} color="#FFFFFF" strokeWidth={2} />
-          </StyledTouchableOpacity>
-        </StyledView>
+          </TouchableOpacity>
+        </View>
 
-        {/* Messages Area */}
-        <StyledImageBackground
+        {/* Chat Background */}
+        <ImageBackground
           source={require("../../../assets/images/chat-background.png")}
-          className="flex-1"
+          style={{ flex: 1 }}
           resizeMode="cover"
         >
-          <StyledScrollView
+          <ScrollView
             ref={scrollViewRef}
-            className="flex-1 px-4 pt-4"
+            style={{ flex: 1, paddingHorizontal: 16, paddingTop: 16 }}
             contentContainerStyle={{ paddingBottom: 20 }}
-            onContentSizeChange={() =>
-              scrollViewRef.current?.scrollToEnd({ animated: true })
-            }
+            onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
           >
             {messages.map((msg) => (
-              <StyledView
+              <View
                 key={msg.id}
                 style={{
                   alignSelf: msg.isSent ? "flex-end" : "flex-start",
@@ -224,7 +188,7 @@ const Support = () => {
                   marginBottom: 12,
                 }}
               >
-                <StyledView
+                <View
                   style={{
                     backgroundColor: msg.isSent ? "#B99F4A" : "#2D2D2F",
                     borderRadius: 16,
@@ -232,7 +196,7 @@ const Support = () => {
                     paddingHorizontal: 16,
                   }}
                 >
-                  <StyledText
+                  <Text
                     style={{
                       color: "white",
                       fontSize: 15,
@@ -241,9 +205,9 @@ const Support = () => {
                     }}
                   >
                     {msg.text}
-                  </StyledText>
+                  </Text>
 
-                  <StyledView
+                  <View
                     style={{
                       flexDirection: "row",
                       justifyContent: "flex-end",
@@ -253,7 +217,7 @@ const Support = () => {
                     }}
                   >
                     {msg.isEdited && (
-                      <StyledText
+                      <Text
                         style={{
                           color: "rgba(255,255,255,0.5)",
                           fontSize: 11,
@@ -261,9 +225,9 @@ const Support = () => {
                         }}
                       >
                         Edited
-                      </StyledText>
+                      </Text>
                     )}
-                    <StyledText
+                    <Text
                       style={{
                         color: "rgba(255,255,255,0.5)",
                         fontSize: 11,
@@ -271,51 +235,37 @@ const Support = () => {
                       }}
                     >
                       {msg.timestamp}
-                    </StyledText>
+                    </Text>
+
                     {msg.isSent && (
-                      <StyledImage
+                      <Image
                         source={require("../../../assets/images/dashboard/double-tick.png")}
-                        style={{
-                          width: 16,
-                          height: 12,
-                          marginLeft: 2,
-                        }}
+                        style={{ width: 16, height: 12, marginLeft: 2 }}
                         resizeMode="contain"
                       />
                     )}
-                  </StyledView>
-                </StyledView>
-              </StyledView>
+                  </View>
+                </View>
+              </View>
             ))}
-          </StyledScrollView>
-        </StyledImageBackground>
+          </ScrollView>
+        </ImageBackground>
 
-        {/* Input Area */}
-        <StyledView
+        {/* Bottom Chat Input */}
+        <View
           style={{
             flexDirection: "row",
             alignItems: "center",
             paddingHorizontal: 16,
             paddingVertical: 50,
             backgroundColor: "#000000",
-
-            borderTopColor: "#2D2D2F",
           }}
         >
-          <StyledTouchableOpacity
-            style={{
-              width: 40,
-              height: 40,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <StyledText style={{ fontSize: 28, color: "#FFFFFF" }}>
-              +
-            </StyledText>
-          </StyledTouchableOpacity>
+          <TouchableOpacity style={{ width: 40, height: 40, alignItems: "center", justifyContent: "center" }}>
+            <Text style={{ fontSize: 28, color: "#FFFFFF" }}>+</Text>
+          </TouchableOpacity>
 
-          <StyledView
+          <View
             style={{
               flex: 1,
               backgroundColor: "#19191B",
@@ -325,7 +275,7 @@ const Support = () => {
               marginHorizontal: 8,
             }}
           >
-            <StyledTextInput
+            <TextInput
               style={{
                 color: "#FFFFFF",
                 fontSize: 15,
@@ -337,9 +287,9 @@ const Support = () => {
               onChangeText={setMessageInput}
               multiline
             />
-          </StyledView>
+          </View>
 
-          <StyledTouchableOpacity
+          <TouchableOpacity
             style={{
               width: 40,
               height: 40,
@@ -350,23 +300,25 @@ const Support = () => {
             }}
             onPress={handleSendMessage}
           >
-            <StyledImage
+            <Image
               source={require("../../../assets/images/dashboard/send-icon.png")}
               style={{ width: 20, height: 20 }}
               resizeMode="contain"
             />
-          </StyledTouchableOpacity>
-        </StyledView>
-      </StyledSafeAreaView>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
     );
   }
 
+  /* -------------------------- FAQ MAIN SCREEN ------------------------ */
+
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <StyledView
+      <View
         style={{
           height: 40,
           flexDirection: "row",
@@ -376,7 +328,7 @@ const Support = () => {
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.back()}
           style={{
             position: "absolute",
@@ -388,8 +340,9 @@ const Support = () => {
           }}
         >
           <ChevronLeft size={26} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
+        </TouchableOpacity>
+
+        <Text
           style={{
             fontSize: 15,
             fontFamily: FONT.SemiBold,
@@ -397,15 +350,15 @@ const Support = () => {
           }}
         >
           Support
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
-      <StyledScrollView
+      <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 30 }}
       >
-        {/* How can we help you? */}
-        <StyledText
+        {/* How can we help? */}
+        <Text
           style={{
             fontSize: 18,
             fontFamily: FONT.Medium,
@@ -414,10 +367,10 @@ const Support = () => {
           }}
         >
           How can we help you?
-        </StyledText>
+        </Text>
 
         {/* Search Bar */}
-        <StyledView
+        <View
           style={{
             backgroundColor: "black",
             borderRadius: 15,
@@ -431,7 +384,7 @@ const Support = () => {
           }}
         >
           <Search size={20} color="#6C6C70" strokeWidth={2} />
-          <StyledTextInput
+          <TextInput
             style={{
               flex: 1,
               marginLeft: 12,
@@ -444,10 +397,10 @@ const Support = () => {
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
-        </StyledView>
+        </View>
 
-        {/* Talk to a support specialist Card */}
-        <StyledTouchableOpacity
+        {/* Contact support card */}
+        <TouchableOpacity
           onPress={() => setShowChat(true)}
           style={{
             width: 332,
@@ -455,21 +408,18 @@ const Support = () => {
             borderRadius: 15,
             marginBottom: 10,
             alignSelf: "center",
+            overflow: "hidden",
           }}
         >
-          <StyledImage
+          <Image
             source={require("../../../assets/images/dashboard/support-specialist.png")}
-            style={{
-              width: "100%",
-              height: "100%",
-              borderRadius: 15,
-            }}
+            style={{ width: "100%", height: "100%" }}
             resizeMode="cover"
           />
-        </StyledTouchableOpacity>
+        </TouchableOpacity>
 
-        {/* Top Questions */}
-        <StyledText
+        {/* Top FAQs */}
+        <Text
           style={{
             fontSize: 18,
             fontFamily: FONT.Medium,
@@ -478,11 +428,10 @@ const Support = () => {
           }}
         >
           Top questions
-        </StyledText>
+        </Text>
 
-        {/* FAQ Items */}
         {faqData.map((faq) => (
-          <StyledView
+          <View
             key={faq.id}
             style={{
               backgroundColor: "black",
@@ -490,10 +439,9 @@ const Support = () => {
               borderColor: "#808080",
               borderRadius: 12,
               marginBottom: 12,
-              overflow: "hidden",
             }}
           >
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => toggleQuestion(faq.id)}
               style={{
                 flexDirection: "row",
@@ -502,7 +450,7 @@ const Support = () => {
                 padding: 16,
               }}
             >
-              <StyledText
+              <Text
                 style={{
                   fontSize: 15,
                   fontFamily: FONT.Medium,
@@ -512,23 +460,18 @@ const Support = () => {
                 }}
               >
                 {faq.question}
-              </StyledText>
+              </Text>
+
               {expandedQuestion === faq.id ? (
                 <ChevronUp size={20} color="#FFFFFF" strokeWidth={2} />
               ) : (
                 <ChevronDown size={20} color="#FFFFFF" strokeWidth={2} />
               )}
-            </StyledTouchableOpacity>
+            </TouchableOpacity>
 
             {expandedQuestion === faq.id && (
-              <StyledView
-                style={{
-                  paddingHorizontal: 16,
-                  paddingBottom: 16,
-                  paddingTop: 0,
-                }}
-              >
-                <StyledText
+              <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+                <Text
                   style={{
                     fontSize: 13,
                     fontFamily: FONT.Regular,
@@ -537,13 +480,13 @@ const Support = () => {
                   }}
                 >
                   {faq.answer}
-                </StyledText>
-              </StyledView>
+                </Text>
+              </View>
             )}
-          </StyledView>
+          </View>
         ))}
-      </StyledScrollView>
-    </StyledSafeAreaView>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 

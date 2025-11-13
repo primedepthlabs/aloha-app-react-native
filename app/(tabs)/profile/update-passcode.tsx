@@ -12,7 +12,6 @@ import {
   TextInput,
   Keyboard,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft } from "lucide-react-native";
 import {
   useFonts,
@@ -22,11 +21,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { useRouter } from "expo-router";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -92,11 +86,11 @@ const UpdatePasscodeScreen = () => {
   const isPasscodeComplete = getCurrentPasscode().every((d) => d !== "");
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <StyledView
+      <View
         style={{
           height: 60,
           flexDirection: "row",
@@ -106,7 +100,7 @@ const UpdatePasscodeScreen = () => {
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => (step > 1 ? setStep(step - 1) : router.back())}
           style={{
             position: "absolute",
@@ -118,17 +112,17 @@ const UpdatePasscodeScreen = () => {
           }}
         >
           <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
+        </TouchableOpacity>
+        <Text
           className="text-white"
           style={{ fontSize: 18, fontFamily: FONT.SemiBold }}
         >
           Update Passcode
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
-      <StyledView style={{ flex: 1, justifyContent: "space-between" }}>
-        <StyledView
+      <View style={{ flex: 1, justifyContent: "space-between" }}>
+        <View
           style={{
             paddingHorizontal: 24,
             paddingTop: 30,
@@ -136,7 +130,7 @@ const UpdatePasscodeScreen = () => {
           }}
         >
           {/* Title */}
-          <StyledText
+          <Text
             style={{
               fontSize: 24,
               fontFamily: FONT.SemiBold,
@@ -149,12 +143,12 @@ const UpdatePasscodeScreen = () => {
             {step === 1
               ? "Enter current\npasscode"
               : step === 2
-              ? "Choose a new 4 digit\npasscode"
-              : "Confirm a new 4 digit\npasscode"}
-          </StyledText>
+                ? "Choose a new 4 digit\npasscode"
+                : "Confirm a new 4 digit\npasscode"}
+          </Text>
 
           {/* Subtitle */}
-          <StyledText
+          <Text
             style={{
               fontSize: 14,
               fontFamily: FONT.Regular,
@@ -166,10 +160,10 @@ const UpdatePasscodeScreen = () => {
             {step === 1
               ? "We need to verify your identity\nbefore choosing a new code"
               : "This will replace your previous\nsecurity code"}
-          </StyledText>
+          </Text>
 
           {/* Passcode Dots with hidden inputs */}
-          <StyledView
+          <View
             style={{
               flexDirection: "row",
               justifyContent: "center",
@@ -179,7 +173,7 @@ const UpdatePasscodeScreen = () => {
             }}
           >
             {getCurrentPasscode().map((digit, index) => (
-              <StyledView
+              <View
                 key={index}
                 style={{
                   width: 60,
@@ -208,7 +202,7 @@ const UpdatePasscodeScreen = () => {
                     fontSize: 28,
                   }}
                 />
-                <StyledText
+                <Text
                   style={{
                     fontSize: 23,
                     fontFamily: FONT.SemiBold,
@@ -217,13 +211,13 @@ const UpdatePasscodeScreen = () => {
                   }}
                 >
                   {digit}
-                </StyledText>
-              </StyledView>
+                </Text>
+              </View>
             ))}
-          </StyledView>
+          </View>
 
           {/* Continue Button */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => {
               if (step === 1 && isPasscodeComplete) setStep(2);
               else if (step === 2 && isPasscodeComplete) setStep(3);
@@ -242,7 +236,7 @@ const UpdatePasscodeScreen = () => {
               opacity: !isPasscodeComplete ? 0.6 : 1,
             }}
           >
-            <StyledText
+            <Text
               style={{
                 fontSize: 18,
                 fontFamily: FONT.SemiBold,
@@ -250,13 +244,13 @@ const UpdatePasscodeScreen = () => {
               }}
             >
               Continue
-            </StyledText>
-          </StyledTouchableOpacity>
+            </Text>
+          </TouchableOpacity>
 
           {/* Forgot Passcode */}
           {step === 1 && (
-            <StyledTouchableOpacity>
-              <StyledText
+            <TouchableOpacity>
+              <Text
                 style={{
                   fontSize: 15,
                   fontFamily: FONT.Regular,
@@ -264,15 +258,15 @@ const UpdatePasscodeScreen = () => {
                 }}
               >
                 Forgot passcode?
-              </StyledText>
-            </StyledTouchableOpacity>
+              </Text>
+            </TouchableOpacity>
           )}
-        </StyledView>
-      </StyledView>
+        </View>
+      </View>
 
       {/* Success Modal */}
       <Modal visible={successModalVisible} transparent animationType="fade">
-        <StyledView
+        <View
           style={{
             flex: 1,
             backgroundColor: "#000000",
@@ -281,8 +275,8 @@ const UpdatePasscodeScreen = () => {
             paddingHorizontal: 10,
           }}
         >
-          <StyledView style={{ alignItems: "center", width: "100%" }}>
-            <StyledView
+          <View style={{ alignItems: "center", width: "100%" }}>
+            <View
               style={{
                 width: 82,
                 height: 82,
@@ -296,9 +290,9 @@ const UpdatePasscodeScreen = () => {
                 style={{ width: 120, height: 120 }}
                 resizeMode="contain"
               />
-            </StyledView>
+            </View>
 
-            <StyledText
+            <Text
               style={{
                 fontSize: 24,
                 fontFamily: FONT.Medium,
@@ -309,9 +303,9 @@ const UpdatePasscodeScreen = () => {
               }}
             >
               Passcode changed{"\n"}successfully
-            </StyledText>
+            </Text>
 
-            <StyledText
+            <Text
               style={{
                 fontSize: 15,
                 fontFamily: FONT.Regular,
@@ -323,9 +317,9 @@ const UpdatePasscodeScreen = () => {
             >
               Your new 4-digit passcode has been{"\n"}updated. You can now use
               it to unlock{"\n"}your application.
-            </StyledText>
+            </Text>
 
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => {
                 setSuccessModalVisible(false);
                 router.back();
@@ -339,7 +333,7 @@ const UpdatePasscodeScreen = () => {
                 borderRadius: 15,
               }}
             >
-              <StyledText
+              <Text
                 style={{
                   fontSize: 15,
                   fontFamily: FONT.Bold,
@@ -347,12 +341,12 @@ const UpdatePasscodeScreen = () => {
                 }}
               >
                 Done
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledView>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
-    </StyledSafeAreaView>
+    </SafeAreaView>
   );
 };
 

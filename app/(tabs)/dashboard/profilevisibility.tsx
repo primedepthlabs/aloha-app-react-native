@@ -9,7 +9,6 @@ import {
   Switch,
   ScrollView,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft } from "lucide-react-native";
 import {
   useFonts,
@@ -19,12 +18,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledScrollView = styled(ScrollView);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -47,18 +40,20 @@ const ProfileVisibility = () => {
 
   if (!fontsLoaded) {
     return (
-      <View className="flex-1 items-center justify-center bg-black">
+      <View
+        style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "black" }}
+      >
         <ActivityIndicator color="#FCCD34" />
       </View>
     );
   }
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <StyledView
+      <View
         style={{
           height: 60,
           flexDirection: "row",
@@ -68,7 +63,7 @@ const ProfileVisibility = () => {
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.back()}
           style={{
             position: "absolute",
@@ -80,8 +75,9 @@ const ProfileVisibility = () => {
           }}
         >
           <ChevronLeft size={26} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
+        </TouchableOpacity>
+
+        <Text
           style={{
             fontSize: 15,
             fontFamily: FONT.SemiBold,
@@ -89,16 +85,16 @@ const ProfileVisibility = () => {
           }}
         >
           Profile Visibility
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
-      <StyledScrollView
+      <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 30 }}
       >
         {/* Global Visibility Section */}
-        <StyledView style={{ marginBottom: 32 }}>
-          <StyledText
+        <View style={{ marginBottom: 32 }}>
+          <Text
             style={{
               fontSize: 18,
               fontFamily: FONT.Medium,
@@ -107,29 +103,27 @@ const ProfileVisibility = () => {
             }}
           >
             Global visibility
-          </StyledText>
+          </Text>
 
           {/* Make Profile Discoverable Toggle */}
-          <StyledView
+          <View
             style={{
               flexDirection: "row",
               alignItems: "flex-start",
               justifyContent: "space-between",
-              marginBottom: 0,
             }}
           >
-            <StyledView style={{ flex: 1, marginRight: 16 }}>
-              <StyledText
+            <View style={{ flex: 1, marginRight: 16 }}>
+              <Text
                 style={{
                   fontSize: 15,
                   fontFamily: FONT.Regular,
                   color: "#FFFFFF",
-                  marginBottom: 0,
                 }}
               >
                 Make profile discoverable
-              </StyledText>
-              <StyledText
+              </Text>
+              <Text
                 style={{
                   fontSize: 13,
                   fontFamily: FONT.Regular,
@@ -137,22 +131,23 @@ const ProfileVisibility = () => {
                 }}
               >
                 Make your profile discoverable to others
-              </StyledText>
-            </StyledView>
+              </Text>
+            </View>
+
             <Switch
               trackColor={{ false: "#19191B", true: "#FCCD34" }}
               thumbColor="#FFFFFF"
               ios_backgroundColor="#19191B"
-              onValueChange={setMakeDiscoverable}
               value={makeDiscoverable}
+              onValueChange={setMakeDiscoverable}
               style={{ marginTop: 4 }}
             />
-          </StyledView>
-        </StyledView>
+          </View>
+        </View>
 
         {/* Discoverability Settings Section */}
-        <StyledView style={{ marginBottom: 32 }}>
-          <StyledText
+        <View style={{ marginBottom: 32 }}>
+          <Text
             style={{
               fontSize: 18,
               fontFamily: FONT.Medium,
@@ -161,10 +156,10 @@ const ProfileVisibility = () => {
             }}
           >
             Discoverability settings
-          </StyledText>
+          </Text>
 
-          {/* Show Profile in Search Results Toggle */}
-          <StyledView
+          {/* Show In Search Toggle */}
+          <View
             style={{
               flexDirection: "row",
               alignItems: "flex-start",
@@ -172,8 +167,8 @@ const ProfileVisibility = () => {
               marginBottom: 8,
             }}
           >
-            <StyledView style={{ flex: 1, marginRight: 16 }}>
-              <StyledText
+            <View style={{ flex: 1, marginRight: 16 }}>
+              <Text
                 style={{
                   fontSize: 15,
                   fontFamily: FONT.Regular,
@@ -182,8 +177,8 @@ const ProfileVisibility = () => {
                 }}
               >
                 Show profile in search results
-              </StyledText>
-              <StyledText
+              </Text>
+              <Text
                 style={{
                   fontSize: 13,
                   fontFamily: FONT.Regular,
@@ -191,22 +186,23 @@ const ProfileVisibility = () => {
                 }}
               >
                 Show your profile in search results
-              </StyledText>
-            </StyledView>
+              </Text>
+            </View>
+
             <Switch
               trackColor={{ false: "#19191B", true: "#FCCD34" }}
               thumbColor="#FFFFFF"
               ios_backgroundColor="#19191B"
-              onValueChange={setShowInSearch}
               value={showInSearch}
+              onValueChange={setShowInSearch}
               style={{ marginTop: 4 }}
             />
-          </StyledView>
-        </StyledView>
+          </View>
+        </View>
 
         {/* Current Status Section */}
-        <StyledView style={{ marginBottom: 32 }}>
-          <StyledText
+        <View style={{ marginBottom: 32 }}>
+          <Text
             style={{
               fontSize: 18,
               fontFamily: FONT.Medium,
@@ -215,29 +211,27 @@ const ProfileVisibility = () => {
             }}
           >
             Current status
-          </StyledText>
+          </Text>
 
-          {/* Online Status Toggle */}
-          <StyledView
+          {/* Online Toggle */}
+          <View
             style={{
               flexDirection: "row",
               alignItems: "flex-start",
               justifyContent: "space-between",
-              marginBottom: 0,
             }}
           >
-            <StyledView style={{ flex: 1, marginRight: 16 }}>
-              <StyledText
+            <View style={{ flex: 1, marginRight: 16 }}>
+              <Text
                 style={{
                   fontSize: 15,
                   fontFamily: FONT.Regular,
                   color: "#FFFFFF",
-                  marginBottom: 0,
                 }}
               >
                 Online
-              </StyledText>
-              <StyledText
+              </Text>
+              <Text
                 style={{
                   fontSize: 13,
                   fontFamily: FONT.Regular,
@@ -245,28 +239,24 @@ const ProfileVisibility = () => {
                 }}
               >
                 Your current status is visible to others
-              </StyledText>
-            </StyledView>
+              </Text>
+            </View>
+
             <Switch
               trackColor={{ false: "#19191B", true: "#FCCD34" }}
               thumbColor="#FFFFFF"
               ios_backgroundColor="#19191B"
-              onValueChange={setShowOnlineStatus}
               value={showOnlineStatus}
+              onValueChange={setShowOnlineStatus}
               style={{ marginTop: 4 }}
             />
-          </StyledView>
-        </StyledView>
-      </StyledScrollView>
+          </View>
+        </View>
+      </ScrollView>
 
       {/* Save Button */}
-      <StyledView
-        style={{
-          paddingHorizontal: 20,
-          paddingBottom: 80,
-        }}
-      >
-        <StyledTouchableOpacity
+      <View style={{ paddingHorizontal: 20, paddingBottom: 80 }}>
+        <TouchableOpacity
           style={{
             width: 332,
             height: 45,
@@ -277,7 +267,7 @@ const ProfileVisibility = () => {
             alignSelf: "center",
           }}
         >
-          <StyledText
+          <Text
             style={{
               fontSize: 17,
               fontFamily: FONT.SemiBold,
@@ -285,10 +275,10 @@ const ProfileVisibility = () => {
             }}
           >
             Save changes
-          </StyledText>
-        </StyledTouchableOpacity>
-      </StyledView>
-    </StyledSafeAreaView>
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 };
 

@@ -10,7 +10,6 @@ import {
   Modal,
   Image,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft, Calendar, Copy } from "lucide-react-native";
 import { Svg, Circle, Path } from "react-native-svg";
 import {
@@ -21,12 +20,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledScrollView = styled(ScrollView);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -47,7 +40,6 @@ const CallHistoryScreen = () => {
   const [receiptVisible, setReceiptVisible] = useState(false);
   const [selectedCall, setSelectedCall] = useState<any>(null);
 
-  // Filter states
   const [fromDate, setFromDate] = useState("09-10-2025");
   const [toDate, setToDate] = useState("09-11-2025");
   const [selectedPeriod, setSelectedPeriod] = useState("This Month");
@@ -142,7 +134,7 @@ const CallHistoryScreen = () => {
   };
 
   const CallItem = ({ call }: any) => (
-    <StyledTouchableOpacity
+    <TouchableOpacity
       onPress={() => {
         setSelectedCall(call);
         setReceiptVisible(true);
@@ -156,7 +148,7 @@ const CallHistoryScreen = () => {
         alignItems: "center",
       }}
     >
-      <StyledView
+      <View
         style={{
           marginRight: 12,
           width: 40,
@@ -178,10 +170,10 @@ const CallHistoryScreen = () => {
           style={{ width: 28, height: 28 }}
           resizeMode="contain"
         />
-      </StyledView>
+      </View>
 
-      <StyledView style={{ flex: 1 }}>
-        <StyledText
+      <View style={{ flex: 1 }}>
+        <Text
           className="text-white"
           style={{
             fontSize: 16,
@@ -190,8 +182,8 @@ const CallHistoryScreen = () => {
           }}
         >
           Call with ({call.recipient})
-        </StyledText>
-        <StyledText
+        </Text>
+        <Text
           className="text-gray-400"
           style={{
             fontSize: 13,
@@ -199,10 +191,10 @@ const CallHistoryScreen = () => {
           }}
         >
           {call.date}
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
-      <StyledText
+      <Text
         style={{
           fontSize: 16,
           fontFamily: FONT.SemiBold,
@@ -210,16 +202,16 @@ const CallHistoryScreen = () => {
         }}
       >
         {call.amount}
-      </StyledText>
-    </StyledTouchableOpacity>
+      </Text>
+    </TouchableOpacity>
   );
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <StyledView
+      <View
         style={{
           height: 60,
           flexDirection: "row",
@@ -229,7 +221,7 @@ const CallHistoryScreen = () => {
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.back()}
           style={{
             position: "absolute",
@@ -241,8 +233,8 @@ const CallHistoryScreen = () => {
           }}
         >
           <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
+        </TouchableOpacity>
+        <Text
           className="text-white"
           style={{
             fontSize: 18,
@@ -250,8 +242,8 @@ const CallHistoryScreen = () => {
           }}
         >
           Call History
-        </StyledText>
-        <StyledTouchableOpacity
+        </Text>
+        <TouchableOpacity
           onPress={() => setFilterVisible(true)}
           style={{
             position: "absolute",
@@ -270,11 +262,11 @@ const CallHistoryScreen = () => {
               strokeLinecap="round"
             />
           </Svg>
-        </StyledTouchableOpacity>
-      </StyledView>
+        </TouchableOpacity>
+      </View>
 
       {/* Calls List */}
-      <StyledScrollView
+      <ScrollView
         style={{
           flex: 1,
           paddingHorizontal: 20,
@@ -284,7 +276,7 @@ const CallHistoryScreen = () => {
         {calls.map((call) => (
           <CallItem key={call.id} call={call} />
         ))}
-      </StyledScrollView>
+      </ScrollView>
 
       {/* Filter Modal */}
       <Modal
@@ -293,11 +285,11 @@ const CallHistoryScreen = () => {
         visible={filterVisible}
         onRequestClose={() => setFilterVisible(false)}
       >
-        <StyledSafeAreaView className="flex-1 bg-black">
+        <SafeAreaView className="flex-1 bg-black">
           <StatusBar barStyle="light-content" />
 
           {/* Filter Header */}
-          <StyledView
+          <View
             style={{
               height: 60,
               flexDirection: "row",
@@ -307,7 +299,7 @@ const CallHistoryScreen = () => {
               position: "relative",
             }}
           >
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setFilterVisible(false)}
               style={{
                 position: "absolute",
@@ -315,8 +307,8 @@ const CallHistoryScreen = () => {
               }}
             >
               <ChevronLeft size={28} color="#FFFFFF" strokeWidth={2} />
-            </StyledTouchableOpacity>
-            <StyledText
+            </TouchableOpacity>
+            <Text
               className="text-white"
               style={{
                 fontSize: 20,
@@ -324,8 +316,8 @@ const CallHistoryScreen = () => {
               }}
             >
               Filter
-            </StyledText>
-            <StyledTouchableOpacity
+            </Text>
+            <TouchableOpacity
               onPress={() => {
                 setSelectedPeriod("");
                 setSelectedCallType([]);
@@ -336,7 +328,7 @@ const CallHistoryScreen = () => {
                 right: 20,
               }}
             >
-              <StyledText
+              <Text
                 style={{
                   color: "#FCCD34",
                   fontSize: 16,
@@ -344,13 +336,13 @@ const CallHistoryScreen = () => {
                 }}
               >
                 Reset
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
+              </Text>
+            </TouchableOpacity>
+          </View>
 
-          <StyledScrollView style={{ flex: 1, paddingHorizontal: 20 }}>
+          <ScrollView style={{ flex: 1, paddingHorizontal: 20 }}>
             {/* Date Range */}
-            <StyledText
+            <Text
               className="text-gray-400"
               style={{
                 fontSize: 14,
@@ -360,13 +352,13 @@ const CallHistoryScreen = () => {
               }}
             >
               Date Range
-            </StyledText>
+            </Text>
 
-            <StyledView
+            <View
               style={{ flexDirection: "row", gap: 12, marginBottom: 16 }}
             >
-              <StyledView style={{ flex: 1 }}>
-                <StyledText
+              <View style={{ flex: 1 }}>
+                <Text
                   className="text-gray-400"
                   style={{
                     fontSize: 13,
@@ -375,8 +367,8 @@ const CallHistoryScreen = () => {
                   }}
                 >
                   From
-                </StyledText>
-                <StyledView
+                </Text>
+                <View
                   style={{
                     backgroundColor: "#1C1C1E",
                     borderRadius: 12,
@@ -389,7 +381,7 @@ const CallHistoryScreen = () => {
                     justifyContent: "space-between",
                   }}
                 >
-                  <StyledText
+                  <Text
                     className="text-white"
                     style={{
                       fontSize: 14,
@@ -397,13 +389,13 @@ const CallHistoryScreen = () => {
                     }}
                   >
                     {fromDate}
-                  </StyledText>
+                  </Text>
                   <Calendar size={20} color="#555E67" />
-                </StyledView>
-              </StyledView>
+                </View>
+              </View>
 
-              <StyledView style={{ flex: 1 }}>
-                <StyledText
+              <View style={{ flex: 1 }}>
+                <Text
                   className="text-gray-400"
                   style={{
                     fontSize: 13,
@@ -412,8 +404,8 @@ const CallHistoryScreen = () => {
                   }}
                 >
                   To
-                </StyledText>
-                <StyledView
+                </Text>
+                <View
                   style={{
                     backgroundColor: "#1C1C1E",
                     borderRadius: 12,
@@ -424,7 +416,7 @@ const CallHistoryScreen = () => {
                     justifyContent: "space-between",
                   }}
                 >
-                  <StyledText
+                  <Text
                     className="text-gray-400"
                     style={{
                       fontSize: 14,
@@ -432,18 +424,18 @@ const CallHistoryScreen = () => {
                     }}
                   >
                     {toDate}
-                  </StyledText>
+                  </Text>
                   <Calendar size={20} color="#555E67" />
-                </StyledView>
-              </StyledView>
-            </StyledView>
+                </View>
+              </View>
+            </View>
 
             {/* Period Buttons */}
-            <StyledView
+            <View
               style={{ flexDirection: "row", gap: 12, marginBottom: 24 }}
             >
               {["Today", "This Week", "This Month"].map((period) => (
-                <StyledTouchableOpacity
+                <TouchableOpacity
                   key={period}
                   onPress={() => setSelectedPeriod(period)}
                   style={{
@@ -456,7 +448,7 @@ const CallHistoryScreen = () => {
                       selectedPeriod === period ? "#FCCD34" : "transparent",
                   }}
                 >
-                  <StyledText
+                  <Text
                     style={{
                       color: selectedPeriod === period ? "#FCCD34" : "#555E67",
                       fontSize: 14,
@@ -464,13 +456,13 @@ const CallHistoryScreen = () => {
                     }}
                   >
                     {period}
-                  </StyledText>
-                </StyledTouchableOpacity>
+                  </Text>
+                </TouchableOpacity>
               ))}
-            </StyledView>
+            </View>
 
             {/* Call Type */}
-            <StyledText
+            <Text
               className="text-gray-400"
               style={{
                 fontSize: 14,
@@ -479,12 +471,12 @@ const CallHistoryScreen = () => {
               }}
             >
               Call Type
-            </StyledText>
-            <StyledView
+            </Text>
+            <View
               style={{ flexDirection: "row", gap: 12, marginBottom: 24 }}
             >
               {["Audio Call", "Video Call"].map((type) => (
-                <StyledTouchableOpacity
+                <TouchableOpacity
                   key={type}
                   onPress={() => toggleCallType(type)}
                   style={{
@@ -500,7 +492,7 @@ const CallHistoryScreen = () => {
                       : "transparent",
                   }}
                 >
-                  <StyledText
+                  <Text
                     style={{
                       color: selectedCallType.includes(type)
                         ? "#FCCD34"
@@ -510,13 +502,13 @@ const CallHistoryScreen = () => {
                     }}
                   >
                     {type}
-                  </StyledText>
-                </StyledTouchableOpacity>
+                  </Text>
+                </TouchableOpacity>
               ))}
-            </StyledView>
+            </View>
 
             {/* Payment Status */}
-            <StyledText
+            <Text
               className="text-gray-400"
               style={{
                 fontSize: 14,
@@ -525,12 +517,12 @@ const CallHistoryScreen = () => {
               }}
             >
               Payment Status
-            </StyledText>
-            <StyledView
+            </Text>
+            <View
               style={{ flexDirection: "row", gap: 12, marginBottom: 32 }}
             >
               {["Successfull", "Failed"].map((status) => (
-                <StyledTouchableOpacity
+                <TouchableOpacity
                   key={status}
                   onPress={() => toggleStatus(status)}
                   style={{
@@ -546,7 +538,7 @@ const CallHistoryScreen = () => {
                       : "transparent",
                   }}
                 >
-                  <StyledText
+                  <Text
                     style={{
                       color: selectedStatus.includes(status)
                         ? "#FCCD34"
@@ -556,17 +548,17 @@ const CallHistoryScreen = () => {
                     }}
                   >
                     {status}
-                  </StyledText>
-                </StyledTouchableOpacity>
+                  </Text>
+                </TouchableOpacity>
               ))}
-            </StyledView>
-          </StyledScrollView>
+            </View>
+          </ScrollView>
 
           {/* Apply Button */}
-          <StyledView
+          <View
             style={{ paddingHorizontal: 20, paddingBottom: 34, paddingTop: 20 }}
           >
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setFilterVisible(false)}
               style={{
                 backgroundColor: "#FCCD34",
@@ -576,7 +568,7 @@ const CallHistoryScreen = () => {
                 justifyContent: "center",
               }}
             >
-              <StyledText
+              <Text
                 className="text-black"
                 style={{
                   fontSize: 17,
@@ -584,10 +576,10 @@ const CallHistoryScreen = () => {
                 }}
               >
                 Apply Filters({getActiveFiltersCount()})
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledSafeAreaView>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
       </Modal>
 
       {/* Receipt Modal */}
@@ -597,11 +589,11 @@ const CallHistoryScreen = () => {
         visible={receiptVisible}
         onRequestClose={() => setReceiptVisible(false)}
       >
-        <StyledSafeAreaView className="flex-1 bg-black">
+        <SafeAreaView className="flex-1 bg-black">
           <StatusBar barStyle="light-content" />
 
           {/* Receipt Header */}
-          <StyledView
+          <View
             style={{
               height: 60,
               flexDirection: "row",
@@ -611,7 +603,7 @@ const CallHistoryScreen = () => {
               position: "relative",
             }}
           >
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setReceiptVisible(false)}
               style={{
                 position: "absolute",
@@ -619,8 +611,8 @@ const CallHistoryScreen = () => {
               }}
             >
               <ChevronLeft size={28} color="#FFFFFF" strokeWidth={2} />
-            </StyledTouchableOpacity>
-            <StyledText
+            </TouchableOpacity>
+            <Text
               className="text-white"
               style={{
                 fontSize: 18,
@@ -628,12 +620,12 @@ const CallHistoryScreen = () => {
               }}
             >
               Call Receipt
-            </StyledText>
-          </StyledView>
+            </Text>
+          </View>
 
-          <StyledScrollView style={{ flex: 1, paddingHorizontal: 20 }}>
+          <ScrollView style={{ flex: 1, paddingHorizontal: 20 }}>
             {/* Success Icon */}
-            <StyledView
+            <View
               style={{ alignItems: "center", marginTop: 32, marginBottom: 24 }}
             >
               <Svg width="45" height="45" viewBox="0 0 80 80" fill="none">
@@ -653,10 +645,10 @@ const CallHistoryScreen = () => {
                   strokeLinejoin="round"
                 />
               </Svg>
-            </StyledView>
+            </View>
 
             {/* Amount */}
-            <StyledText
+            <Text
               className="text-white text-center"
               style={{
                 fontSize: 24,
@@ -665,21 +657,21 @@ const CallHistoryScreen = () => {
               }}
             >
               {selectedCall?.totalAmount}
-            </StyledText>
-            <StyledText
+            </Text>
+            <Text
               className="text-center"
               style={{
-                fontSize: 14,
+                fontSize: 12,
                 fontFamily: FONT.Regular,
                 color: "#FCCD34",
                 marginBottom: 32,
               }}
             >
               Payment Successfully
-            </StyledText>
+            </Text>
 
             {/* Service Details */}
-            <StyledText
+            <Text
               className="text-white"
               style={{
                 fontSize: 14,
@@ -688,9 +680,9 @@ const CallHistoryScreen = () => {
               }}
             >
               Service Details
-            </StyledText>
+            </Text>
 
-            <StyledView
+            <View
               style={{
                 backgroundColor: "#1C1C1E",
                 borderRadius: 12,
@@ -698,7 +690,7 @@ const CallHistoryScreen = () => {
                 marginBottom: 24,
               }}
             >
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
@@ -707,7 +699,7 @@ const CallHistoryScreen = () => {
                   borderBottomColor: "#2C2C2E",
                 }}
               >
-                <StyledText
+                <Text
                   className="text-[#6F6F70]"
                   style={{
                     fontSize: 14,
@@ -715,8 +707,8 @@ const CallHistoryScreen = () => {
                   }}
                 >
                   Recipient of Payment:
-                </StyledText>
-                <StyledText
+                </Text>
+                <Text
                   className="text-white"
                   style={{
                     fontSize: 14,
@@ -724,10 +716,10 @@ const CallHistoryScreen = () => {
                   }}
                 >
                   Bam Margera
-                </StyledText>
-              </StyledView>
+                </Text>
+              </View>
 
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
@@ -736,7 +728,7 @@ const CallHistoryScreen = () => {
                   borderBottomColor: "#2C2C2E",
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 14,
                     fontFamily: FONT.Regular,
@@ -744,8 +736,8 @@ const CallHistoryScreen = () => {
                   }}
                 >
                   Fee Type:
-                </StyledText>
-                <StyledText
+                </Text>
+                <Text
                   className="text-white"
                   style={{
                     fontSize: 14,
@@ -753,10 +745,10 @@ const CallHistoryScreen = () => {
                   }}
                 >
                   {selectedCall?.feeType}
-                </StyledText>
-              </StyledView>
+                </Text>
+              </View>
 
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
@@ -765,7 +757,7 @@ const CallHistoryScreen = () => {
                   borderBottomColor: "#2C2C2E",
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 14,
                     fontFamily: FONT.Regular,
@@ -773,8 +765,8 @@ const CallHistoryScreen = () => {
                   }}
                 >
                   Call duration:
-                </StyledText>
-                <StyledText
+                </Text>
+                <Text
                   className="text-white"
                   style={{
                     fontSize: 14,
@@ -782,17 +774,17 @@ const CallHistoryScreen = () => {
                   }}
                 >
                   {selectedCall?.duration}
-                </StyledText>
-              </StyledView>
+                </Text>
+              </View>
 
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
                   paddingVertical: 12,
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 14,
                     fontFamily: FONT.Regular,
@@ -800,8 +792,8 @@ const CallHistoryScreen = () => {
                   }}
                 >
                   Rate Applied:
-                </StyledText>
-                <StyledText
+                </Text>
+                <Text
                   className="text-white"
                   style={{
                     fontSize: 14,
@@ -809,12 +801,12 @@ const CallHistoryScreen = () => {
                   }}
                 >
                   {selectedCall?.rateApplied}
-                </StyledText>
-              </StyledView>
-            </StyledView>
+                </Text>
+              </View>
+            </View>
 
             {/* Transaction Info */}
-            <StyledText
+            <Text
               className="text-white"
               style={{
                 fontSize: 16,
@@ -823,9 +815,9 @@ const CallHistoryScreen = () => {
               }}
             >
               Transaction Info
-            </StyledText>
+            </Text>
 
-            <StyledView
+            <View
               style={{
                 backgroundColor: "#1C1C1E",
                 borderRadius: 12,
@@ -833,7 +825,7 @@ const CallHistoryScreen = () => {
                 marginBottom: 32,
               }}
             >
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
@@ -842,7 +834,7 @@ const CallHistoryScreen = () => {
                   borderBottomColor: "#2C2C2E",
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 14,
                     fontFamily: FONT.Regular,
@@ -850,8 +842,8 @@ const CallHistoryScreen = () => {
                   }}
                 >
                   Paid From:
-                </StyledText>
-                <StyledText
+                </Text>
+                <Text
                   className="text-white"
                   style={{
                     fontSize: 14,
@@ -859,10 +851,10 @@ const CallHistoryScreen = () => {
                   }}
                 >
                   {selectedCall?.paidFrom}
-                </StyledText>
-              </StyledView>
+                </Text>
+              </View>
 
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
@@ -871,7 +863,7 @@ const CallHistoryScreen = () => {
                   borderBottomColor: "#2C2C2E",
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 14,
                     fontFamily: FONT.Regular,
@@ -879,8 +871,8 @@ const CallHistoryScreen = () => {
                   }}
                 >
                   Date/Time:
-                </StyledText>
-                <StyledText
+                </Text>
+                <Text
                   className="text-white"
                   style={{
                     fontSize: 14,
@@ -888,10 +880,10 @@ const CallHistoryScreen = () => {
                   }}
                 >
                   {selectedCall?.date}
-                </StyledText>
-              </StyledView>
+                </Text>
+              </View>
 
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
@@ -899,7 +891,7 @@ const CallHistoryScreen = () => {
                   paddingVertical: 12,
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 14,
                     fontFamily: FONT.Regular,
@@ -907,11 +899,11 @@ const CallHistoryScreen = () => {
                   }}
                 >
                   Transaction ID:
-                </StyledText>
-                <StyledView
+                </Text>
+                <View
                   style={{ flexDirection: "row", alignItems: "center" }}
                 >
-                  <StyledText
+                  <Text
                     className="text-white"
                     style={{
                       fontSize: 14,
@@ -920,16 +912,16 @@ const CallHistoryScreen = () => {
                     }}
                   >
                     {selectedCall?.transactionId}
-                  </StyledText>
+                  </Text>
                   <Copy size={16} color="#FCCD34" />
-                </StyledView>
-              </StyledView>
-            </StyledView>
-          </StyledScrollView>
+                </View>
+              </View>
+            </View>
+          </ScrollView>
 
           {/* Action Buttons */}
-          <StyledView style={{ paddingHorizontal: 20, paddingBottom: 20 }}>
-            <StyledTouchableOpacity
+          <View style={{ paddingHorizontal: 20, paddingBottom: 20 }}>
+            <TouchableOpacity
               style={{
                 backgroundColor: "#FCCD34",
                 borderRadius: 12,
@@ -939,7 +931,7 @@ const CallHistoryScreen = () => {
                 marginBottom: 12,
               }}
             >
-              <StyledText
+              <Text
                 className="text-black"
                 style={{
                   fontSize: 16,
@@ -947,10 +939,10 @@ const CallHistoryScreen = () => {
                 }}
               >
                 Share Receipt
-              </StyledText>
-            </StyledTouchableOpacity>
+              </Text>
+            </TouchableOpacity>
 
-            <StyledTouchableOpacity
+            <TouchableOpacity
               style={{
                 backgroundColor: "transparent",
                 borderRadius: 12,
@@ -961,7 +953,7 @@ const CallHistoryScreen = () => {
                 justifyContent: "center",
               }}
             >
-              <StyledText
+              <Text
                 className="text-white"
                 style={{
                   fontSize: 16,
@@ -969,12 +961,12 @@ const CallHistoryScreen = () => {
                 }}
               >
                 Get Support
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledSafeAreaView>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
       </Modal>
-    </StyledSafeAreaView>
+    </SafeAreaView>
   );
 };
 

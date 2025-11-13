@@ -9,7 +9,6 @@ import {
   ScrollView,
   Image,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft } from "lucide-react-native";
 import {
   useFonts,
@@ -19,12 +18,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledScrollView = styled(ScrollView);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -43,47 +36,37 @@ const Dashboard = () => {
 
   if (!fontsLoaded) {
     return (
-      <View className="flex-1 items-center justify-center bg-black">
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "black" }}>
         <ActivityIndicator color="#FCCD34" />
       </View>
     );
   }
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
       <StatusBar barStyle="light-content" />
 
-      {/* Header */}
-      <StyledView
+      {/* HEADER */}
+      <View
         style={{
           height: 60,
           flexDirection: "row",
-          alignItems: "center",
           justifyContent: "center",
+          alignItems: "center",
           paddingHorizontal: 20,
-          position: "relative",
         }}
       >
-        <StyledText
-          className="text-white"
-          style={{
-            fontSize: 18,
-            fontFamily: FONT.SemiBold,
-          }}
-        >
+        <Text style={{ fontSize: 18, color: "#FFF", fontFamily: FONT.SemiBold }}>
           Dashboard
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
-      <StyledScrollView
+      <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{
-          paddingHorizontal: 24,
-          paddingTop: 7,
-        }}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 7 }}
       >
-        {/* Balance Card */}
-        <StyledView
+        {/* BALANCE CARD */}
+        <View
           style={{
             backgroundColor: "#19191B",
             borderRadius: 16,
@@ -91,15 +74,11 @@ const Dashboard = () => {
             marginBottom: 16,
           }}
         >
-          <StyledView
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-            }}
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}
           >
-            <StyledView style={{ flex: 1 }}>
-              <StyledText
+            <View style={{ flex: 1 }}>
+              <Text
                 style={{
                   fontSize: 14,
                   fontFamily: FONT.Regular,
@@ -108,8 +87,9 @@ const Dashboard = () => {
                 }}
               >
                 Total balance
-              </StyledText>
-              <StyledText
+              </Text>
+
+              <Text
                 style={{
                   fontSize: 32,
                   fontFamily: FONT.SemiBold,
@@ -118,18 +98,12 @@ const Dashboard = () => {
                 }}
               >
                 1250{" "}
-                <StyledText
-                  style={{
-                    fontSize: 24,
-                    fontFamily: FONT.Bold,
-                  }}
-                >
-                  GEL
-                </StyledText>
-              </StyledText>
-            </StyledView>
-            <StyledView style={{ alignItems: "flex-end" }}>
-              <StyledText
+                <Text style={{ fontSize: 24, fontFamily: FONT.Bold }}>GEL</Text>
+              </Text>
+            </View>
+
+            <View style={{ alignItems: "flex-end" }}>
+              <Text
                 style={{
                   fontSize: 14,
                   fontFamily: FONT.Regular,
@@ -138,34 +112,21 @@ const Dashboard = () => {
                 }}
               >
                 Last 7 days
-              </StyledText>
-              <StyledText
-                style={{
-                  fontSize: 15,
-                  fontFamily: FONT.Regular,
-                  color: "#75FA94",
-                }}
-              >
-                +35.20 GEL
-              </StyledText>
-            </StyledView>
-          </StyledView>
-        </StyledView>
+              </Text>
 
-        {/* Followers and Withdrawal Buttons */}
-        <StyledView
-          style={{
-            flexDirection: "row",
-            gap: 12,
-            marginBottom: 24,
-          }}
-        >
+              <Text style={{ fontSize: 15, fontFamily: FONT.Regular, color: "#75FA94" }}>
+                +35.20 GEL
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* FOLLOWERS + WITHDRAW */}
+
+        <View style={{ flexDirection: "row", gap: 12, marginBottom: 24 }}>
           {/* Followers Button */}
-          <StyledTouchableOpacity
-            onPress={() => {
-              console.log("Followers pressed");
-              router.push("/dashboard/followers");
-            }}
+          <TouchableOpacity
+            onPress={() => router.push("/dashboard/followers")}
             style={{
               width: 164,
               height: 48,
@@ -180,7 +141,7 @@ const Dashboard = () => {
               justifyContent: "center",
             }}
           >
-            <StyledText
+            <Text
               style={{
                 fontSize: 14,
                 fontFamily: FONT.SemiBold,
@@ -189,26 +150,20 @@ const Dashboard = () => {
               }}
             >
               Followers
-            </StyledText>
-            <StyledText
-              style={{
-                fontSize: 14,
-                fontFamily: FONT.SemiBold,
-                color: "#FCCD34",
-              }}
-            >
+            </Text>
+
+            <Text style={{ fontSize: 14, fontFamily: FONT.SemiBold, color: "#FCCD34" }}>
               2 245
-            </StyledText>
-          </StyledTouchableOpacity>
+            </Text>
+          </TouchableOpacity>
 
           {/* Withdrawal Button */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => router.push("/(tabs)/dashboard/withdrawl")}
             style={{
               width: 164,
               height: 48,
               backgroundColor: "#FCCD34",
-
               borderRadius: 15,
               paddingVertical: 16,
               paddingHorizontal: 24,
@@ -222,21 +177,18 @@ const Dashboard = () => {
               style={{ width: 20, height: 20, marginRight: 8 }}
               resizeMode="contain"
             />
-            <StyledText
-              style={{
-                fontSize: 15,
-                fontFamily: FONT.SemiBold,
-                color: "#000000",
-              }}
+
+            <Text
+              style={{ fontSize: 15, fontFamily: FONT.SemiBold, color: "#000000" }}
             >
               Withdrawal
-            </StyledText>
-          </StyledTouchableOpacity>
-        </StyledView>
+            </Text>
+          </TouchableOpacity>
+        </View>
 
-        {/* Monetization Tools Section */}
-        <StyledView style={{ marginBottom: 24 }}>
-          <StyledText
+        {/* MONETIZATION TOOLS */}
+        <View style={{ marginBottom: 24 }}>
+          <Text
             style={{
               fontSize: 18,
               fontFamily: FONT.Bold,
@@ -245,8 +197,9 @@ const Dashboard = () => {
             }}
           >
             Monetization tools
-          </StyledText>
-          <StyledText
+          </Text>
+
+          <Text
             style={{
               fontSize: 14,
               fontFamily: FONT.Regular,
@@ -255,10 +208,10 @@ const Dashboard = () => {
             }}
           >
             Manage your earning tools and settings
-          </StyledText>
+          </Text>
 
           {/* Profile */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => router.push("/(tabs)/dashboard/welcome-dashboard")}
             style={{
               backgroundColor: "#19191B",
@@ -270,134 +223,74 @@ const Dashboard = () => {
               paddingVertical: 12,
             }}
           >
-            <StyledView
-              style={{
-                borderRadius: 7.69,
-                alignItems: "center",
-                justifyContent: "center",
-                marginRight: 12,
-              }}
-            >
-              <Image
-                source={require("../../../assets/images/dashboard/profile-1.png")}
-                style={{ width: 40, height: 40 }}
-                resizeMode="contain"
-              />
-            </StyledView>
-            <StyledText
-              style={{
-                flex: 1,
-                fontSize: 16,
-                fontFamily: FONT.Regular,
-                color: "#FFFFFF",
-              }}
-            >
+            <Image
+              source={require("../../../assets/images/dashboard/profile-1.png")}
+              style={{ width: 40, height: 40, marginRight: 12 }}
+              resizeMode="contain"
+            />
+
+            <Text style={{ flex: 1, fontSize: 16, fontFamily: FONT.Regular, color: "#FFFFFF" }}>
               Profile
-            </StyledText>
+            </Text>
+
             <ChevronLeft
               size={20}
               color="#FFFFFFCC"
               strokeWidth={2}
               style={{ transform: [{ rotate: "180deg" }] }}
             />
-          </StyledTouchableOpacity>
+          </TouchableOpacity>
 
           {/* Paid messaging */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => router.push("/(tabs)/dashboard/PaidMessages")}
             style={{
               backgroundColor: "#19191B",
-              borderRadius: 0, // No rounded corners
               flexDirection: "row",
               alignItems: "center",
               paddingHorizontal: 8,
               paddingVertical: 12,
             }}
           >
-            <StyledView
-              style={{
-                width: 40,
-                height: 40,
-
-                borderRadius: 7.69,
-                alignItems: "center",
-                justifyContent: "center",
-                marginRight: 12,
-              }}
-            >
-              <Image
-                source={require("../../../assets/images/dashboard/message.png")}
-                style={{ width: 40, height: 40 }}
-                resizeMode="contain"
-              />
-            </StyledView>
-            <StyledText
-              style={{
-                flex: 1,
-                fontSize: 16,
-                fontFamily: FONT.Regular,
-                color: "#FFFFFF",
-              }}
-            >
-              Paid messaging
-            </StyledText>
-            <ChevronLeft
-              size={20}
-              color="#FFFFFFCC"
-              strokeWidth={2}
-              style={{ transform: [{ rotate: "180deg" }] }}
+            <Image
+              source={require("../../../assets/images/dashboard/message.png")}
+              style={{ width: 40, height: 40, marginRight: 12 }}
+              resizeMode="contain"
             />
-          </StyledTouchableOpacity>
+
+            <Text style={{ flex: 1, color: "#FFFFFF", fontSize: 16, fontFamily: FONT.Regular }}>
+              Paid messaging
+            </Text>
+
+            <ChevronLeft size={20} color="#FFFFFFCC" strokeWidth={2} style={{ transform: [{ rotate: "180deg" }] }} />
+          </TouchableOpacity>
 
           {/* Donation settings */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => router.push("/(tabs)/dashboard/donation")}
             style={{
               backgroundColor: "#19191B",
-              borderRadius: 0, // No rounded corners
               flexDirection: "row",
               alignItems: "center",
               paddingHorizontal: 8,
               paddingVertical: 12,
             }}
           >
-            <StyledView
-              style={{
-                width: 40,
-                height: 40,
-
-                borderRadius: 7.69,
-                alignItems: "center",
-                justifyContent: "center",
-                marginRight: 12,
-              }}
-            >
-              <Image
-                source={require("../../../assets/images/dashboard/donation.png")}
-                style={{ width: 40, height: 40 }}
-                resizeMode="contain"
-              />
-            </StyledView>
-            <StyledText
-              style={{
-                flex: 1,
-                fontSize: 16,
-                fontFamily: FONT.Regular,
-                color: "#FFFFFF",
-              }}
-            >
-              Donation settings
-            </StyledText>
-            <ChevronLeft
-              size={20}
-              color="#FFFFFFCC"
-              strokeWidth={2}
-              style={{ transform: [{ rotate: "180deg" }] }}
+            <Image
+              source={require("../../../assets/images/dashboard/donation.png")}
+              style={{ width: 40, height: 40, marginRight: 12 }}
+              resizeMode="contain"
             />
-          </StyledTouchableOpacity>
+
+            <Text style={{ flex: 1, fontSize: 16, color: "#FFFFFF", fontFamily: FONT.Regular }}>
+              Donation settings
+            </Text>
+
+            <ChevronLeft size={20} color="#FFFFFFCC" style={{ transform: [{ rotate: "180deg" }] }} />
+          </TouchableOpacity>
 
           {/* Video/Audio settings */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => router.push("/(tabs)/dashboard/videocalls")}
             style={{
               backgroundColor: "#19191B",
@@ -409,67 +302,31 @@ const Dashboard = () => {
               paddingVertical: 12,
             }}
           >
-            <StyledView
-              style={{
-                width: 40,
-                height: 40,
-
-                borderRadius: 7.69,
-                alignItems: "center",
-                justifyContent: "center",
-                marginRight: 12,
-              }}
-            >
-              <Image
-                source={require("../../../assets/images/dashboard/videocall.png")}
-                style={{ width: 40, height: 40 }}
-                resizeMode="contain"
-              />
-            </StyledView>
-            <StyledText
-              style={{
-                flex: 1,
-                fontSize: 16,
-                fontFamily: FONT.Regular,
-                color: "#FFFFFF",
-              }}
-            >
-              Video/Audio settings
-            </StyledText>
-            <ChevronLeft
-              size={20}
-              color="#FFFFFFCC"
-              strokeWidth={2}
-              style={{ transform: [{ rotate: "180deg" }] }}
+            <Image
+              source={require("../../../assets/images/dashboard/videocall.png")}
+              style={{ width: 40, height: 40, marginRight: 12 }}
+              resizeMode="contain"
             />
-          </StyledTouchableOpacity>
-        </StyledView>
 
-        {/* Financial Management Section */}
-        <StyledView style={{ marginBottom: 24 }}>
-          <StyledText
-            style={{
-              fontSize: 18,
-              fontFamily: FONT.Bold,
-              color: "#FFFFFF",
-              marginBottom: 4,
-            }}
-          >
+            <Text style={{ flex: 1, color: "#FFFFFF", fontSize: 16, fontFamily: FONT.Regular }}>
+              Video/Audio settings
+            </Text>
+
+            <ChevronLeft size={20} color="#FFFFFFCC" strokeWidth={2} style={{ transform: [{ rotate: "180deg" }] }} />
+          </TouchableOpacity>
+        </View>
+
+        {/* FINANCIAL MANAGEMENT */}
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ fontSize: 18, color: "#FFF", fontFamily: FONT.Bold, marginBottom: 4 }}>
             Financial management
-          </StyledText>
-          <StyledText
-            style={{
-              fontSize: 14,
-              fontFamily: FONT.Regular,
-              color: "#8E8E93",
-              marginBottom: 16,
-            }}
-          >
-            Control your earnings and payout methods
-          </StyledText>
+          </Text>
 
-          {/* Payout method rules */}
-          <StyledTouchableOpacity
+          <Text style={{ fontSize: 14, fontFamily: FONT.Regular, color: "#8E8E93", marginBottom: 16 }}>
+            Control your earnings and payout methods
+          </Text>
+
+          <TouchableOpacity
             onPress={() => router.push("/(tabs)/dashboard/payout")}
             style={{
               backgroundColor: "#19191B",
@@ -477,70 +334,35 @@ const Dashboard = () => {
               flexDirection: "row",
               alignItems: "center",
               paddingHorizontal: 8,
-              paddingVertical: 6,
+              paddingVertical: 12,
             }}
           >
-            <StyledView
-              style={{
-                width: 40,
-                height: 40,
-
-                borderRadius: 7.69,
-                alignItems: "center",
-                justifyContent: "center",
-                marginRight: 12,
-              }}
-            >
-              <Image
-                source={require("../../../assets/images/dashboard/payout.png")}
-                style={{ width: 40, height: 40 }}
-                resizeMode="contain"
-              />
-            </StyledView>
-            <StyledText
-              style={{
-                flex: 1,
-                fontSize: 16,
-                fontFamily: FONT.Regular,
-                color: "#FFFFFF",
-              }}
-            >
-              Payout method rules
-            </StyledText>
-            <ChevronLeft
-              size={20}
-              color="#FFFFFFCC"
-              strokeWidth={2}
-              style={{ transform: [{ rotate: "180deg" }] }}
+            <Image
+              source={require("../../../assets/images/dashboard/payout.png")}
+              style={{ width: 40, height: 40, marginRight: 12 }}
+              resizeMode="contain"
             />
-          </StyledTouchableOpacity>
-        </StyledView>
 
-        {/* Profile & Admin Section */}
-        <StyledView style={{ marginBottom: 40 }}>
-          <StyledText
-            style={{
-              fontSize: 18,
-              fontFamily: FONT.Bold,
-              color: "#FFFFFF",
-              marginBottom: 4,
-            }}
-          >
+            <Text style={{ flex: 1, color: "#FFF", fontSize: 16, fontFamily: FONT.Regular }}>
+              Payout method rules
+            </Text>
+
+            <ChevronLeft size={20} color="#FFF" strokeWidth={2} style={{ transform: [{ rotate: "180deg" }] }} />
+          </TouchableOpacity>
+        </View>
+
+        {/* PROFILE & ADMIN */}
+        <View style={{ marginBottom: 40 }}>
+          <Text style={{ fontSize: 18, fontFamily: FONT.Bold, color: "#FFF", marginBottom: 4 }}>
             Profile & Admin
-          </StyledText>
-          <StyledText
-            style={{
-              fontSize: 14,
-              fontFamily: FONT.Regular,
-              color: "#8E8E93",
-              marginBottom: 16,
-            }}
-          >
+          </Text>
+
+          <Text style={{ color: "#8E8E93", fontSize: 14, fontFamily: FONT.Regular, marginBottom: 16 }}>
             Update your public information and manage user interactions
-          </StyledText>
+          </Text>
 
           {/* Profile visibility */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => router.push("/(tabs)/dashboard/profilevisibility")}
             style={{
               backgroundColor: "#19191B",
@@ -552,90 +374,45 @@ const Dashboard = () => {
               paddingVertical: 12,
             }}
           >
-            <StyledView
-              style={{
-                width: 40,
-                height: 40,
-
-                borderRadius: 7.69,
-                alignItems: "center",
-                justifyContent: "center",
-                marginRight: 12,
-              }}
-            >
-              <Image
-                source={require("../../../assets/images/dashboard/profile.png")}
-                style={{ width: 40, height: 40 }}
-                resizeMode="contain"
-              />
-            </StyledView>
-            <StyledText
-              style={{
-                flex: 1,
-                fontSize: 16,
-                fontFamily: FONT.Regular,
-                color: "#FFFFFF",
-              }}
-            >
-              Profile visibility
-            </StyledText>
-            <ChevronLeft
-              size={20}
-              color="#FFFFFFCC"
-              strokeWidth={2}
-              style={{ transform: [{ rotate: "180deg" }] }}
+            <Image
+              source={require("../../../assets/images/dashboard/profile.png")}
+              style={{ width: 40, height: 40, marginRight: 12 }}
+              resizeMode="contain"
             />
-          </StyledTouchableOpacity>
+
+            <Text style={{ flex: 1, fontSize: 16, color: "#FFF", fontFamily: FONT.Regular }}>
+              Profile visibility
+            </Text>
+
+            <ChevronLeft size={20} color="#FFF" strokeWidth={2} style={{ transform: [{ rotate: "180deg" }] }} />
+          </TouchableOpacity>
 
           {/* Block list */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => router.push("/(tabs)/dashboard/blocked")}
             style={{
               backgroundColor: "#19191B",
-              borderRadius: 0,
               flexDirection: "row",
               alignItems: "center",
               paddingHorizontal: 8,
               paddingVertical: 12,
             }}
           >
-            <StyledView
-              style={{
-                width: 40,
-                height: 40,
-
-                borderRadius: 7.69,
-                alignItems: "center",
-                justifyContent: "center",
-                marginRight: 12,
-              }}
-            >
-              <Image
-                source={require("../../../assets/images/dashboard/block.png")}
-                style={{ width: 40, height: 40 }}
-                resizeMode="contain"
-              />
-            </StyledView>
-            <StyledText
-              style={{
-                flex: 1,
-                fontSize: 16,
-                fontFamily: FONT.Regular,
-                color: "#FFFFFF",
-              }}
-            >
-              Block list
-            </StyledText>
-            <ChevronLeft
-              size={20}
-              color="#FFFFFFCC"
-              strokeWidth={2}
-              style={{ transform: [{ rotate: "180deg" }] }}
+            <Image
+              source={require("../../../assets/images/dashboard/block.png")}
+              style={{ width: 40, height: 40, marginRight: 12 }}
+              resizeMode="contain"
             />
-          </StyledTouchableOpacity>
+
+            <Text style={{ flex: 1, color: "#FFF", fontSize: 16, fontFamily: FONT.Regular }}>
+              Block list
+            </Text>
+
+            <ChevronLeft size={20} color="#FFF" strokeWidth={2} style={{ transform: [{ rotate: "180deg" }] }} />
+          </TouchableOpacity>
 
           {/* Support */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => router.push("/(tabs)/dashboard/support")}
             style={{
               backgroundColor: "#19191B",
@@ -647,43 +424,21 @@ const Dashboard = () => {
               paddingVertical: 12,
             }}
           >
-            <StyledView
-              style={{
-                width: 40,
-                height: 40,
-
-                borderRadius: 7.69,
-                alignItems: "center",
-                justifyContent: "center",
-                marginRight: 12,
-              }}
-            >
-              <Image
-                source={require("../../../assets/images/dashboard/support.png")}
-                style={{ width: 40, height: 40 }}
-                resizeMode="contain"
-              />
-            </StyledView>
-            <StyledText
-              style={{
-                flex: 1,
-                fontSize: 16,
-                fontFamily: FONT.Regular,
-                color: "#FFFFFF",
-              }}
-            >
-              Support
-            </StyledText>
-            <ChevronLeft
-              size={20}
-              color="#FFFFFFCC"
-              strokeWidth={2}
-              style={{ transform: [{ rotate: "180deg" }] }}
+            <Image
+              source={require("../../../assets/images/dashboard/support.png")}
+              style={{ width: 40, height: 40, marginRight: 12 }}
+              resizeMode="contain"
             />
-          </StyledTouchableOpacity>
-        </StyledView>
-      </StyledScrollView>
-    </StyledSafeAreaView>
+
+            <Text style={{ flex: 1, color: "#FFF", fontSize: 16, fontFamily: FONT.Regular }}>
+              Support
+            </Text>
+
+            <ChevronLeft size={20} color="#FFF" strokeWidth={2} style={{ transform: [{ rotate: "180deg" }] }} />
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 

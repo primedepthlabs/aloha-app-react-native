@@ -12,7 +12,6 @@ import {
   ActivityIndicator,
   Image,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft } from "lucide-react-native";
 import {
   useFonts,
@@ -22,13 +21,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTextInput = styled(TextInput);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledScrollView = styled(ScrollView);
-const StyledSafeAreaView = styled(SafeAreaView);
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const FONT = {
@@ -108,30 +100,30 @@ const Donation = () => {
 
   if (step === 1) {
     return (
-      <StyledSafeAreaView className="flex-1 bg-black">
+      <SafeAreaView className="flex-1 bg-black">
         <StatusBar barStyle="light-content" />
-        <StyledScrollView className="flex-1">
+        <ScrollView className="flex-1">
           {/* Header */}
-          <StyledView
+          <View
             className="flex-row items-center px-4"
             style={{ height: 44, marginTop: 8 }}
           >
-            <StyledTouchableOpacity
+            <TouchableOpacity
               className="absolute left-4"
               style={{ zIndex: 10 }}
             >
               <ChevronLeft size={24} color="#fff" strokeWidth={2.5} />
-            </StyledTouchableOpacity>
-            <StyledText
+            </TouchableOpacity>
+            <Text
               className="text-white text-center flex-1 font-semibold"
               style={{ fontSize: 18 }}
             >
               Donation
-            </StyledText>
-          </StyledView>
+            </Text>
+          </View>
 
           {/* Balance Card */}
-          <StyledView
+          <View
             className="flex-row items-center justify-between px-4"
             style={{
               width: 350,
@@ -141,12 +133,11 @@ const Donation = () => {
               borderRadius: 15,
               borderWidth: 0.3,
               borderColor: "#FCCD34",
-
               backgroundColor: "rgba(28, 28, 30, 0.8)",
             }}
           >
-            <StyledView>
-              <StyledText
+            <View>
+              <Text
                 className="text-gray-400"
                 style={{
                   fontFamily: FONT.Regular,
@@ -157,15 +148,15 @@ const Donation = () => {
                 }}
               >
                 Balance:
-              </StyledText>
-              <StyledText
+              </Text>
+              <Text
                 className="text-white font-bold"
                 style={{ fontSize: 18, fontFamily: FONT.SemiBold }}
               >
                 {balance} GEL
-              </StyledText>
-            </StyledView>
-            <StyledTouchableOpacity
+              </Text>
+            </View>
+            <TouchableOpacity
               className="bg-[#FCCD34] items-center justify-center"
               style={{
                 width: 92,
@@ -173,20 +164,20 @@ const Donation = () => {
                 borderRadius: 10,
               }}
             >
-              <StyledText
+              <Text
                 className="text-black font-semibold"
                 style={{ fontSize: 13 }}
               >
                 + Add funds
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
+              </Text>
+            </TouchableOpacity>
+          </View>
 
           {/* Select Amount Section */}
-          <StyledView
+          <View
             style={{ paddingLeft: 21, paddingRight: 21, marginTop: 24 }}
           >
-            <StyledText
+            <Text
               className="text-white font-bold"
               style={{
                 fontSize: 16,
@@ -195,10 +186,10 @@ const Donation = () => {
               }}
             >
               Select amount
-            </StyledText>
+            </Text>
 
             {/* Amount Buttons Row */}
-            <StyledView
+            <View
               className="flex-row"
               style={{
                 gap: 8,
@@ -206,7 +197,7 @@ const Donation = () => {
               }}
             >
               {amounts.map((amount) => (
-                <StyledTouchableOpacity
+                <TouchableOpacity
                   key={amount}
                   onPress={() => handleAmountSelect(amount)}
                   className={`flex-1 items-center justify-center ${
@@ -222,7 +213,7 @@ const Donation = () => {
                     borderColor: "#3A3A3C",
                   }}
                 >
-                  <StyledText
+                  <Text
                     className={`font-semibold ${
                       selectedAmount === amount && !customAmount
                         ? "text-black"
@@ -231,13 +222,13 @@ const Donation = () => {
                     style={{ fontSize: 16, fontFamily: FONT.Medium }}
                   >
                     {amount} GEL
-                  </StyledText>
-                </StyledTouchableOpacity>
+                  </Text>
+                </TouchableOpacity>
               ))}
-            </StyledView>
+            </View>
 
             {/* Custom Amount Input */}
-            <StyledTextInput
+            <TextInput
               value={customAmount}
               onChangeText={(text) => {
                 setCustomAmount(text);
@@ -261,7 +252,7 @@ const Donation = () => {
             />
 
             {/* Message Section */}
-            <StyledText
+            <Text
               className="text-white font-bold"
               style={{
                 fontSize: 15,
@@ -270,10 +261,10 @@ const Donation = () => {
               }}
             >
               You can say something to Bam Margera
-            </StyledText>
+            </Text>
 
-            <StyledView style={{ position: "relative", marginBottom: 24 }}>
-              <StyledTextInput
+            <View style={{ position: "relative", marginBottom: 24 }}>
+              <TextInput
                 value={message}
                 onChangeText={setMessage}
                 placeholder="Type your message (Max 240 chars)"
@@ -295,7 +286,7 @@ const Donation = () => {
                 }}
               />
 
-              <StyledText
+              <Text
                 className="text-gray-500 absolute"
                 style={{
                   fontSize: 12,
@@ -305,11 +296,11 @@ const Donation = () => {
                 }}
               >
                 {message.length}/240
-              </StyledText>
-            </StyledView>
+              </Text>
+            </View>
 
             {/* Next Button */}
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={handleNext}
               className="bg-[#FCCD34] items-center justify-center"
               style={{
@@ -318,46 +309,46 @@ const Donation = () => {
                 borderRadius: 15,
               }}
             >
-              <StyledText
+              <Text
                 className="text-black font-bold"
                 style={{ fontSize: 17 }}
               >
                 Next
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledScrollView>
-      </StyledSafeAreaView>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
     );
   }
 
   // Step 2: Payment Method Screen
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
-      <StyledScrollView className="flex-1">
+      <ScrollView className="flex-1">
         {/* Header */}
-        <StyledView
+        <View
           className="flex-row items-center px-4"
           style={{ height: 44, marginTop: 8 }}
         >
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => setStep(1)}
             className="absolute left-4"
             style={{ zIndex: 10 }}
           >
             <ChevronLeft size={24} color="#fff" strokeWidth={2.5} />
-          </StyledTouchableOpacity>
-          <StyledText
+          </TouchableOpacity>
+          <Text
             className="text-white text-center flex-1 font-semibold"
             style={{ fontSize: 18 }}
-          >
+            >
             Donation
-          </StyledText>
-        </StyledView>
+          </Text>
+        </View>
 
         {/* Amount Display */}
-        <StyledView
+        <View
           className="items-center justify-center"
           style={{
             width: 350,
@@ -369,7 +360,7 @@ const Donation = () => {
             marginBottom: 24,
           }}
         >
-          <StyledText
+          <Text
             className="text-gray-400"
             style={{
               fontSize: 12,
@@ -378,23 +369,23 @@ const Donation = () => {
             }}
           >
             You are donating:
-          </StyledText>
-          <StyledText
+          </Text>
+          <Text
             className="text-yellow-400 font-bold"
             style={{ fontSize: 18, fontFamily: FONT.SemiBold }}
           >
             {customAmount || selectedAmount} GEL
-          </StyledText>
-        </StyledView>
+          </Text>
+        </View>
 
-        <StyledView
+        <View
           style={{
             paddingLeft: 21,
             paddingRight: 21,
             marginTop: 5,
           }}
         >
-          <StyledText
+          <Text
             className="text-white font-bold"
             style={{
               fontSize: 17.5,
@@ -403,10 +394,10 @@ const Donation = () => {
             }}
           >
             Select Payment Method
-          </StyledText>
+          </Text>
 
           {/* Balance Option */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => handlePaymentSelect("balance")}
             style={{
               flexDirection: "row",
@@ -423,22 +414,22 @@ const Donation = () => {
               backgroundColor: "rgba(28, 28, 30, 0.8)",
             }}
           >
-            <StyledView className="flex-row items-center">
-              <StyledView className="w-10 h-10 rounded-[8px] mr-3 items-center justify-center">
+            <View className="flex-row items-center">
+              <View className="w-10 h-10 rounded-[8px] mr-3 items-center justify-center">
                 <Image
                   source={require("../../../assets/images/balance.png")}
                   className="w-6 h-6"
                   resizeMode="contain"
                 />
-              </StyledView>
-              <StyledText
+              </View>
+              <Text
                 className="text-white"
                 style={{ fontSize: 15, fontFamily: FONT.Regular }}
               >
                 Balance
-              </StyledText>
-            </StyledView>
-            <StyledView
+              </Text>
+            </View>
+            <View
               style={{
                 width: 20,
                 height: 20,
@@ -451,7 +442,7 @@ const Donation = () => {
               }}
             >
               {selectedPayment === "balance" && (
-                <StyledView
+                <View
                   style={{
                     width: 12,
                     height: 12,
@@ -460,11 +451,11 @@ const Donation = () => {
                   }}
                 />
               )}
-            </StyledView>
-          </StyledTouchableOpacity>
+            </View>
+          </TouchableOpacity>
 
           {/* Apple Pay Option */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => handlePaymentSelect("apple")}
             style={{
               flexDirection: "row",
@@ -480,26 +471,26 @@ const Donation = () => {
               backgroundColor: "rgba(28, 28, 30, 0.8)",
             }}
           >
-            <StyledView className="flex-row items-center">
-              <StyledView className="w-10 h-10 rounded-[8px] mr-3 items-center justify-center">
+            <View className="flex-row items-center">
+              <View className="w-10 h-10 rounded-[8px] mr-3 items-center justify-center">
                 <Image
                   source={require("../../../assets/images/applepay.png")}
                   className="w-7 h-7"
                   resizeMode="contain"
                 />
-              </StyledView>
-              <StyledText
+              </View>
+              <Text
                 className="text-white"
                 style={{ fontSize: 15, fontFamily: FONT.Regular }}
               >
                 Apple Pay
-              </StyledText>
-            </StyledView>
-            <StyledText className="text-gray-500 text-[20px]">›</StyledText>
-          </StyledTouchableOpacity>
+              </Text>
+            </View>
+            <Text className="text-gray-500 text-[20px]">›</Text>
+          </TouchableOpacity>
 
           {/* Card Option */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => handlePaymentSelect("card")}
             style={{
               flexDirection: "row",
@@ -515,31 +506,31 @@ const Donation = () => {
               backgroundColor: "rgba(28, 28, 30, 0.8)",
             }}
           >
-            <StyledView className="flex-row items-center flex-1">
-              <StyledView className="w-10 h-10 rounded-[8px] mr-3 items-center justify-center">
+            <View className="flex-row items-center flex-1">
+              <View className="w-10 h-10 rounded-[8px] mr-3 items-center justify-center">
                 <Image
                   source={require("../../../assets/images/creditcard.png")}
                   className="w-6 h-6"
                   resizeMode="contain"
                 />
-              </StyledView>
-              <StyledText
+              </View>
+              <Text
                 className="text-white"
                 style={{ fontSize: 15, fontFamily: FONT.Regular }}
               >
                 Credit/Debit Card
-              </StyledText>
-            </StyledView>
-            <StyledText className="text-gray-500 text-[20px]">
+              </Text>
+            </View>
+            <Text className="text-gray-500 text-[20px]">
               {showCardOptions ? "∧" : "›"}
-            </StyledText>
-          </StyledTouchableOpacity>
+            </Text>
+          </TouchableOpacity>
 
           {/* Card Options Expanded */}
           {showCardOptions && (
-            <StyledView style={{ marginBottom: 8 }}>
+            <View style={{ marginBottom: 8 }}>
               {/* MasterCard */}
-              <StyledTouchableOpacity
+              <TouchableOpacity
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
@@ -551,20 +542,20 @@ const Donation = () => {
                   marginBottom: 8,
                 }}
               >
-                <StyledView className="w-10 h-7 rounded-[6px] bg-red-600 mr-3 relative items-center justify-center">
-                  <StyledView className="w-5 h-5 bg-red-700 rounded-full absolute left-0" />
-                  <StyledView className="w-5 h-5 bg-orange-500 rounded-full absolute right-0" />
-                </StyledView>
-                <StyledText
+                <View className="w-10 h-7 rounded-[6px] bg-red-600 mr-3 relative items-center justify-center">
+                  <View className="w-5 h-5 bg-red-700 rounded-full absolute left-0" />
+                  <View className="w-5 h-5 bg-orange-500 rounded-full absolute right-0" />
+                </View>
+                <Text
                   className="text-white"
                   style={{ fontSize: 15, fontFamily: FONT.Regular }}
                 >
                   MASTERCARD **** 5100
-                </StyledText>
-              </StyledTouchableOpacity>
+                </Text>
+              </TouchableOpacity>
 
               {/* Visa */}
-              <StyledTouchableOpacity
+              <TouchableOpacity
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
@@ -576,23 +567,23 @@ const Donation = () => {
                   marginBottom: 8,
                 }}
               >
-                <StyledView className="w-10 h-7 rounded-[6px] bg-blue-600 mr-3 items-center justify-center">
-                  <StyledText className="text-white font-bold text-[12px]">
+                <View className="w-10 h-7 rounded-[6px] bg-blue-600 mr-3 items-center justify-center">
+                  <Text className="text-white font-bold text-[12px]">
                     VISA
-                  </StyledText>
-                </StyledView>
-                <StyledText
+                  </Text>
+                </View>
+                <Text
                   className="text-white"
                   style={{ fontSize: 15, fontFamily: FONT.Regular }}
                 >
                   VISA **** 5100
-                </StyledText>
-              </StyledTouchableOpacity>
-            </StyledView>
+                </Text>
+              </TouchableOpacity>
+            </View>
           )}
 
           {/* Add Card Button */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => router.push("/(tabs)/discover/addCard")}
             style={{
               width: 350,
@@ -606,16 +597,16 @@ const Donation = () => {
               backgroundColor: "transparent",
             }}
           >
-            <StyledText
+            <Text
               className="text-white"
               style={{ fontSize: 16, fontFamily: FONT.Medium }}
             >
               + Add Card
-            </StyledText>
-          </StyledTouchableOpacity>
+            </Text>
+          </TouchableOpacity>
 
           {/* Donate Button */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={handleDonate}
             style={{
               width: 350,
@@ -628,29 +619,29 @@ const Donation = () => {
               marginBottom: 12,
             }}
           >
-            <StyledText className="text-black text-[20px] mr-2">♥</StyledText>
-            <StyledText
+            <Text className="text-black text-[20px] mr-2">♥</Text>
+            <Text
               className="text-black"
               style={{ fontSize: 17, fontFamily: FONT.Medium }}
             >
               Donate now
-            </StyledText>
-          </StyledTouchableOpacity>
+            </Text>
+          </TouchableOpacity>
 
-          <StyledText
+          <Text
             className="text-gray-500 text-center"
             style={{ fontSize: 13, fontFamily: FONT.Regular }}
           >
             Donation are non-refundable
-          </StyledText>
-        </StyledView>
-      </StyledScrollView>
+          </Text>
+        </View>
+      </ScrollView>
 
       {/* Success Modal */}
       <Modal visible={showSuccess} transparent animationType="fade">
-        <StyledView className="flex-1 bg-black items-center justify-center px-5">
-          <StyledView className="items-center w-full">
-            <StyledView
+        <View className="flex-1 bg-black items-center justify-center px-5">
+          <View className="items-center w-full">
+            <View
               style={{
                 width: 120,
                 height: 120,
@@ -664,9 +655,9 @@ const Donation = () => {
                 style={{ width: 120, height: 120 }}
                 resizeMode="contain"
               />
-            </StyledView>
+            </View>
 
-            <StyledText
+            <Text
               className="text-white font-bold"
               style={{
                 fontSize: 24,
@@ -675,21 +666,21 @@ const Donation = () => {
               }}
             >
               Donation Successful!
-            </StyledText>
-            <StyledText
+            </Text>
+            <Text
               className="text-gray-400 text-center"
               style={{ fontSize: 15, marginBottom: 32 }}
             >
               Your generous contribution will help{"\n"}make a difference.
-            </StyledText>
+            </Text>
 
-            <StyledText
+            <Text
               className="text-white"
               style={{ fontSize: 18, marginBottom: 12 }}
             >
               Amount Donated
-            </StyledText>
-            <StyledView
+            </Text>
+            <View
               style={{
                 borderRadius: 12,
                 borderWidth: 0.3,
@@ -699,15 +690,15 @@ const Donation = () => {
                 marginBottom: 48,
               }}
             >
-              <StyledText
+              <Text
                 className="text-yellow-400 font-bold text-center"
                 style={{ fontSize: 28 }}
               >
                 {customAmount || selectedAmount} GEL
-              </StyledText>
-            </StyledView>
+              </Text>
+            </View>
 
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => {
                 setShowSuccess(false);
                 resetFlow();
@@ -720,32 +711,32 @@ const Donation = () => {
                 borderRadius: 12,
               }}
             >
-              <StyledText
+              <Text
                 className="text-black font-bold"
                 style={{ fontSize: 17 }}
               >
                 Done
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledView>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
 
       {/* Failed Modal */}
       <Modal visible={showFailed} transparent animationType="fade">
-        <StyledView className="flex-1 bg-black items-center justify-center px-5">
-          <StyledTouchableOpacity
+        <View className="flex-1 bg-black items-center justify-center px-5">
+          <TouchableOpacity
             onPress={() => setShowFailed(false)}
             className="absolute top-16 right-8"
             style={{ zIndex: 10 }}
           >
-            <StyledText className="text-white" style={{ fontSize: 32 }}>
+            <Text className="text-white" style={{ fontSize: 32 }}>
               ×
-            </StyledText>
-          </StyledTouchableOpacity>
+            </Text>
+          </TouchableOpacity>
 
-          <StyledView className="items-center w-full">
-            <StyledView
+          <View className="items-center w-full">
+            <View
               className="items-center justify-center"
               style={{
                 width: 120,
@@ -758,9 +749,9 @@ const Donation = () => {
                 style={{ width: 80, height: 80 }}
                 resizeMode="contain"
               />
-            </StyledView>
+            </View>
 
-            <StyledText
+            <Text
               className="text-white font-bold"
               style={{
                 fontSize: 24,
@@ -769,21 +760,21 @@ const Donation = () => {
               }}
             >
               Payment Failed!
-            </StyledText>
-            <StyledText
+            </Text>
+            <Text
               className="text-gray-400 text-center"
               style={{ fontSize: 15, marginBottom: 32 }}
             >
               An error occurred while processing your{"\n"}contribution
-            </StyledText>
+            </Text>
 
-            <StyledText
+            <Text
               className="text-white"
               style={{ fontSize: 18, marginBottom: 12 }}
             >
               Amount Due
-            </StyledText>
-            <StyledView
+            </Text>
+            <View
               style={{
                 borderRadius: 12,
                 borderWidth: 0.3,
@@ -793,15 +784,15 @@ const Donation = () => {
                 marginBottom: 48,
               }}
             >
-              <StyledText
+              <Text
                 className="text-yellow-400 font-bold text-center"
                 style={{ fontSize: 28 }}
               >
                 {customAmount || selectedAmount} GEL
-              </StyledText>
-            </StyledView>
+              </Text>
+            </View>
 
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setShowFailed(false)}
               className="bg-[#FCCD34] items-center justify-center"
               style={{
@@ -811,15 +802,15 @@ const Donation = () => {
                 marginBottom: 12,
               }}
             >
-              <StyledText
+              <Text
                 className="text-black font-bold"
                 style={{ fontSize: 17, fontFamily: FONT.Bold }}
               >
                 Try again
-              </StyledText>
-            </StyledTouchableOpacity>
+              </Text>
+            </TouchableOpacity>
 
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => {
                 setShowFailed(false);
                 resetFlow();
@@ -834,24 +825,24 @@ const Donation = () => {
                 marginBottom: 32,
               }}
             >
-              <StyledText
+              <Text
                 className="text-white font-bold"
                 style={{ fontSize: 17, fontFamily: FONT.Regular }}
               >
                 Back
-              </StyledText>
-            </StyledTouchableOpacity>
+              </Text>
+            </TouchableOpacity>
 
-            <StyledText className="text-white" style={{ fontSize: 15 }}>
+            <Text className="text-white" style={{ fontSize: 15 }}>
               Need Help?{" "}
-              <StyledText className="text-[#FCCD34] ">
+              <Text className="text-[#FCCD34] ">
                 Contact Support
-              </StyledText>
-            </StyledText>
-          </StyledView>
-        </StyledView>
+              </Text>
+            </Text>
+          </View>
+        </View>
       </Modal>
-    </StyledSafeAreaView>
+    </SafeAreaView>
   );
 };
 

@@ -10,7 +10,6 @@ import {
   TextInput,
   Image,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft } from "lucide-react-native";
 import {
   useFonts,
@@ -20,13 +19,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledScrollView = styled(ScrollView);
-const StyledTextInput = styled(TextInput);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -67,16 +59,15 @@ const ContactSupportScreen = () => {
   };
 
   const handleSubmit = () => {
-    // Handle form submission
     console.log("Form submitted", { name, email, message });
   };
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <StyledView
+      <View
         style={{
           height: 60,
           flexDirection: "row",
@@ -86,7 +77,7 @@ const ContactSupportScreen = () => {
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.back()}
           style={{
             position: "absolute",
@@ -98,8 +89,8 @@ const ContactSupportScreen = () => {
           }}
         >
           <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
+        </TouchableOpacity>
+        <Text
           className="text-white"
           style={{
             fontSize: 18,
@@ -107,10 +98,10 @@ const ContactSupportScreen = () => {
           }}
         >
           Contact Support
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
-      <StyledScrollView
+      <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
           paddingHorizontal: 20,
@@ -118,16 +109,16 @@ const ContactSupportScreen = () => {
         }}
       >
         {/* Support Icon */}
-        <StyledView style={{ alignItems: "center", marginBottom: 24 }}>
+        <View style={{ alignItems: "center", marginBottom: 24 }}>
           <Image
             source={require("../../../assets/images/profile/contact-support.png")}
             style={{ width: 76, height: 79 }}
             resizeMode="contain"
           />
-        </StyledView>
+        </View>
 
         {/* Title */}
-        <StyledText
+        <Text
           className="text-white text-center"
           style={{
             fontSize: 18,
@@ -136,11 +127,11 @@ const ContactSupportScreen = () => {
           }}
         >
           How can we help?
-        </StyledText>
+        </Text>
 
         {/* Name Input */}
-        <StyledView style={{ marginBottom: 16 }}>
-          <StyledTextInput
+        <View style={{ marginBottom: 16 }}>
+          <TextInput
             value={name}
             onChangeText={setName}
             placeholder="Enter your name"
@@ -157,11 +148,11 @@ const ContactSupportScreen = () => {
               borderColor: "transparent",
             }}
           />
-        </StyledView>
+        </View>
 
         {/* Email Input */}
-        <StyledView style={{ marginBottom: emailError ? 8 : 16 }}>
-          <StyledTextInput
+        <View style={{ marginBottom: emailError ? 8 : 16 }}>
+          <TextInput
             value={email}
             onChangeText={validateEmail}
             placeholder="Enter your email"
@@ -180,11 +171,11 @@ const ContactSupportScreen = () => {
               borderColor: emailError ? "#FF3B30" : "transparent",
             }}
           />
-        </StyledView>
+        </View>
 
         {/* Email Error */}
         {emailError ? (
-          <StyledView
+          <View
             style={{
               flexDirection: "row",
               alignItems: "center",
@@ -192,7 +183,7 @@ const ContactSupportScreen = () => {
               paddingLeft: 4,
             }}
           >
-            <StyledView
+            <View
               style={{
                 width: 20,
                 height: 20,
@@ -203,7 +194,7 @@ const ContactSupportScreen = () => {
                 marginRight: 8,
               }}
             >
-              <StyledText
+              <Text
                 style={{
                   color: "#FFFFFF",
                   fontSize: 14,
@@ -211,9 +202,9 @@ const ContactSupportScreen = () => {
                 }}
               >
                 !
-              </StyledText>
-            </StyledView>
-            <StyledText
+              </Text>
+            </View>
+            <Text
               style={{
                 color: "#FF3B30",
                 fontSize: 14,
@@ -221,13 +212,13 @@ const ContactSupportScreen = () => {
               }}
             >
               {emailError}
-            </StyledText>
-          </StyledView>
+            </Text>
+          </View>
         ) : null}
 
         {/* Message Input */}
-        <StyledView style={{ marginBottom: 32 }}>
-          <StyledTextInput
+        <View style={{ marginBottom: 32 }}>
+          <TextInput
             value={message}
             onChangeText={setMessage}
             placeholder="Type your message ..."
@@ -248,10 +239,10 @@ const ContactSupportScreen = () => {
               borderColor: "transparent",
             }}
           />
-        </StyledView>
+        </View>
 
         {/* Submit Button */}
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={handleSubmit}
           style={{
             backgroundColor: "#FCCD34",
@@ -262,7 +253,7 @@ const ContactSupportScreen = () => {
             marginBottom: 40,
           }}
         >
-          <StyledText
+          <Text
             className="text-white "
             style={{
               fontSize: 18,
@@ -270,10 +261,10 @@ const ContactSupportScreen = () => {
             }}
           >
             Contact Us
-          </StyledText>
-        </StyledTouchableOpacity>
-      </StyledScrollView>
-    </StyledSafeAreaView>
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 

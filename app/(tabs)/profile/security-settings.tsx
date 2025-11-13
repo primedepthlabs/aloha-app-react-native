@@ -11,7 +11,6 @@ import {
   Modal,
   Image,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft } from "lucide-react-native";
 import {
   useFonts,
@@ -22,13 +21,6 @@ import {
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
 import * as LocalAuthentication from "expo-local-authentication";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledScrollView = styled(ScrollView);
-const StyledTextInput = styled(TextInput);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -103,11 +95,11 @@ const SecuritySettings = () => {
 
   // Main Security Settings Screen
   const renderMainScreen = () => (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <StyledView
+      <View
         style={{
           height: 60,
           flexDirection: "row",
@@ -117,7 +109,7 @@ const SecuritySettings = () => {
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.back()}
           style={{
             position: "absolute",
@@ -129,8 +121,8 @@ const SecuritySettings = () => {
           }}
         >
           <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
+        </TouchableOpacity>
+        <Text
           className="text-white"
           style={{
             fontSize: 18,
@@ -138,10 +130,10 @@ const SecuritySettings = () => {
           }}
         >
           Security Settings
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
-      <StyledScrollView
+      <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
           paddingHorizontal: 24,
@@ -149,7 +141,7 @@ const SecuritySettings = () => {
         }}
       >
         {/* Passkey Option */}
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => setPasskeyScreenVisible(true)}
           style={{
             backgroundColor: "black",
@@ -161,7 +153,7 @@ const SecuritySettings = () => {
             marginBottom: 6,
           }}
         >
-          <StyledView
+          <View
             style={{
               width: 40,
               height: 40,
@@ -177,8 +169,8 @@ const SecuritySettings = () => {
               style={{ width: 24, height: 24 }}
               resizeMode="contain"
             />
-          </StyledView>
-          <StyledText
+          </View>
+          <Text
             style={{
               flex: 1,
               fontSize: 16,
@@ -187,17 +179,17 @@ const SecuritySettings = () => {
             }}
           >
             Passkey
-          </StyledText>
+          </Text>
           <ChevronLeft
             size={20}
             color="#8E8E93"
             strokeWidth={2}
             style={{ transform: [{ rotate: "180deg" }] }}
           />
-        </StyledTouchableOpacity>
+        </TouchableOpacity>
 
         {/* Face ID Option */}
-        <StyledView
+        <View
           style={{
             backgroundColor: "black",
             borderRadius: 16,
@@ -208,7 +200,7 @@ const SecuritySettings = () => {
             marginBottom: 6,
           }}
         >
-          <StyledView
+          <View
             style={{
               width: 40,
               height: 40,
@@ -224,8 +216,8 @@ const SecuritySettings = () => {
               style={{ width: 24, height: 24 }}
               resizeMode="contain"
             />
-          </StyledView>
-          <StyledText
+          </View>
+          <Text
             style={{
               flex: 1,
               fontSize: 16,
@@ -234,8 +226,8 @@ const SecuritySettings = () => {
             }}
           >
             Face ID
-          </StyledText>
-          <StyledTouchableOpacity
+          </Text>
+          <TouchableOpacity
             onPress={toggleFaceId}
             style={{
               width: 51,
@@ -246,7 +238,7 @@ const SecuritySettings = () => {
               justifyContent: "center",
             }}
           >
-            <StyledView
+            <View
               style={{
                 width: 27,
                 height: 27,
@@ -255,11 +247,11 @@ const SecuritySettings = () => {
                 transform: [{ translateX: faceIdEnabled ? 20 : 0 }],
               }}
             />
-          </StyledTouchableOpacity>
-        </StyledView>
+          </TouchableOpacity>
+        </View>
 
         {/* Passcode Option */}
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => setPasscodeScreenVisible(true)}
           style={{
             backgroundColor: "black",
@@ -270,7 +262,7 @@ const SecuritySettings = () => {
             paddingVertical: 6,
           }}
         >
-          <StyledView
+          <View
             style={{
               width: 40,
               height: 40,
@@ -286,8 +278,8 @@ const SecuritySettings = () => {
               style={{ width: 24, height: 24 }}
               resizeMode="contain"
             />
-          </StyledView>
-          <StyledText
+          </View>
+          <Text
             style={{
               flex: 1,
               fontSize: 16,
@@ -296,16 +288,16 @@ const SecuritySettings = () => {
             }}
           >
             Passcode
-          </StyledText>
+          </Text>
           <ChevronLeft
             size={20}
             color="#8E8E93"
             strokeWidth={2}
             style={{ transform: [{ rotate: "180deg" }] }}
           />
-        </StyledTouchableOpacity>
-      </StyledScrollView>
-    </StyledSafeAreaView>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
   );
 
   // Passkey Screen
@@ -316,11 +308,11 @@ const SecuritySettings = () => {
       visible={passkeyScreenVisible}
       onRequestClose={() => setPasskeyScreenVisible(false)}
     >
-      <StyledSafeAreaView className="flex-1 bg-black">
+      <SafeAreaView className="flex-1 bg-black">
         <StatusBar barStyle="light-content" />
 
         {/* Header */}
-        <StyledView
+        <View
           style={{
             height: 60,
             flexDirection: "row",
@@ -330,7 +322,7 @@ const SecuritySettings = () => {
             position: "relative",
           }}
         >
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => setPasskeyScreenVisible(false)}
             style={{
               position: "absolute",
@@ -342,8 +334,8 @@ const SecuritySettings = () => {
             }}
           >
             <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-          </StyledTouchableOpacity>
-          <StyledText
+          </TouchableOpacity>
+          <Text
             className="text-white"
             style={{
               fontSize: 18,
@@ -351,10 +343,10 @@ const SecuritySettings = () => {
             }}
           >
             Passkey
-          </StyledText>
-        </StyledView>
+          </Text>
+        </View>
 
-        <StyledScrollView
+        <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={{
             paddingHorizontal: 24,
@@ -362,7 +354,7 @@ const SecuritySettings = () => {
           }}
         >
           {/* Passkey Status */}
-          <StyledView
+          <View
             style={{
               backgroundColor: "black",
               borderRadius: 16,
@@ -373,7 +365,7 @@ const SecuritySettings = () => {
               marginBottom: 6,
             }}
           >
-            <StyledView
+            <View
               style={{
                 width: 40,
                 height: 40,
@@ -389,9 +381,9 @@ const SecuritySettings = () => {
                 style={{ width: 24, height: 24 }}
                 resizeMode="contain"
               />
-            </StyledView>
-            <StyledView style={{ flex: 1 }}>
-              <StyledText
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text
                 style={{
                   fontSize: 15,
                   fontFamily: FONT.Regular,
@@ -400,8 +392,8 @@ const SecuritySettings = () => {
                 }}
               >
                 Passkey Status: Active
-              </StyledText>
-              <StyledText
+              </Text>
+              <Text
                 style={{
                   fontSize: 12,
                   fontFamily: FONT.Regular,
@@ -411,9 +403,9 @@ const SecuritySettings = () => {
               >
                 Passkeys are a more secure way to sign in to your account. They
                 replace...
-              </StyledText>
-            </StyledView>
-            <StyledView
+              </Text>
+            </View>
+            <View
               style={{
                 width: 24,
                 height: 24,
@@ -428,11 +420,11 @@ const SecuritySettings = () => {
                 style={{ width: 20, height: 20 }}
                 resizeMode="contain"
               />
-            </StyledView>
-          </StyledView>
+            </View>
+          </View>
 
           {/* Remove Passkey */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={handleRemovePasskey}
             style={{
               backgroundColor: "black",
@@ -444,7 +436,7 @@ const SecuritySettings = () => {
               marginBottom: 6,
             }}
           >
-            <StyledView
+            <View
               style={{
                 width: 40,
                 height: 40,
@@ -460,8 +452,8 @@ const SecuritySettings = () => {
                 style={{ width: 24, height: 24 }}
                 resizeMode="contain"
               />
-            </StyledView>
-            <StyledText
+            </View>
+            <Text
               style={{
                 flex: 1,
                 fontSize: 15,
@@ -470,17 +462,17 @@ const SecuritySettings = () => {
               }}
             >
               Remove Passkey
-            </StyledText>
+            </Text>
             <ChevronLeft
               size={20}
               color="#8E8E93"
               strokeWidth={2}
               style={{ transform: [{ rotate: "180deg" }] }}
             />
-          </StyledTouchableOpacity>
+          </TouchableOpacity>
 
           {/* Recreate Passkey */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             style={{
               backgroundColor: "black",
               borderRadius: 16,
@@ -490,7 +482,7 @@ const SecuritySettings = () => {
               paddingVertical: 6,
             }}
           >
-            <StyledView
+            <View
               style={{
                 width: 40,
                 height: 40,
@@ -506,8 +498,8 @@ const SecuritySettings = () => {
                 style={{ width: 24, height: 24 }}
                 resizeMode="contain"
               />
-            </StyledView>
-            <StyledText
+            </View>
+            <Text
               style={{
                 flex: 1,
                 fontSize: 15,
@@ -516,16 +508,16 @@ const SecuritySettings = () => {
               }}
             >
               Recreate Passkey
-            </StyledText>
+            </Text>
             <ChevronLeft
               size={20}
               color="#8E8E93"
               strokeWidth={2}
               style={{ transform: [{ rotate: "180deg" }] }}
             />
-          </StyledTouchableOpacity>
-        </StyledScrollView>
-      </StyledSafeAreaView>
+          </TouchableOpacity>
+        </ScrollView>
+      </SafeAreaView>
 
       {/* Delete Passkey Confirmation Modal */}
       <Modal
@@ -534,7 +526,7 @@ const SecuritySettings = () => {
         visible={deletePasskeyModalVisible}
         onRequestClose={() => setDeletePasskeyModalVisible(false)}
       >
-        <StyledView
+        <View
           style={{
             flex: 1,
             backgroundColor: "rgba(0, 0, 0, 0.7)",
@@ -543,7 +535,7 @@ const SecuritySettings = () => {
             paddingHorizontal: 40,
           }}
         >
-          <StyledView
+          <View
             style={{
               backgroundColor: "#2C2C2E",
               borderRadius: 20,
@@ -552,7 +544,7 @@ const SecuritySettings = () => {
               maxWidth: 320,
             }}
           >
-            <StyledText
+            <Text
               className="text-white text-center"
               style={{
                 fontSize: 15,
@@ -562,9 +554,9 @@ const SecuritySettings = () => {
               }}
             >
               Are you sure you want to{"\n"}Delete your Passkey?
-            </StyledText>
+            </Text>
 
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={confirmDeletePasskey}
               style={{
                 paddingVertical: 12,
@@ -573,7 +565,7 @@ const SecuritySettings = () => {
                 alignItems: "center",
               }}
             >
-              <StyledText
+              <Text
                 className="text-center"
                 style={{
                   fontSize: 16,
@@ -582,17 +574,17 @@ const SecuritySettings = () => {
                 }}
               >
                 Delete
-              </StyledText>
-            </StyledTouchableOpacity>
+              </Text>
+            </TouchableOpacity>
 
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setDeletePasskeyModalVisible(false)}
               style={{
                 paddingVertical: 12,
                 alignItems: "center",
               }}
             >
-              <StyledText
+              <Text
                 className="text-white text-center"
                 style={{
                   fontSize: 16,
@@ -600,10 +592,10 @@ const SecuritySettings = () => {
                 }}
               >
                 Cancel
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledView>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
 
       {/* Biometric Authentication Modal */}
@@ -613,7 +605,7 @@ const SecuritySettings = () => {
         visible={biometricAuthVisible}
         onRequestClose={() => setBiometricAuthVisible(false)}
       >
-        <StyledView
+        <View
           style={{
             flex: 1,
             backgroundColor: "rgba(0, 0, 0, 0.85)",
@@ -622,8 +614,8 @@ const SecuritySettings = () => {
             paddingHorizontal: 40,
           }}
         >
-          <StyledView style={{ alignItems: "center" }}>
-            <StyledText
+          <View style={{ alignItems: "center" }}>
+            <Text
               style={{
                 fontSize: 16,
                 fontFamily: FONT.Regular,
@@ -635,9 +627,9 @@ const SecuritySettings = () => {
             >
               Use your device's Face ID, Touch ID,{"\n"}or PIN to confirm
               removal of your{"\n"}Passkey.
-            </StyledText>
+            </Text>
 
-            <StyledView
+            <View
               style={{
                 width: 120,
                 height: 120,
@@ -652,7 +644,7 @@ const SecuritySettings = () => {
                 style={{ width: 48, height: 48 }}
                 resizeMode="contain"
               />
-              <StyledText
+              <Text
                 style={{
                   fontSize: 14,
                   fontFamily: FONT.Regular,
@@ -661,10 +653,10 @@ const SecuritySettings = () => {
                 }}
               >
                 Face ID
-              </StyledText>
-            </StyledView>
-          </StyledView>
-        </StyledView>
+              </Text>
+            </View>
+          </View>
+        </View>
       </Modal>
     </Modal>
   );
@@ -677,11 +669,11 @@ const SecuritySettings = () => {
       visible={passcodeScreenVisible}
       onRequestClose={() => setPasscodeScreenVisible(false)}
     >
-      <StyledSafeAreaView className="flex-1 bg-black">
+      <SafeAreaView className="flex-1 bg-black">
         <StatusBar barStyle="light-content" />
 
         {/* Header */}
-        <StyledView
+        <View
           style={{
             height: 60,
             flexDirection: "row",
@@ -691,7 +683,7 @@ const SecuritySettings = () => {
             position: "relative",
           }}
         >
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => setPasscodeScreenVisible(false)}
             style={{
               position: "absolute",
@@ -703,8 +695,8 @@ const SecuritySettings = () => {
             }}
           >
             <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-          </StyledTouchableOpacity>
-          <StyledText
+          </TouchableOpacity>
+          <Text
             className="text-white"
             style={{
               fontSize: 18,
@@ -712,10 +704,10 @@ const SecuritySettings = () => {
             }}
           >
             Passcode
-          </StyledText>
-        </StyledView>
+          </Text>
+        </View>
 
-        <StyledScrollView
+        <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={{
             paddingHorizontal: 24,
@@ -723,7 +715,7 @@ const SecuritySettings = () => {
           }}
         >
           {/* Update Passcode */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             style={{
               backgroundColor: "BLACK",
               borderRadius: 16,
@@ -734,7 +726,7 @@ const SecuritySettings = () => {
               marginBottom: 6,
             }}
           >
-            <StyledView
+            <View
               style={{
                 width: 40,
                 height: 40,
@@ -750,12 +742,12 @@ const SecuritySettings = () => {
                 style={{ width: 24, height: 24 }}
                 resizeMode="contain"
               />
-            </StyledView>
-            <StyledTouchableOpacity
+            </View>
+            <TouchableOpacity
               onPress={() => router.push("/(tabs)/profile/update-passcode")}
               style={{ flex: 1 }}
             >
-              <StyledText
+              <Text
                 style={{
                   flex: 1,
                   fontSize: 16,
@@ -764,18 +756,18 @@ const SecuritySettings = () => {
                 }}
               >
                 Update passcode
-              </StyledText>
-            </StyledTouchableOpacity>
+              </Text>
+            </TouchableOpacity>
             <ChevronLeft
               size={20}
               color="#8E8E93"
               strokeWidth={2}
               style={{ transform: [{ rotate: "180deg" }] }}
             />
-          </StyledTouchableOpacity>
+          </TouchableOpacity>
 
           {/* Turn Off Passcode */}
-          <StyledView
+          <View
             style={{
               backgroundColor: "black",
               borderRadius: 16,
@@ -786,7 +778,7 @@ const SecuritySettings = () => {
               paddingVertical: 6,
             }}
           >
-            <StyledView
+            <View
               style={{
                 width: 40,
                 height: 40,
@@ -802,8 +794,8 @@ const SecuritySettings = () => {
                 style={{ width: 24, height: 24 }}
                 resizeMode="contain"
               />
-            </StyledView>
-            <StyledText
+            </View>
+            <Text
               style={{
                 flex: 1,
                 fontSize: 16,
@@ -812,8 +804,8 @@ const SecuritySettings = () => {
               }}
             >
               Turn off passcode
-            </StyledText>
-            <StyledTouchableOpacity
+            </Text>
+            <TouchableOpacity
               onPress={togglePasscode}
               style={{
                 width: 51,
@@ -824,7 +816,7 @@ const SecuritySettings = () => {
                 justifyContent: "center",
               }}
             >
-              <StyledView
+              <View
                 style={{
                   width: 27,
                   height: 27,
@@ -833,10 +825,10 @@ const SecuritySettings = () => {
                   transform: [{ translateX: passcodeEnabled ? 20 : 0 }],
                 }}
               />
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledScrollView>
-      </StyledSafeAreaView>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
     </Modal>
   );
 

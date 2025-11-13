@@ -11,7 +11,7 @@ import {
   Modal,
 } from "react-native";
 import { Svg, Path, Circle } from "react-native-svg";
-import { styled } from "nativewind";
+import { } from "nativewind";
 import {
   Settings,
   Bell,
@@ -30,13 +30,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledScrollView = styled(ScrollView);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledImage = styled(Image);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -73,7 +66,7 @@ const ProfileScreen = () => {
     rightText,
     onPress,
   }: any) => (
-    <StyledTouchableOpacity
+    <TouchableOpacity
       onPress={onPress}
       style={{
         width: 330,
@@ -87,8 +80,8 @@ const ProfileScreen = () => {
         marginBottom: 10,
       }}
     >
-      <StyledView className="flex-row items-center flex-1">
-        <StyledView
+      <View className="flex-row items-center flex-1">
+        <View
           className="items-center justify-center"
           style={{
             width: 32,
@@ -103,9 +96,9 @@ const ProfileScreen = () => {
             backgroundColor="#19191B"
             strokeWidth={2}
           />
-        </StyledView>
-        <StyledView className="flex-1">
-          <StyledText
+        </View>
+        <View className="flex-1">
+          <Text
             className="text-white"
             style={{
               fontSize: 16,
@@ -113,10 +106,10 @@ const ProfileScreen = () => {
             }}
           >
             {title}
-          </StyledText>
-        </StyledView>
+          </Text>
+        </View>
         {rightText && (
-          <StyledText
+          <Text
             className="text-gray-400"
             style={{
               fontSize: 15,
@@ -125,15 +118,15 @@ const ProfileScreen = () => {
             }}
           >
             {rightText}
-          </StyledText>
+          </Text>
         )}
         <ChevronRight size={20} color="#8E8E93" strokeWidth={2} />
-      </StyledView>
-    </StyledTouchableOpacity>
+      </View>
+    </TouchableOpacity>
   );
 
   const LanguageOption = ({ flag, code, name, isSelected, onSelect }: any) => (
-    <StyledTouchableOpacity
+    <TouchableOpacity
       onPress={onSelect}
       style={{
         flexDirection: "row",
@@ -145,11 +138,11 @@ const ProfileScreen = () => {
         borderBottomColor: "#2C2C2E",
       }}
     >
-      <StyledView style={{ flexDirection: "row", alignItems: "center" }}>
-        <StyledText style={{ fontSize: 32, marginRight: 16 }}>
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <Text style={{ fontSize: 32, marginRight: 16 }}>
           {flag}
-        </StyledText>
-        <StyledText
+        </Text>
+        <Text
           style={{
             fontSize: 17,
             fontFamily: FONT.Regular,
@@ -157,9 +150,9 @@ const ProfileScreen = () => {
           }}
         >
           {name}
-        </StyledText>
-      </StyledView>
-      <StyledView
+        </Text>
+      </View>
+      <View
         style={{
           width: 24,
           height: 24,
@@ -171,7 +164,7 @@ const ProfileScreen = () => {
         }}
       >
         {isSelected && (
-          <StyledView
+          <View
             style={{
               width: 12,
               height: 12,
@@ -180,8 +173,8 @@ const ProfileScreen = () => {
             }}
           />
         )}
-      </StyledView>
-    </StyledTouchableOpacity>
+      </View>
+    </TouchableOpacity>
   );
 
   const handleLanguageSelect = (language: string) => {
@@ -190,11 +183,11 @@ const ProfileScreen = () => {
   };
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
-      <StyledScrollView className="flex-1">
+      <ScrollView className="flex-1">
         {/* Profile Header */}
-        <StyledView
+        <View
           style={{
             width: 375,
             height: 65,
@@ -204,7 +197,7 @@ const ProfileScreen = () => {
             alignItems: "center",
           }}
         >
-          <StyledView
+          <View
             style={{
               width: 70,
               height: 70,
@@ -214,13 +207,13 @@ const ProfileScreen = () => {
               backgroundColor: "#2C2C2E",
             }}
           >
-            <StyledImage
+            <Image
               source={require("../../../assets/images/profile-placeholder.png")}
               style={{ width: 70, height: 70 }}
               resizeMode="cover"
             />
-          </StyledView>
-          <StyledText
+          </View>
+          <Text
             className="text-white"
             style={{
               fontSize: 24,
@@ -228,11 +221,11 @@ const ProfileScreen = () => {
             }}
           >
             {userName}
-          </StyledText>
-        </StyledView>
+          </Text>
+        </View>
 
         {/* Balance Card */}
-        <StyledView
+        <View
           className="flex-row items-center justify-between px-4"
           style={{
             width: 350,
@@ -245,8 +238,8 @@ const ProfileScreen = () => {
             backgroundColor: "rgba(28, 28, 30, 0.8)",
           }}
         >
-          <StyledView>
-            <StyledText
+          <View>
+            <Text
               className="text-gray-400"
               style={{
                 fontFamily: FONT.Regular,
@@ -257,15 +250,15 @@ const ProfileScreen = () => {
               }}
             >
               Balance:
-            </StyledText>
-            <StyledText
+            </Text>
+            <Text
               className="text-white font-bold"
               style={{ fontSize: 18, fontFamily: FONT.SemiBold }}
             >
               {balance} GEL
-            </StyledText>
-          </StyledView>
-          <StyledTouchableOpacity
+            </Text>
+          </View>
+          <TouchableOpacity
             className="bg-[#FCCD34] items-center justify-center"
             onPress={() => router.push("/(tabs)/profile/addFunds")}
             style={{
@@ -274,17 +267,17 @@ const ProfileScreen = () => {
               borderRadius: 10,
             }}
           >
-            <StyledText
+            <Text
               className="text-black font-semibold"
               style={{ fontSize: 13 }}
             >
               + Add funds
-            </StyledText>
-          </StyledTouchableOpacity>
-        </StyledView>
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Tabs */}
-        <StyledView
+        <View
           style={{
             width: 331,
             height: 39,
@@ -296,7 +289,7 @@ const ProfileScreen = () => {
             backgroundColor: "#1C1C1E",
           }}
         >
-          <StyledTouchableOpacity
+          <TouchableOpacity
             className="bg-[#FCCD34] items-center justify-center"
             style={{
               width: 144,
@@ -305,7 +298,7 @@ const ProfileScreen = () => {
               paddingHorizontal: 7.75,
             }}
           >
-            <StyledText
+            <Text
               className="text-black"
               style={{
                 fontSize: 16,
@@ -313,15 +306,15 @@ const ProfileScreen = () => {
               }}
             >
               Settings
-            </StyledText>
-          </StyledTouchableOpacity>
-          <StyledTouchableOpacity
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
             className="items-center justify-center flex-1"
             style={{
               paddingHorizontal: 7.75,
             }}
           >
-            <StyledText
+            <Text
               className="text-gray-400"
               style={{
                 fontSize: 16,
@@ -329,12 +322,12 @@ const ProfileScreen = () => {
               }}
             >
               Gallery
-            </StyledText>
-          </StyledTouchableOpacity>
-        </StyledView>
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Menu Items */}
-        <StyledView
+        <View
           style={{
             width: 330,
             marginTop: 15,
@@ -379,8 +372,8 @@ const ProfileScreen = () => {
             rightText={selectedLanguage}
             onPress={() => setIsLanguageModalVisible(true)}
           />
-        </StyledView>
-      </StyledScrollView>
+        </View>
+      </ScrollView>
 
       {/* Language Selection Modal */}
       <Modal
@@ -389,7 +382,7 @@ const ProfileScreen = () => {
         animationType="slide"
         onRequestClose={() => setIsLanguageModalVisible(false)}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           style={{
             flex: 1,
             backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -398,7 +391,7 @@ const ProfileScreen = () => {
           activeOpacity={1}
           onPress={() => setIsLanguageModalVisible(false)}
         >
-          <StyledTouchableOpacity
+          <TouchableOpacity
             activeOpacity={1}
             style={{
               backgroundColor: "#1C1C1E",
@@ -408,7 +401,7 @@ const ProfileScreen = () => {
             }}
           >
             {/* Handle Bar */}
-            <StyledView
+            <View
               style={{
                 width: 36,
                 height: 5,
@@ -421,7 +414,7 @@ const ProfileScreen = () => {
             />
 
             {/* Title */}
-            <StyledText
+            <Text
               style={{
                 fontSize: 17,
                 fontFamily: FONT.SemiBold,
@@ -431,7 +424,7 @@ const ProfileScreen = () => {
               }}
             >
               Choose Language
-            </StyledText>
+            </Text>
 
             {/* Language Options */}
             <LanguageOption
@@ -448,10 +441,10 @@ const ProfileScreen = () => {
               isSelected={selectedLanguage === "English"}
               onSelect={() => handleLanguageSelect("English")}
             />
-          </StyledTouchableOpacity>
-        </StyledTouchableOpacity>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
-    </StyledSafeAreaView>
+    </SafeAreaView>
   );
 };
 

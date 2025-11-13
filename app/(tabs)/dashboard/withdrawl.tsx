@@ -13,7 +13,6 @@ import {
   Dimensions,
   Platform,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft, Copy } from "lucide-react-native";
 import {
   useFonts,
@@ -24,14 +23,6 @@ import {
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
 
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledScrollView = styled(ScrollView);
-const StyledTextInput = styled(TextInput);
-const StyledImage = styled(Image);
-
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
 const FONT = {
@@ -41,7 +32,7 @@ const FONT = {
   Bold: "Poppins_700Bold",
 };
 
-const BUTTON_HORIZONTAL_PADDING = 24; // matches your content padding
+const BUTTON_HORIZONTAL_PADDING = 24;
 
 const Withdrawal = () => {
   const [fontsLoaded] = useFonts({
@@ -57,7 +48,6 @@ const Withdrawal = () => {
   const [successToastVisible, setSuccessToastVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Verification code state
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef<any[]>([]);
 
@@ -115,7 +105,6 @@ const Withdrawal = () => {
     setVerificationVisible(true);
   };
 
-  /* ---------- Styles used for history modal rows ---------- */
   const historyRowStyle = {
     width: 332,
     height: 48,
@@ -126,11 +115,11 @@ const Withdrawal = () => {
   };
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <StyledView
+      <View
         style={{
           height: 60,
           flexDirection: "row",
@@ -140,7 +129,7 @@ const Withdrawal = () => {
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.back()}
           style={{
             position: "absolute",
@@ -152,8 +141,8 @@ const Withdrawal = () => {
           }}
         >
           <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
+        </TouchableOpacity>
+        <Text
           style={{
             fontSize: 15,
             fontFamily: FONT.SemiBold,
@@ -161,19 +150,19 @@ const Withdrawal = () => {
           }}
         >
           Withdrawal
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
-      <StyledScrollView
+      <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
           paddingHorizontal: 24,
           paddingTop: 20,
-          paddingBottom: 160, // ensure scrolling space so content isn't hidden behind absolute button
+          paddingBottom: 160,
         }}
       >
         {/* Current Balance Card */}
-        <StyledView
+        <View
           style={{
             backgroundColor: "#19191B",
             borderRadius: 16,
@@ -181,7 +170,7 @@ const Withdrawal = () => {
             marginBottom: 10,
           }}
         >
-          <StyledText
+          <Text
             style={{
               fontSize: 12,
               fontFamily: FONT.Regular,
@@ -190,8 +179,8 @@ const Withdrawal = () => {
             }}
           >
             Current balance:
-          </StyledText>
-          <StyledText
+          </Text>
+          <Text
             style={{
               fontSize: 20,
               fontFamily: FONT.SemiBold,
@@ -199,11 +188,11 @@ const Withdrawal = () => {
             }}
           >
             {currentBalance} GEL
-          </StyledText>
-        </StyledView>
+          </Text>
+        </View>
 
         {/* Amount to Withdraw */}
-        <StyledText
+        <Text
           style={{
             fontSize: 18,
             fontFamily: FONT.Medium,
@@ -212,9 +201,9 @@ const Withdrawal = () => {
           }}
         >
           Amount to withdraw (GEL)
-        </StyledText>
+        </Text>
 
-        <StyledTextInput
+        <TextInput
           value={amount}
           onChangeText={setAmount}
           keyboardType="numeric"
@@ -231,7 +220,7 @@ const Withdrawal = () => {
           placeholderTextColor="#6F6F70"
         />
 
-        <StyledText
+        <Text
           style={{
             fontSize: 12,
             fontFamily: FONT.Regular,
@@ -240,10 +229,10 @@ const Withdrawal = () => {
           }}
         >
           Minimum withdrawal amount is 10 GEL
-        </StyledText>
+        </Text>
 
         {/* Payout Destination */}
-        <StyledText
+        <Text
           style={{
             fontSize: 18,
             fontFamily: FONT.Medium,
@@ -252,9 +241,9 @@ const Withdrawal = () => {
           }}
         >
           Payout destination
-        </StyledText>
+        </Text>
 
-        <StyledTouchableOpacity
+        <TouchableOpacity
           style={{
             backgroundColor: "#19191B",
             borderRadius: 12,
@@ -264,7 +253,7 @@ const Withdrawal = () => {
             marginBottom: 20,
           }}
         >
-          <StyledView
+          <View
             style={{
               width: 38,
               height: 38,
@@ -280,9 +269,9 @@ const Withdrawal = () => {
               style={{ width: 24, height: 24, tintColor: "#FFFFFF" }}
               resizeMode="contain"
             />
-          </StyledView>
-          <StyledView style={{ flex: 1 }}>
-            <StyledText
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text
               style={{
                 fontSize: 15,
                 fontFamily: FONT.Regular,
@@ -290,18 +279,18 @@ const Withdrawal = () => {
               }}
             >
               IBAN: GE**** 1234
-            </StyledText>
-          </StyledView>
+            </Text>
+          </View>
           <ChevronLeft
             size={20}
             color="#8E8E93"
             strokeWidth={2}
             style={{ transform: [{ rotate: "180deg" }] }}
           />
-        </StyledTouchableOpacity>
+        </TouchableOpacity>
 
         {/* Withdrawal Summary */}
-        <StyledText
+        <Text
           style={{
             fontSize: 16,
             fontFamily: FONT.SemiBold,
@@ -310,9 +299,9 @@ const Withdrawal = () => {
           }}
         >
           Withdrawal Summary
-        </StyledText>
+        </Text>
 
-        <StyledView
+        <View
           style={{
             backgroundColor: "#19191B",
             borderRadius: 12,
@@ -320,7 +309,7 @@ const Withdrawal = () => {
             marginBottom: 24,
           }}
         >
-          <StyledView
+          <View
             style={{
               flexDirection: "row",
               justifyContent: "space-between",
@@ -329,7 +318,7 @@ const Withdrawal = () => {
               borderBottomColor: "#2C2C2E",
             }}
           >
-            <StyledText
+            <Text
               style={{
                 fontSize: 14,
                 fontFamily: FONT.Regular,
@@ -337,8 +326,8 @@ const Withdrawal = () => {
               }}
             >
               Withdrawal amount:
-            </StyledText>
-            <StyledText
+            </Text>
+            <Text
               style={{
                 fontSize: 14,
                 fontFamily: FONT.Medium,
@@ -346,10 +335,10 @@ const Withdrawal = () => {
               }}
             >
               {withdrawalAmount.toFixed(2)} GEL
-            </StyledText>
-          </StyledView>
+            </Text>
+          </View>
 
-          <StyledView
+          <View
             style={{
               flexDirection: "row",
               justifyContent: "space-between",
@@ -358,7 +347,7 @@ const Withdrawal = () => {
               borderBottomColor: "#2C2C2E",
             }}
           >
-            <StyledText
+            <Text
               style={{
                 fontSize: 14,
                 fontFamily: FONT.Regular,
@@ -366,8 +355,8 @@ const Withdrawal = () => {
               }}
             >
               TAX & Commission:
-            </StyledText>
-            <StyledText
+            </Text>
+            <Text
               style={{
                 fontSize: 14,
                 fontFamily: FONT.Medium,
@@ -375,17 +364,17 @@ const Withdrawal = () => {
               }}
             >
               -{taxCommission.toFixed(2)} GEL
-            </StyledText>
-          </StyledView>
+            </Text>
+          </View>
 
-          <StyledView
+          <View
             style={{
               flexDirection: "row",
               justifyContent: "space-between",
               paddingVertical: 12,
             }}
           >
-            <StyledText
+            <Text
               style={{
                 fontSize: 14,
                 fontFamily: FONT.Regular,
@@ -393,8 +382,8 @@ const Withdrawal = () => {
               }}
             >
               Final amount u'll receive:
-            </StyledText>
-            <StyledText
+            </Text>
+            <Text
               style={{
                 fontSize: 14,
                 fontFamily: FONT.SemiBold,
@@ -402,11 +391,11 @@ const Withdrawal = () => {
               }}
             >
               {finalAmount.toFixed(2)} GEL
-            </StyledText>
-          </StyledView>
-        </StyledView>
+            </Text>
+          </View>
+        </View>
 
-        <StyledText
+        <Text
           style={{
             fontSize: 12,
             fontFamily: FONT.Regular,
@@ -415,24 +404,23 @@ const Withdrawal = () => {
           }}
         >
           Transfers typically take 1-3 business days.
-        </StyledText>
-      </StyledScrollView>
+        </Text>
+      </ScrollView>
 
-      {/* Withdraw Button (absolute, centered pill like screenshot) */}
-      <StyledView
+      {/* Withdraw Button */}
+      <View
         style={{
           position: "absolute",
           left: BUTTON_HORIZONTAL_PADDING,
           right: BUTTON_HORIZONTAL_PADDING,
-          // bump bottom high so it clears tab bars / rounded device bottom
           bottom: Platform.OS === "ios" ? 96 : 80,
           alignItems: "center",
           justifyContent: "center",
-          zIndex: 9999, // make sure it's on top
+          zIndex: 9999,
         }}
         pointerEvents="box-none"
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={handleWithdraw}
           disabled={withdrawalAmount < 10}
           style={{
@@ -454,7 +442,7 @@ const Withdrawal = () => {
             }),
           }}
         >
-          <StyledText
+          <Text
             style={{
               fontSize: 18,
               fontFamily: FONT.SemiBold,
@@ -462,13 +450,13 @@ const Withdrawal = () => {
             }}
           >
             Withdraw
-          </StyledText>
-        </StyledTouchableOpacity>
-      </StyledView>
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Success Toast */}
       {successToastVisible && (
-        <StyledView
+        <View
           style={{
             position: "absolute",
             top: 0,
@@ -480,7 +468,7 @@ const Withdrawal = () => {
             justifyContent: "center",
           }}
         >
-          <StyledText
+          <Text
             style={{
               fontSize: 16,
               fontFamily: FONT.SemiBold,
@@ -488,8 +476,8 @@ const Withdrawal = () => {
             }}
           >
             Withdrawal successfully initiated!
-          </StyledText>
-        </StyledView>
+          </Text>
+        </View>
       )}
 
       {/* Security Verification Modal */}
@@ -499,11 +487,11 @@ const Withdrawal = () => {
         visible={verificationVisible}
         onRequestClose={() => setVerificationVisible(false)}
       >
-        <StyledSafeAreaView className="flex-1 bg-black">
+        <SafeAreaView className="flex-1 bg-black">
           <StatusBar barStyle="light-content" />
 
           {/* Header */}
-          <StyledView
+          <View
             style={{
               height: 60,
               flexDirection: "row",
@@ -513,7 +501,7 @@ const Withdrawal = () => {
               position: "relative",
             }}
           >
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setVerificationVisible(false)}
               style={{
                 position: "absolute",
@@ -525,8 +513,8 @@ const Withdrawal = () => {
               }}
             >
               <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-            </StyledTouchableOpacity>
-            <StyledText
+            </TouchableOpacity>
+            <Text
               style={{
                 fontSize: 18,
                 fontFamily: FONT.SemiBold,
@@ -534,17 +522,17 @@ const Withdrawal = () => {
               }}
             >
               Security Verification
-            </StyledText>
-          </StyledView>
+            </Text>
+          </View>
 
-          <StyledScrollView
+          <ScrollView
             style={{ flex: 1 }}
             contentContainerStyle={{
               paddingHorizontal: 24,
               paddingTop: 40,
             }}
           >
-            <StyledText
+            <Text
               style={{
                 fontSize: 24,
                 fontFamily: FONT.Bold,
@@ -554,9 +542,9 @@ const Withdrawal = () => {
               }}
             >
               Enter verification code
-            </StyledText>
+            </Text>
 
-            <StyledText
+            <Text
               style={{
                 fontSize: 14,
                 fontFamily: FONT.Regular,
@@ -568,15 +556,15 @@ const Withdrawal = () => {
             >
               To ensure security, we have sent a 6-digit code to your registered
               number:{" "}
-              <StyledText
+              <Text
                 style={{ color: "#FFFFFF", fontFamily: FONT.SemiBold }}
               >
                 +995 598 *** 323
-              </StyledText>
-            </StyledText>
+              </Text>
+            </Text>
 
             {/* Code Input Boxes */}
-            <StyledView
+            <View
               style={{
                 flexDirection: "row",
                 justifyContent: "space-between",
@@ -585,7 +573,7 @@ const Withdrawal = () => {
               }}
             >
               {code.map((digit, index) => (
-                <StyledView
+                <View
                   key={index}
                   style={{
                     width: 52,
@@ -598,7 +586,7 @@ const Withdrawal = () => {
                     justifyContent: "center",
                   }}
                 >
-                  <StyledTextInput
+                  <TextInput
                     ref={(el) => (inputRefs.current[index] = el)}
                     value={digit}
                     onChangeText={(text) => handleCodeChange(text, index)}
@@ -614,12 +602,12 @@ const Withdrawal = () => {
                       height: "100%",
                     }}
                   />
-                </StyledView>
+                </View>
               ))}
-            </StyledView>
+            </View>
 
             {/* Submit Button */}
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={handleSubmit}
               disabled={!isCodeComplete || isSubmitting}
               style={{
@@ -636,7 +624,7 @@ const Withdrawal = () => {
               {isSubmitting ? (
                 <ActivityIndicator color="#000000" />
               ) : (
-                <StyledText
+                <Text
                   style={{
                     fontSize: 18,
                     fontFamily: FONT.SemiBold,
@@ -644,19 +632,19 @@ const Withdrawal = () => {
                   }}
                 >
                   Submit
-                </StyledText>
+                </Text>
               )}
-            </StyledTouchableOpacity>
+            </TouchableOpacity>
 
             {/* Resend Code */}
-            <StyledView
+            <View
               style={{
                 flexDirection: "row",
                 justifyContent: "center",
                 alignItems: "center",
               }}
             >
-              <StyledText
+              <Text
                 style={{
                   fontSize: 14,
                   fontFamily: FONT.Regular,
@@ -664,8 +652,8 @@ const Withdrawal = () => {
                 }}
               >
                 Send code again{" "}
-              </StyledText>
-              <StyledText
+              </Text>
+              <Text
                 style={{
                   fontSize: 14,
                   fontFamily: FONT.Regular,
@@ -673,10 +661,10 @@ const Withdrawal = () => {
                 }}
               >
                 00:20
-              </StyledText>
-            </StyledView>
-          </StyledScrollView>
-        </StyledSafeAreaView>
+              </Text>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
       </Modal>
 
       {/* Withdrawal History Modal */}
@@ -686,11 +674,11 @@ const Withdrawal = () => {
         visible={historyVisible}
         onRequestClose={() => setHistoryVisible(false)}
       >
-        <StyledSafeAreaView className="flex-1 bg-black">
+        <SafeAreaView className="flex-1 bg-black">
           <StatusBar barStyle="light-content" />
 
           {/* Header */}
-          <StyledView
+          <View
             style={{
               height: 56,
               flexDirection: "row",
@@ -700,7 +688,7 @@ const Withdrawal = () => {
               position: "relative",
             }}
           >
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setHistoryVisible(false)}
               style={{
                 position: "absolute",
@@ -712,9 +700,9 @@ const Withdrawal = () => {
               }}
             >
               <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-            </StyledTouchableOpacity>
+            </TouchableOpacity>
 
-            <StyledText
+            <Text
               style={{
                 fontSize: 16,
                 fontFamily: FONT.SemiBold,
@@ -722,11 +710,11 @@ const Withdrawal = () => {
               }}
             >
               Withdrawal History
-            </StyledText>
-          </StyledView>
+            </Text>
+          </View>
 
-          {/* Body (fixed layout - no scroll) */}
-          <StyledView
+          {/* Body */}
+          <View
             style={{
               flex: 1,
               paddingHorizontal: 20,
@@ -735,15 +723,15 @@ const Withdrawal = () => {
               justifyContent: "space-between",
             }}
           >
-            {/* Top content (icon + amount + subtitle) */}
-            <StyledView style={{ alignItems: "center", marginTop: 2 }}>
-              <StyledImage
+            {/* Top content */}
+            <View style={{ alignItems: "center", marginTop: 2 }}>
+              <Image
                 source={require("../../../assets/images/Check.png")}
                 style={{ width: 40, height: 40 }}
                 resizeMode="contain"
               />
 
-              <StyledText
+              <Text
                 style={{
                   fontSize: 20,
                   fontFamily: FONT.SemiBold,
@@ -752,9 +740,9 @@ const Withdrawal = () => {
                 }}
               >
                 999.50 GEL
-              </StyledText>
+              </Text>
 
-              <StyledText
+              <Text
                 style={{
                   fontSize: 11,
                   fontFamily: FONT.Regular,
@@ -763,13 +751,13 @@ const Withdrawal = () => {
                 }}
               >
                 Completed
-              </StyledText>
-            </StyledView>
+              </Text>
+            </View>
 
-            {/* Middle content (compact cards stacked) */}
-            <StyledView style={{ flexShrink: 1, gap: 8 }}>
+            {/* Middle content */}
+            <View style={{ flexShrink: 1, gap: 8 }}>
               {/* Balance & Amount selection */}
-              <StyledText
+              <Text
                 style={{
                   fontSize: 13,
                   fontFamily: FONT.SemiBold,
@@ -778,9 +766,9 @@ const Withdrawal = () => {
                 }}
               >
                 Balance & Amount selection
-              </StyledText>
+              </Text>
 
-              <StyledView
+              <View
                 style={{
                   backgroundColor: "#19191B",
                   borderRadius: 12,
@@ -790,14 +778,14 @@ const Withdrawal = () => {
                   alignItems: "center",
                 }}
               >
-                <StyledView
+                <View
                   style={{
                     ...historyRowStyle,
                     borderBottomWidth: 1,
                     borderBottomColor: "#2C2C2E",
                   }}
                 >
-                  <StyledText
+                  <Text
                     style={{
                       fontSize: 13,
                       fontFamily: FONT.Regular,
@@ -805,8 +793,8 @@ const Withdrawal = () => {
                     }}
                   >
                     Withdrawal amount:
-                  </StyledText>
-                  <StyledText
+                  </Text>
+                  <Text
                     style={{
                       fontSize: 13,
                       fontFamily: FONT.Medium,
@@ -814,17 +802,17 @@ const Withdrawal = () => {
                     }}
                   >
                     1000.00 GEL
-                  </StyledText>
-                </StyledView>
+                  </Text>
+                </View>
 
-                <StyledView
+                <View
                   style={{
                     ...historyRowStyle,
                     borderBottomWidth: 1,
                     borderBottomColor: "#2C2C2E",
                   }}
                 >
-                  <StyledText
+                  <Text
                     style={{
                       fontSize: 13,
                       fontFamily: FONT.Regular,
@@ -832,8 +820,8 @@ const Withdrawal = () => {
                     }}
                   >
                     Transfer fee:
-                  </StyledText>
-                  <StyledText
+                  </Text>
+                  <Text
                     style={{
                       fontSize: 13,
                       fontFamily: FONT.Medium,
@@ -841,17 +829,17 @@ const Withdrawal = () => {
                     }}
                   >
                     -0.50 GEL
-                  </StyledText>
-                </StyledView>
+                  </Text>
+                </View>
 
-                <StyledView
+                <View
                   style={{
                     ...historyRowStyle,
                     borderBottomWidth: 1,
                     borderBottomColor: "#2C2C2E",
                   }}
                 >
-                  <StyledText
+                  <Text
                     style={{
                       fontSize: 13,
                       fontFamily: FONT.Regular,
@@ -859,8 +847,8 @@ const Withdrawal = () => {
                     }}
                   >
                     Net amount received:
-                  </StyledText>
-                  <StyledText
+                  </Text>
+                  <Text
                     style={{
                       fontSize: 13,
                       fontFamily: FONT.Medium,
@@ -868,11 +856,11 @@ const Withdrawal = () => {
                     }}
                   >
                     999.50 GEL
-                  </StyledText>
-                </StyledView>
+                  </Text>
+                </View>
 
-                <StyledView style={{ ...historyRowStyle }}>
-                  <StyledText
+                <View style={{ ...historyRowStyle }}>
+                  <Text
                     style={{
                       fontSize: 13,
                       fontFamily: FONT.Regular,
@@ -880,8 +868,8 @@ const Withdrawal = () => {
                     }}
                   >
                     Status:
-                  </StyledText>
-                  <StyledText
+                  </Text>
+                  <Text
                     style={{
                       fontSize: 13,
                       fontFamily: FONT.Medium,
@@ -889,12 +877,12 @@ const Withdrawal = () => {
                     }}
                   >
                     Completed
-                  </StyledText>
-                </StyledView>
-              </StyledView>
+                  </Text>
+                </View>
+              </View>
 
               {/* Withdrawal summary */}
-              <StyledText
+              <Text
                 style={{
                   fontSize: 13,
                   fontFamily: FONT.SemiBold,
@@ -903,9 +891,9 @@ const Withdrawal = () => {
                 }}
               >
                 Withdrawal summary
-              </StyledText>
+              </Text>
 
-              <StyledView
+              <View
                 style={{
                   backgroundColor: "#1C1C1E",
                   borderRadius: 12,
@@ -913,14 +901,14 @@ const Withdrawal = () => {
                   paddingHorizontal: 12,
                 }}
               >
-                <StyledView
+                <View
                   style={{
                     ...historyRowStyle,
                     borderBottomWidth: 1,
                     borderBottomColor: "#2C2C2E",
                   }}
                 >
-                  <StyledText
+                  <Text
                     style={{
                       fontSize: 13,
                       fontFamily: FONT.Regular,
@@ -928,8 +916,8 @@ const Withdrawal = () => {
                     }}
                   >
                     Transferred to:
-                  </StyledText>
-                  <StyledText
+                  </Text>
+                  <Text
                     style={{
                       fontSize: 13,
                       fontFamily: FONT.Medium,
@@ -937,17 +925,17 @@ const Withdrawal = () => {
                     }}
                   >
                     Bank account
-                  </StyledText>
-                </StyledView>
+                  </Text>
+                </View>
 
-                <StyledView
+                <View
                   style={{
                     ...historyRowStyle,
                     borderBottomWidth: 1,
                     borderBottomColor: "#2C2C2E",
                   }}
                 >
-                  <StyledText
+                  <Text
                     style={{
                       fontSize: 13,
                       fontFamily: FONT.Regular,
@@ -955,8 +943,8 @@ const Withdrawal = () => {
                     }}
                   >
                     Initiated from:
-                  </StyledText>
-                  <StyledText
+                  </Text>
+                  <Text
                     style={{
                       fontSize: 13,
                       fontFamily: FONT.Medium,
@@ -964,17 +952,17 @@ const Withdrawal = () => {
                     }}
                   >
                     In-App balance
-                  </StyledText>
-                </StyledView>
+                  </Text>
+                </View>
 
-                <StyledView
+                <View
                   style={{
                     ...historyRowStyle,
                     borderBottomWidth: 1,
                     borderBottomColor: "#2C2C2E",
                   }}
                 >
-                  <StyledText
+                  <Text
                     style={{
                       fontSize: 13,
                       fontFamily: FONT.Regular,
@@ -982,8 +970,8 @@ const Withdrawal = () => {
                     }}
                   >
                     Date/time
-                  </StyledText>
-                  <StyledText
+                  </Text>
+                  <Text
                     style={{
                       fontSize: 13,
                       fontFamily: FONT.Medium,
@@ -991,11 +979,11 @@ const Withdrawal = () => {
                     }}
                   >
                     May 15, 2024, 10:30
-                  </StyledText>
-                </StyledView>
+                  </Text>
+                </View>
 
-                <StyledView style={{ ...historyRowStyle }}>
-                  <StyledText
+                <View style={{ ...historyRowStyle }}>
+                  <Text
                     style={{
                       fontSize: 13,
                       fontFamily: FONT.Regular,
@@ -1003,12 +991,12 @@ const Withdrawal = () => {
                     }}
                   >
                     Transaction ID:
-                  </StyledText>
+                  </Text>
 
-                  <StyledView
+                  <View
                     style={{ flexDirection: "row", alignItems: "center" }}
                   >
-                    <StyledText
+                    <Text
                       style={{
                         fontSize: 13,
                         fontFamily: FONT.Medium,
@@ -1017,16 +1005,16 @@ const Withdrawal = () => {
                       }}
                     >
                       A1B2C4R4HD7
-                    </StyledText>
+                    </Text>
                     <Copy size={16} color="#FCCD34" />
-                  </StyledView>
-                </StyledView>
-              </StyledView>
-            </StyledView>
+                  </View>
+                </View>
+              </View>
+            </View>
 
             {/* Bottom action buttons */}
-            <StyledView style={{ paddingTop: 10 }}>
-              <StyledTouchableOpacity
+            <View style={{ paddingTop: 10 }}>
+              <TouchableOpacity
                 style={{
                   backgroundColor: "#FCCD34",
                   borderRadius: 12,
@@ -1036,7 +1024,7 @@ const Withdrawal = () => {
                   marginBottom: 10,
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 15,
                     fontFamily: FONT.SemiBold,
@@ -1044,10 +1032,10 @@ const Withdrawal = () => {
                   }}
                 >
                   Download invoice
-                </StyledText>
-              </StyledTouchableOpacity>
+                </Text>
+              </TouchableOpacity>
 
-              <StyledTouchableOpacity
+              <TouchableOpacity
                 onPress={() => setHistoryVisible(false)}
                 style={{
                   backgroundColor: "transparent",
@@ -1059,7 +1047,7 @@ const Withdrawal = () => {
                   justifyContent: "center",
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 15,
                     fontFamily: FONT.SemiBold,
@@ -1067,13 +1055,13 @@ const Withdrawal = () => {
                   }}
                 >
                   Close
-                </StyledText>
-              </StyledTouchableOpacity>
-            </StyledView>
-          </StyledView>
-        </StyledSafeAreaView>
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </SafeAreaView>
       </Modal>
-    </StyledSafeAreaView>
+    </SafeAreaView>
   );
 };
 

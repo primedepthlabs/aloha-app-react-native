@@ -10,7 +10,6 @@ import {
   Switch,
   Image,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft } from "lucide-react-native";
 import {
   useFonts,
@@ -20,13 +19,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-import Svg, { Path } from "react-native-svg";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledTextInput = styled(TextInput);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -48,18 +40,18 @@ const PaidMessages = () => {
 
   if (!fontsLoaded) {
     return (
-      <View className="flex-1 items-center justify-center bg-black">
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "black" }}>
         <ActivityIndicator color="#FCCD34" />
       </View>
     );
   }
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <StyledView
+      <View
         style={{
           height: 60,
           flexDirection: "row",
@@ -69,7 +61,7 @@ const PaidMessages = () => {
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.back()}
           style={{
             position: "absolute",
@@ -81,8 +73,9 @@ const PaidMessages = () => {
           }}
         >
           <ChevronLeft size={26} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
+        </TouchableOpacity>
+
+        <Text
           style={{
             fontSize: 15,
             fontFamily: FONT.SemiBold,
@@ -90,12 +83,12 @@ const PaidMessages = () => {
           }}
         >
           Paid Messaging
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
-      <StyledView style={{ flex: 1, paddingHorizontal: 20, paddingTop: 30 }}>
+      <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 30 }}>
         {/* Enable Paid Message Toggle */}
-        <StyledView
+        <View
           style={{
             flexDirection: "row",
             alignItems: "center",
@@ -103,12 +96,12 @@ const PaidMessages = () => {
             marginBottom: 32,
           }}
         >
-          <StyledView style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Image
               source={require("../../../assets/images/dashboard/lock-icon.png")}
               style={{ width: 15, height: 15 }}
             />
-            <StyledText
+            <Text
               style={{
                 fontSize: 16,
                 fontFamily: FONT.Regular,
@@ -117,8 +110,9 @@ const PaidMessages = () => {
               }}
             >
               Enable Paid Message
-            </StyledText>
-          </StyledView>
+            </Text>
+          </View>
+
           <Switch
             trackColor={{ false: "#3E3E40", true: "#FCCD34" }}
             thumbColor="#FFFFFF"
@@ -126,11 +120,11 @@ const PaidMessages = () => {
             onValueChange={setIsEnabled}
             value={isEnabled}
           />
-        </StyledView>
+        </View>
 
         {/* Price Input */}
-        <StyledView style={{ marginBottom: 16 }}>
-          <StyledText
+        <View style={{ marginBottom: 16 }}>
+          <Text
             style={{
               fontSize: 16,
               fontFamily: FONT.Regular,
@@ -139,8 +133,9 @@ const PaidMessages = () => {
             }}
           >
             Price for first 60 characters (GEL)
-          </StyledText>
-          <StyledTextInput
+          </Text>
+
+          <TextInput
             style={{
               backgroundColor: "#19191B",
               borderRadius: 15,
@@ -157,11 +152,11 @@ const PaidMessages = () => {
             keyboardType="decimal-pad"
             placeholderTextColor="#6C6C70"
           />
-        </StyledView>
+        </View>
 
         {/* Info Text */}
-        <StyledView style={{ marginBottom: 24 }}>
-          <StyledText
+        <View style={{ marginBottom: 24 }}>
+          <Text
             style={{
               fontSize: 12,
               fontFamily: FONT.Regular,
@@ -171,8 +166,9 @@ const PaidMessages = () => {
             }}
           >
             Users are charged this fee only when you send a reply.
-          </StyledText>
-          <StyledText
+          </Text>
+
+          <Text
             style={{
               fontSize: 12,
               fontFamily: FONT.Regular,
@@ -181,10 +177,10 @@ const PaidMessages = () => {
               marginBottom: 12,
             }}
           >
-            If you do not reply within 24 hours, the user will be refunded
-            automatically.
-          </StyledText>
-          <StyledText
+            If you do not reply within 24 hours, the user will be refunded automatically.
+          </Text>
+
+          <Text
             style={{
               fontSize: 12,
               fontFamily: FONT.Regular,
@@ -192,21 +188,14 @@ const PaidMessages = () => {
               lineHeight: 20,
             }}
           >
-            The total charge is calculated based on the length of the user's
-            message, capped at the second price point for every 60 characters
-            beyond the first.
-          </StyledText>
-        </StyledView>
-      </StyledView>
+            The total charge is calculated based on the length of the user's message, capped at the second price point for every 60 characters beyond the first.
+          </Text>
+        </View>
+      </View>
 
       {/* Save Button */}
-      <StyledView
-        style={{
-          paddingHorizontal: 20,
-          paddingBottom: 80,
-        }}
-      >
-        <StyledTouchableOpacity
+      <View style={{ paddingHorizontal: 20, paddingBottom: 80 }}>
+        <TouchableOpacity
           style={{
             width: 332,
             height: 45,
@@ -217,7 +206,7 @@ const PaidMessages = () => {
             alignSelf: "center",
           }}
         >
-          <StyledText
+          <Text
             style={{
               fontSize: 17,
               fontFamily: FONT.SemiBold,
@@ -225,10 +214,10 @@ const PaidMessages = () => {
             }}
           >
             Save changes
-          </StyledText>
-        </StyledTouchableOpacity>
-      </StyledView>
-    </StyledSafeAreaView>
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 };
 

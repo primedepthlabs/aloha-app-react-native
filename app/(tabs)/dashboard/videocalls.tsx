@@ -10,7 +10,6 @@ import {
   Switch,
   Image,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft } from "lucide-react-native";
 import {
   useFonts,
@@ -20,13 +19,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-import Svg, { Path } from "react-native-svg";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledTextInput = styled(TextInput);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -50,18 +42,18 @@ const VideoCalls = () => {
 
   if (!fontsLoaded) {
     return (
-      <View className="flex-1 items-center justify-center bg-black">
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "black" }}>
         <ActivityIndicator color="#FCCD34" />
       </View>
     );
   }
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <StyledView
+      <View
         style={{
           height: 60,
           flexDirection: "row",
@@ -71,7 +63,7 @@ const VideoCalls = () => {
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.back()}
           style={{
             position: "absolute",
@@ -83,8 +75,9 @@ const VideoCalls = () => {
           }}
         >
           <ChevronLeft size={26} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
+        </TouchableOpacity>
+
+        <Text
           style={{
             fontSize: 15,
             fontFamily: FONT.SemiBold,
@@ -92,13 +85,13 @@ const VideoCalls = () => {
           }}
         >
           Video & Audio Calls
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
-      <StyledView style={{ flex: 1, paddingHorizontal: 20, paddingTop: 30 }}>
+      <View style={{ flex: 1, paddingHorizontal: 20, paddingTop: 30 }}>
         {/* Video Calls Section */}
-        <StyledView style={{ marginBottom: 36 }}>
-          <StyledText
+        <View style={{ marginBottom: 36 }}>
+          <Text
             style={{
               fontSize: 18,
               fontFamily: FONT.Medium,
@@ -107,10 +100,10 @@ const VideoCalls = () => {
             }}
           >
             Video calls:
-          </StyledText>
+          </Text>
 
           {/* Enable Video Calls Toggle */}
-          <StyledView
+          <View
             style={{
               flexDirection: "row",
               alignItems: "center",
@@ -118,12 +111,12 @@ const VideoCalls = () => {
               marginBottom: 24,
             }}
           >
-            <StyledView style={{ flexDirection: "row", alignItems: "center" }}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Image
                 source={require("../../../assets/images/profile/video-call.png")}
                 style={{ width: 38, height: 38 }}
               />
-              <StyledText
+              <Text
                 style={{
                   fontSize: 15,
                   fontFamily: FONT.Regular,
@@ -132,8 +125,9 @@ const VideoCalls = () => {
                 }}
               >
                 Enable paid video calls
-              </StyledText>
-            </StyledView>
+              </Text>
+            </View>
+
             <Switch
               trackColor={{ false: "#3E3E40", true: "#FCCD34" }}
               thumbColor="#FFFFFF"
@@ -141,11 +135,11 @@ const VideoCalls = () => {
               onValueChange={setVideoEnabled}
               value={videoEnabled}
             />
-          </StyledView>
+          </View>
 
           {/* Video Price Input */}
-          <StyledView>
-            <StyledText
+          <View>
+            <Text
               style={{
                 fontSize: 15,
                 fontFamily: FONT.Medium,
@@ -154,8 +148,8 @@ const VideoCalls = () => {
               }}
             >
               Price per minute (GEL)
-            </StyledText>
-            <StyledTextInput
+            </Text>
+            <TextInput
               style={{
                 backgroundColor: "#19191B",
                 borderRadius: 12,
@@ -170,12 +164,12 @@ const VideoCalls = () => {
               keyboardType="decimal-pad"
               placeholderTextColor="#6C6C70"
             />
-          </StyledView>
-        </StyledView>
+          </View>
+        </View>
 
         {/* Audio Calls Section */}
-        <StyledView style={{ marginBottom: 24 }}>
-          <StyledText
+        <View style={{ marginBottom: 24 }}>
+          <Text
             style={{
               fontSize: 18,
               fontFamily: FONT.Medium,
@@ -184,10 +178,10 @@ const VideoCalls = () => {
             }}
           >
             Audio calls:
-          </StyledText>
+          </Text>
 
           {/* Enable Audio Calls Toggle */}
-          <StyledView
+          <View
             style={{
               flexDirection: "row",
               alignItems: "center",
@@ -195,12 +189,12 @@ const VideoCalls = () => {
               marginBottom: 24,
             }}
           >
-            <StyledView style={{ flexDirection: "row", alignItems: "center" }}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Image
                 source={require("../../../assets/images/dashboard/call.png")}
                 style={{ width: 38, height: 38 }}
               />
-              <StyledText
+              <Text
                 style={{
                   fontSize: 15,
                   fontFamily: FONT.Regular,
@@ -209,8 +203,9 @@ const VideoCalls = () => {
                 }}
               >
                 Enable paid audio calls
-              </StyledText>
-            </StyledView>
+              </Text>
+            </View>
+
             <Switch
               trackColor={{ false: "#3E3E40", true: "#FCCD34" }}
               thumbColor="#FFFFFF"
@@ -218,11 +213,11 @@ const VideoCalls = () => {
               onValueChange={setAudioEnabled}
               value={audioEnabled}
             />
-          </StyledView>
+          </View>
 
           {/* Audio Price Input */}
-          <StyledView>
-            <StyledText
+          <View>
+            <Text
               style={{
                 fontSize: 15,
                 fontFamily: FONT.Medium,
@@ -231,8 +226,8 @@ const VideoCalls = () => {
               }}
             >
               Price per minute (GEL)
-            </StyledText>
-            <StyledTextInput
+            </Text>
+            <TextInput
               style={{
                 backgroundColor: "#19191B",
                 borderRadius: 12,
@@ -247,18 +242,18 @@ const VideoCalls = () => {
               keyboardType="decimal-pad"
               placeholderTextColor="#6C6C70"
             />
-          </StyledView>
-        </StyledView>
-      </StyledView>
+          </View>
+        </View>
+      </View>
 
       {/* Save Button */}
-      <StyledView
+      <View
         style={{
           paddingHorizontal: 20,
           paddingBottom: 80,
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           style={{
             width: 332,
             height: 45,
@@ -269,7 +264,7 @@ const VideoCalls = () => {
             alignSelf: "center",
           }}
         >
-          <StyledText
+          <Text
             style={{
               fontSize: 17,
               fontFamily: FONT.SemiBold,
@@ -277,10 +272,10 @@ const VideoCalls = () => {
             }}
           >
             Save changes
-          </StyledText>
-        </StyledTouchableOpacity>
-      </StyledView>
-    </StyledSafeAreaView>
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 };
 

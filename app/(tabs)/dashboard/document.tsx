@@ -11,7 +11,6 @@ import {
   Image,
   Alert,
 } from "react-native";
-import { styled } from "nativewind";
 import {
   ChevronLeft,
   Upload,
@@ -29,11 +28,6 @@ import {
 import { useRouter } from "expo-router";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -53,9 +47,7 @@ const DocumentUploadScreen = () => {
     Poppins_700Bold,
   });
 
-  const [uploadState, setUploadState] = useState<
-    "idle" | "uploading" | "uploaded"
-  >("idle");
+  const [uploadState, setUploadState] = useState<"idle" | "uploading" | "uploaded">("idle");
   const [selectedFile, setSelectedFile] = useState<any>(null);
   const [showOptions, setShowOptions] = useState(true);
   const [successModalVisible, setSuccessModalVisible] = useState(false);
@@ -81,12 +73,11 @@ const DocumentUploadScreen = () => {
         setShowOptions(false);
         setUploadState("uploading");
 
-        // Simulate upload
         setTimeout(() => {
           setUploadState("uploaded");
         }, 2000);
       }
-    } catch (error) {
+    } catch {
       Alert.alert("Error", "Failed to pick image");
     }
   };
@@ -103,12 +94,11 @@ const DocumentUploadScreen = () => {
         setShowOptions(false);
         setUploadState("uploading");
 
-        // Simulate upload
         setTimeout(() => {
           setUploadState("uploaded");
         }, 2000);
       }
-    } catch (error) {
+    } catch {
       Alert.alert("Error", "Failed to pick document");
     }
   };
@@ -131,11 +121,11 @@ const DocumentUploadScreen = () => {
   };
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <StyledView
+      <View
         style={{
           height: 60,
           flexDirection: "row",
@@ -144,7 +134,7 @@ const DocumentUploadScreen = () => {
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.back()}
           style={{
             width: 40,
@@ -154,10 +144,9 @@ const DocumentUploadScreen = () => {
           }}
         >
           <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
+        </TouchableOpacity>
 
-        {/* Progress Bar */}
-        <StyledView
+        <View
           style={{
             flex: 1,
             height: 4,
@@ -166,7 +155,7 @@ const DocumentUploadScreen = () => {
             borderRadius: 2,
           }}
         >
-          <StyledView
+          <View
             style={{
               width: "50%",
               height: "100%",
@@ -174,12 +163,12 @@ const DocumentUploadScreen = () => {
               borderRadius: 2,
             }}
           />
-        </StyledView>
-      </StyledView>
+        </View>
+      </View>
 
-      <StyledView style={{ flex: 1, paddingHorizontal: 24, paddingTop: 40 }}>
+      <View style={{ flex: 1, paddingHorizontal: 24, paddingTop: 40 }}>
         {/* Title */}
-        <StyledText
+        <Text
           style={{
             fontSize: 24,
             textAlign: "center",
@@ -189,10 +178,10 @@ const DocumentUploadScreen = () => {
           }}
         >
           Upload Your document
-        </StyledText>
+        </Text>
 
         {/* Subtitle */}
-        <StyledText
+        <Text
           style={{
             fontSize: 14,
             fontFamily: FONT.Regular,
@@ -203,10 +192,10 @@ const DocumentUploadScreen = () => {
           }}
         >
           Ensure all details on the photo are visible{"\n"}and easy to read.
-        </StyledText>
+        </Text>
 
         {/* Upload Area */}
-        <StyledView
+        <View
           style={{
             borderWidth: 1,
             borderColor: "#FCCD34",
@@ -216,9 +205,9 @@ const DocumentUploadScreen = () => {
             marginBottom: 16,
           }}
         >
-          <StyledView style={{ flexDirection: "row", alignItems: "center" }}>
-            {/* Icon/Preview Box */}
-            <StyledView
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            {/* Icon / Preview */}
+            <View
               style={{
                 width: 90,
                 height: 90,
@@ -230,7 +219,7 @@ const DocumentUploadScreen = () => {
               }}
             >
               {uploadState === "idle" && (
-                <StyledView
+                <View
                   style={{
                     width: 50,
                     height: 50,
@@ -241,11 +230,11 @@ const DocumentUploadScreen = () => {
                   }}
                 >
                   <Upload size={24} color="#FCCD34" />
-                </StyledView>
+                </View>
               )}
 
               {uploadState === "uploading" && (
-                <StyledView
+                <View
                   style={{
                     width: 50,
                     height: 50,
@@ -256,25 +245,20 @@ const DocumentUploadScreen = () => {
                   }}
                 >
                   <ActivityIndicator size="small" color="#FCCD34" />
-                </StyledView>
+                </View>
               )}
 
               {uploadState === "uploaded" && selectedFile?.uri && (
                 <Image
                   source={{ uri: selectedFile.uri }}
-                  style={{
-                    width: 90,
-                    height: 90,
-                    borderRadius: 12,
-                  }}
+                  style={{ width: 90, height: 90, borderRadius: 12 }}
                   resizeMode="cover"
                 />
               )}
-            </StyledView>
+            </View>
 
-            {/* Text Content */}
-            <StyledView style={{ flex: 1 }}>
-              <StyledText
+            <View style={{ flex: 1 }}>
+              <Text
                 style={{
                   fontSize: 18,
                   fontFamily: FONT.Medium,
@@ -283,10 +267,10 @@ const DocumentUploadScreen = () => {
                 }}
               >
                 Upload file
-              </StyledText>
+              </Text>
 
               {uploadState === "idle" && (
-                <StyledText
+                <Text
                   style={{
                     fontSize: 15,
                     fontFamily: FONT.Regular,
@@ -294,11 +278,11 @@ const DocumentUploadScreen = () => {
                   }}
                 >
                   Choose from your{"\n"}device
-                </StyledText>
+                </Text>
               )}
 
               {uploadState === "uploading" && (
-                <StyledText
+                <Text
                   style={{
                     fontSize: 15,
                     fontFamily: FONT.Regular,
@@ -306,25 +290,23 @@ const DocumentUploadScreen = () => {
                   }}
                 >
                   Uploading...
-                </StyledText>
+                </Text>
               )}
 
               {uploadState === "uploaded" && (
-                <StyledView
-                  style={{ flexDirection: "row", alignItems: "center" }}
-                >
-                  <StyledView style={{ flex: 1 }}>
-                    <StyledText
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      numberOfLines={2}
                       style={{
                         fontSize: 13,
                         fontFamily: FONT.Regular,
                         color: "#FCCD34",
                       }}
-                      numberOfLines={2}
                     >
                       {getFileName()}
-                    </StyledText>
-                    <StyledText
+                    </Text>
+                    <Text
                       style={{
                         fontSize: 15,
                         fontFamily: FONT.Regular,
@@ -333,25 +315,19 @@ const DocumentUploadScreen = () => {
                       }}
                     >
                       Uploaded
-                    </StyledText>
-                  </StyledView>
+                    </Text>
+                  </View>
 
-                  <StyledTouchableOpacity
-                    onPress={handleDelete}
-                    style={{
-                      padding: 8,
-                    }}
-                  >
+                  <TouchableOpacity onPress={handleDelete} style={{ padding: 8 }}>
                     <Trash2 size={20} color="#FFFFFF" />
-                  </StyledTouchableOpacity>
-                </StyledView>
+                  </TouchableOpacity>
+                </View>
               )}
-            </StyledView>
-          </StyledView>
-        </StyledView>
+            </View>
+          </View>
+        </View>
 
-        {/* File Format Text */}
-        <StyledText
+        <Text
           style={{
             fontSize: 15,
             fontFamily: FONT.Regular,
@@ -361,12 +337,12 @@ const DocumentUploadScreen = () => {
           }}
         >
           JPG, PNG HEIC, WEBP or PDF (max 50 MB)
-        </StyledText>
+        </Text>
 
         {/* Options */}
         {showOptions && uploadState === "idle" && (
-          <StyledView>
-            <StyledTouchableOpacity
+          <View>
+            <TouchableOpacity
               onPress={handlePhotoLibrary}
               style={{
                 backgroundColor: "#19191B",
@@ -380,7 +356,7 @@ const DocumentUploadScreen = () => {
                 borderBottomColor: "#2C2C2E",
               }}
             >
-              <StyledText
+              <Text
                 style={{
                   fontSize: 18,
                   fontFamily: FONT.Regular,
@@ -388,11 +364,11 @@ const DocumentUploadScreen = () => {
                 }}
               >
                 Photo Library
-              </StyledText>
+              </Text>
               <ImageIcon size={22} color="#FCCD34" />
-            </StyledTouchableOpacity>
+            </TouchableOpacity>
 
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={handleChooseFile}
               style={{
                 backgroundColor: "#19191B",
@@ -404,7 +380,7 @@ const DocumentUploadScreen = () => {
                 justifyContent: "space-between",
               }}
             >
-              <StyledText
+              <Text
                 style={{
                   fontSize: 18,
                   fontFamily: FONT.Regular,
@@ -412,16 +388,16 @@ const DocumentUploadScreen = () => {
                 }}
               >
                 Choose File
-              </StyledText>
+              </Text>
               <FileText size={22} color="#FCCD34" />
-            </StyledTouchableOpacity>
-          </StyledView>
+            </TouchableOpacity>
+          </View>
         )}
-      </StyledView>
+      </View>
 
       {/* Bottom Button */}
-      <StyledView style={{ paddingHorizontal: 24, paddingBottom: 50 }}>
-        <StyledTouchableOpacity
+      <View style={{ paddingHorizontal: 24, paddingBottom: 50 }}>
+        <TouchableOpacity
           onPress={handleSubmit}
           disabled={uploadState !== "uploaded"}
           style={{
@@ -433,7 +409,7 @@ const DocumentUploadScreen = () => {
             opacity: uploadState === "uploaded" ? 1 : 0.6,
           }}
         >
-          <StyledText
+          <Text
             style={{
               fontSize: 18,
               fontFamily: FONT.SemiBold,
@@ -441,13 +417,13 @@ const DocumentUploadScreen = () => {
             }}
           >
             {uploadState === "uploaded" ? "Submit" : "Continue"}
-          </StyledText>
-        </StyledTouchableOpacity>
-      </StyledView>
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Success Modal */}
       <Modal visible={successModalVisible} transparent animationType="fade">
-        <StyledView
+        <View
           style={{
             flex: 1,
             backgroundColor: "#000000",
@@ -456,8 +432,7 @@ const DocumentUploadScreen = () => {
             paddingHorizontal: 24,
           }}
         >
-          {/* Progress Bar at Top */}
-          <StyledView
+          <View
             style={{
               position: "absolute",
               top: 60,
@@ -468,7 +443,7 @@ const DocumentUploadScreen = () => {
               borderRadius: 2,
             }}
           >
-            <StyledView
+            <View
               style={{
                 width: "100%",
                 height: "100%",
@@ -476,11 +451,10 @@ const DocumentUploadScreen = () => {
                 borderRadius: 2,
               }}
             />
-          </StyledView>
+          </View>
 
-          <StyledView style={{ alignItems: "center", width: "100%" }}>
-            {/* Success Icon */}
-            <StyledView
+          <View style={{ alignItems: "center", width: "100%" }}>
+            <View
               style={{
                 width: 120,
                 height: 120,
@@ -494,10 +468,9 @@ const DocumentUploadScreen = () => {
                 style={{ width: 120, height: 120 }}
                 resizeMode="contain"
               />
-            </StyledView>
+            </View>
 
-            {/* Success Title */}
-            <StyledText
+            <Text
               style={{
                 fontSize: 28,
                 fontFamily: FONT.Bold,
@@ -508,10 +481,9 @@ const DocumentUploadScreen = () => {
               }}
             >
               File Uploaded{"\n"}Successfully!
-            </StyledText>
+            </Text>
 
-            {/* Success Message */}
-            <StyledText
+            <Text
               style={{
                 fontSize: 14,
                 fontFamily: FONT.Regular,
@@ -522,15 +494,11 @@ const DocumentUploadScreen = () => {
               }}
             >
               The document{" "}
-              <StyledText style={{ color: "#FCCD34" }}>
-                {getFileName()}
-              </StyledText>
-              {"\n"}is confirmed and ready for final{"\n"}submission review. Tap
-              the button{"\n"}below to review your document before{"\n"}sending.
-            </StyledText>
+              <Text style={{ color: "#FCCD34" }}>{getFileName()}</Text>
+              {"\n"}is confirmed and ready for final{"\n"}submission review.
+            </Text>
 
-            {/* Done Button */}
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => {
                 setSuccessModalVisible(false);
                 router.back();
@@ -544,7 +512,7 @@ const DocumentUploadScreen = () => {
                 borderRadius: 15,
               }}
             >
-              <StyledText
+              <Text
                 style={{
                   fontSize: 18,
                   fontFamily: FONT.SemiBold,
@@ -552,12 +520,12 @@ const DocumentUploadScreen = () => {
                 }}
               >
                 Done
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledView>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
-    </StyledSafeAreaView>
+    </SafeAreaView>
   );
 };
 

@@ -10,7 +10,6 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft } from "lucide-react-native";
 import {
   useFonts,
@@ -20,13 +19,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledTextInput = styled(TextInput);
-const StyledScrollView = styled(ScrollView);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -100,10 +92,7 @@ const AddBank = () => {
       "Delete Bank Account",
       "Are you sure you want to delete this bank account?",
       [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
+        { text: "Cancel", style: "cancel" },
         {
           text: "Delete",
           style: "destructive",
@@ -131,12 +120,11 @@ const AddBank = () => {
   };
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
 
-      {/* Success Banner */}
       {showSuccess && (
-        <StyledView
+        <View
           style={{
             backgroundColor: "#FCCD34",
             paddingVertical: 16,
@@ -148,7 +136,7 @@ const AddBank = () => {
             zIndex: 1000,
           }}
         >
-          <StyledText
+          <Text
             style={{
               fontSize: 15,
               fontFamily: FONT.SemiBold,
@@ -157,23 +145,22 @@ const AddBank = () => {
             }}
           >
             {successMessage}
-          </StyledText>
-        </StyledView>
+          </Text>
+        </View>
       )}
 
-      {/* Header */}
-      <StyledView
+      {/* HEADER */}
+      <View
         style={{
           height: 60,
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "center",
           paddingHorizontal: 20,
-          position: "relative",
           marginTop: showSuccess ? 56 : 0,
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.back()}
           style={{
             position: "absolute",
@@ -185,8 +172,9 @@ const AddBank = () => {
           }}
         >
           <ChevronLeft size={26} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
+        </TouchableOpacity>
+
+        <Text
           style={{
             fontSize: 15,
             fontFamily: FONT.SemiBold,
@@ -194,16 +182,15 @@ const AddBank = () => {
           }}
         >
           Add Bank Account
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
-      <StyledScrollView
+      <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 30 }}
       >
-        {/* Account Holder Details Section */}
-        <StyledView style={{ marginBottom: 32 }}>
-          <StyledText
+        <View style={{ marginBottom: 32 }}>
+          <Text
             style={{
               fontSize: 18,
               fontFamily: FONT.Medium,
@@ -212,8 +199,9 @@ const AddBank = () => {
             }}
           >
             Account holder details
-          </StyledText>
-          <StyledText
+          </Text>
+
+          <Text
             style={{
               fontSize: 13,
               fontFamily: FONT.Regular,
@@ -224,11 +212,11 @@ const AddBank = () => {
           >
             Please provide the account holder's details as they appear on the
             bank statement.
-          </StyledText>
+          </Text>
 
-          {/* Full Name Input */}
-          <StyledView style={{ marginBottom: 24 }}>
-            <StyledText
+          {/* Full Name */}
+          <View style={{ marginBottom: 24 }}>
+            <Text
               style={{
                 fontSize: 15,
                 fontFamily: FONT.Medium,
@@ -237,8 +225,9 @@ const AddBank = () => {
               }}
             >
               {isEditing ? "Full name of account" : "IBAN owner name"}
-            </StyledText>
-            <StyledTextInput
+            </Text>
+
+            <TextInput
               style={{
                 backgroundColor: "#19191B",
                 borderRadius: 12,
@@ -246,7 +235,7 @@ const AddBank = () => {
                 paddingHorizontal: 16,
                 fontSize: 15,
                 fontFamily: FONT.Regular,
-                color: isEditing ? "#6C6C70" : "#6C6C70",
+                color: "#6C6C70",
                 borderWidth: nameError ? 1 : 0,
                 borderColor: nameError ? "#FF3B30" : "transparent",
               }}
@@ -259,15 +248,10 @@ const AddBank = () => {
               placeholderTextColor="#6C6C70"
               editable={!isEditing}
             />
+
             {nameError ? (
-              <StyledView
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginTop: 8,
-                }}
-              >
-                <StyledView
+              <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}>
+                <View
                   style={{
                     width: 16,
                     height: 16,
@@ -278,7 +262,7 @@ const AddBank = () => {
                     marginRight: 8,
                   }}
                 >
-                  <StyledText
+                  <Text
                     style={{
                       fontSize: 12,
                       fontFamily: FONT.Bold,
@@ -286,9 +270,9 @@ const AddBank = () => {
                     }}
                   >
                     !
-                  </StyledText>
-                </StyledView>
-                <StyledText
+                  </Text>
+                </View>
+                <Text
                   style={{
                     fontSize: 12,
                     fontFamily: FONT.Regular,
@@ -297,14 +281,14 @@ const AddBank = () => {
                   }}
                 >
                   {nameError}
-                </StyledText>
-              </StyledView>
+                </Text>
+              </View>
             ) : null}
-          </StyledView>
+          </View>
 
-          {/* IBAN Input */}
-          <StyledView style={{ marginBottom: 16 }}>
-            <StyledText
+          {/* IBAN */}
+          <View style={{ marginBottom: 16 }}>
+            <Text
               style={{
                 fontSize: 15,
                 fontFamily: FONT.Medium,
@@ -313,8 +297,9 @@ const AddBank = () => {
               }}
             >
               {isEditing ? "(IBAN)" : "Bank (IBAN)"}
-            </StyledText>
-            <StyledTextInput
+            </Text>
+
+            <TextInput
               style={{
                 backgroundColor: "#19191B",
                 borderRadius: 12,
@@ -322,7 +307,7 @@ const AddBank = () => {
                 paddingHorizontal: 16,
                 fontSize: 15,
                 fontFamily: FONT.Regular,
-                color: isEditing ? "#6C6C70" : "#6C6C70",
+                color: "#6C6C70",
                 borderWidth: ibanError ? 1 : 0,
                 borderColor: ibanError ? "#FF3B30" : "transparent",
               }}
@@ -336,15 +321,10 @@ const AddBank = () => {
               autoCapitalize="characters"
               editable={!isEditing}
             />
+
             {ibanError ? (
-              <StyledView
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginTop: 8,
-                }}
-              >
-                <StyledView
+              <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8 }}>
+                <View
                   style={{
                     width: 16,
                     height: 16,
@@ -355,7 +335,7 @@ const AddBank = () => {
                     marginRight: 8,
                   }}
                 >
-                  <StyledText
+                  <Text
                     style={{
                       fontSize: 12,
                       fontFamily: FONT.Bold,
@@ -363,9 +343,9 @@ const AddBank = () => {
                     }}
                   >
                     !
-                  </StyledText>
-                </StyledView>
-                <StyledText
+                  </Text>
+                </View>
+                <Text
                   style={{
                     fontSize: 12,
                     fontFamily: FONT.Regular,
@@ -374,12 +354,12 @@ const AddBank = () => {
                   }}
                 >
                   {ibanError}
-                </StyledText>
-              </StyledView>
+                </Text>
+              </View>
             ) : null}
-          </StyledView>
+          </View>
 
-          <StyledText
+          <Text
             style={{
               fontSize: 12,
               fontFamily: FONT.Regular,
@@ -387,19 +367,13 @@ const AddBank = () => {
             }}
           >
             Your bank details are securely encrypted and stored.
-          </StyledText>
-        </StyledView>
-      </StyledScrollView>
+          </Text>
+        </View>
+      </ScrollView>
 
       {/* Buttons */}
-      <StyledView
-        style={{
-          paddingHorizontal: 20,
-          paddingBottom: 80,
-          gap: 12,
-        }}
-      >
-        <StyledTouchableOpacity
+      <View style={{ paddingHorizontal: 20, paddingBottom: 80, gap: 12 }}>
+        <TouchableOpacity
           style={{
             width: 332,
             height: 45,
@@ -415,9 +389,9 @@ const AddBank = () => {
             alignSelf: "center",
           }}
           onPress={isEditing ? () => setIsEditing(false) : handleSave}
-          disabled={nameError || ibanError ? true : false}
+          disabled={!!(nameError || ibanError)}
         >
-          <StyledText
+          <Text
             style={{
               fontSize: 17,
               fontFamily: FONT.SemiBold,
@@ -425,11 +399,11 @@ const AddBank = () => {
             }}
           >
             {isEditing ? "Edit account" : "Save bank account"}
-          </StyledText>
-        </StyledTouchableOpacity>
+          </Text>
+        </TouchableOpacity>
 
         {isEditing && (
-          <StyledTouchableOpacity
+          <TouchableOpacity
             style={{
               width: 332,
               height: 45,
@@ -441,7 +415,7 @@ const AddBank = () => {
             }}
             onPress={handleDelete}
           >
-            <StyledText
+            <Text
               style={{
                 fontSize: 17,
                 fontFamily: FONT.SemiBold,
@@ -449,11 +423,11 @@ const AddBank = () => {
               }}
             >
               Delete IBAN
-            </StyledText>
-          </StyledTouchableOpacity>
+            </Text>
+          </TouchableOpacity>
         )}
-      </StyledView>
-    </StyledSafeAreaView>
+      </View>
+    </SafeAreaView>
   );
 };
 

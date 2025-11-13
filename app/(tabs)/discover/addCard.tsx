@@ -11,7 +11,6 @@ import {
   ActivityIndicator,
   Image,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft, Camera } from "lucide-react-native";
 import {
   useFonts,
@@ -21,13 +20,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTextInput = styled(TextInput);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledScrollView = styled(ScrollView);
-const StyledSafeAreaView = styled(SafeAreaView);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -52,7 +44,6 @@ const AddCard = () => {
     Poppins_700Bold,
   });
 
-  // Detect card type based on number
   const detectCardType = (number: string) => {
     const cleanNumber = number.replace(/\s/g, "");
     if (cleanNumber.startsWith("4")) {
@@ -63,14 +54,12 @@ const AddCard = () => {
     return "";
   };
 
-  // Format card number with spaces
   const formatCardNumber = (text: string) => {
     const cleaned = text.replace(/\s/g, "");
     const chunks = cleaned.match(/.{1,4}/g);
     return chunks ? chunks.join(" ") : cleaned;
   };
 
-  // Format expiry date
   const formatExpiryDate = (text: string) => {
     const cleaned = text.replace(/\D/g, "");
     if (cleaned.length >= 2) {
@@ -103,7 +92,6 @@ const AddCard = () => {
 
   const validateCard = () => {
     const cleanNumber = cardNumber.replace(/\s/g, "");
-    // Simple validation - check if card number is 16 digits
     if (cleanNumber.length !== 16) {
       setShowError(true);
       return false;
@@ -126,39 +114,39 @@ const AddCard = () => {
   }
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
-      <StyledScrollView className="flex-1">
+      <ScrollView className="flex-1">
         {/* Header */}
-        <StyledView
+        <View
           className="flex-row items-center px-4"
           style={{ height: 44, marginTop: 8 }}
         >
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => router.back()}
             className="absolute left-4"
             style={{ zIndex: 10 }}
           >
             <ChevronLeft size={24} color="#fff" strokeWidth={2.5} />
-          </StyledTouchableOpacity>
-          <StyledText
+          </TouchableOpacity>
+          <Text
             className="text-white text-center flex-1 font-semibold"
             style={{ fontSize: 18, fontFamily: FONT.SemiBold }}
           >
             Add Cart
-          </StyledText>
-        </StyledView>
+          </Text>
+        </View>
 
-        <StyledView style={{ paddingHorizontal: 21, marginTop: 40 }}>
+        <View style={{ paddingHorizontal: 21, marginTop: 40 }}>
           {/* Card Number Input */}
-          <StyledText
+          <Text
             className="text-white mb-2"
             style={{ fontSize: 15, fontFamily: FONT.Regular }}
           >
             Card Number
-          </StyledText>
-          <StyledView style={{ position: "relative", marginBottom: 16 }}>
-            <StyledTextInput
+          </Text>
+          <View style={{ position: "relative", marginBottom: 16 }}>
+            <TextInput
               value={cardNumber}
               onChangeText={handleCardNumberChange}
               placeholder="Your card number"
@@ -179,7 +167,7 @@ const AddCard = () => {
               maxLength={19}
             />
             {cardType && (
-              <StyledView
+              <View
                 className="absolute items-center justify-center"
                 style={{
                   left: 16,
@@ -190,15 +178,15 @@ const AddCard = () => {
                   borderRadius: 8,
                 }}
               >
-                <StyledText
+                <Text
                   className="text-white font-bold"
                   style={{ fontSize: 12 }}
                 >
                   {cardType === "VISA" ? "VISA" : "MC"}
-                </StyledText>
-              </StyledView>
+                </Text>
+              </View>
             )}
-            <StyledTouchableOpacity
+            <TouchableOpacity
               className="absolute items-center justify-center"
               style={{
                 right: 16,
@@ -208,15 +196,15 @@ const AddCard = () => {
               }}
             >
               <Camera size={20} color="#EFEFEF" />
-            </StyledTouchableOpacity>
-          </StyledView>
+            </TouchableOpacity>
+          </View>
 
           {showError && (
-            <StyledView
+            <View
               className="flex-row items-center mb-4"
               style={{ marginTop: -12 }}
             >
-              <StyledView
+              <View
                 className="items-center justify-center mr-2"
                 style={{
                   width: 16,
@@ -225,14 +213,14 @@ const AddCard = () => {
                   backgroundColor: "#FF3B30",
                 }}
               >
-                <StyledText
+                <Text
                   className="text-white font-bold"
                   style={{ fontSize: 10 }}
                 >
                   !
-                </StyledText>
-              </StyledView>
-              <StyledText
+                </Text>
+              </View>
+              <Text
                 style={{
                   color: "#FF3B30",
                   fontSize: 14,
@@ -240,24 +228,24 @@ const AddCard = () => {
                 }}
               >
                 Please check your credit card number.
-              </StyledText>
-            </StyledView>
+              </Text>
+            </View>
           )}
 
           {/* Expiry Date and CVV Row */}
-          <StyledView
+          <View
             className="flex-row"
             style={{ gap: 16, marginBottom: 24 }}
           >
             {/* Expiry Date */}
-            <StyledView style={{ flex: 1 }}>
-              <StyledText
+            <View style={{ flex: 1 }}>
+              <Text
                 className="text-white mb-2"
                 style={{ fontSize: 15, fontFamily: FONT.Regular }}
               >
                 Exp. Date
-              </StyledText>
-              <StyledTextInput
+              </Text>
+              <TextInput
                 value={expiryDate}
                 onChangeText={handleExpiryChange}
                 placeholder="MM/YY"
@@ -276,17 +264,17 @@ const AddCard = () => {
                 keyboardType="numeric"
                 maxLength={5}
               />
-            </StyledView>
+            </View>
 
             {/* CVV */}
-            <StyledView style={{ flex: 1 }}>
-              <StyledText
+            <View style={{ flex: 1 }}>
+              <Text
                 className="text-white mb-2"
                 style={{ fontSize: 15, fontFamily: FONT.Regular }}
               >
                 CVV
-              </StyledText>
-              <StyledTextInput
+              </Text>
+              <TextInput
                 value={cvv}
                 onChangeText={handleCvvChange}
                 placeholder="123"
@@ -306,15 +294,15 @@ const AddCard = () => {
                 maxLength={3}
                 secureTextEntry
               />
-            </StyledView>
-          </StyledView>
+            </View>
+          </View>
 
           {/* Save Card Checkbox */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => setSaveCard(!saveCard)}
             className="flex-row items-center mb-8"
           >
-            <StyledView
+            <View
               style={{
                 width: 24,
                 height: 24,
@@ -327,7 +315,7 @@ const AddCard = () => {
               }}
             >
               {saveCard && (
-                <StyledView
+                <View
                   style={{
                     width: 14,
                     height: 14,
@@ -336,17 +324,17 @@ const AddCard = () => {
                   }}
                 />
               )}
-            </StyledView>
-            <StyledText
+            </View>
+            <Text
               className="text-[#6F6F70]"
               style={{ fontSize: 16, fontFamily: FONT.Regular }}
             >
               Save this card
-            </StyledText>
-          </StyledTouchableOpacity>
+            </Text>
+          </TouchableOpacity>
 
           {/* Continue Button */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={handleContinue}
             disabled={!cardNumber || !expiryDate || !cvv}
             className="items-center justify-center"
@@ -359,7 +347,7 @@ const AddCard = () => {
               marginTop: 300,
             }}
           >
-            <StyledText
+            <Text
               className="font-bold"
               style={{
                 fontSize: 17,
@@ -368,16 +356,16 @@ const AddCard = () => {
               }}
             >
               Continue
-            </StyledText>
-          </StyledTouchableOpacity>
-        </StyledView>
-      </StyledScrollView>
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
 
       {/* Success Modal */}
       <Modal visible={showSuccess} transparent animationType="fade">
-        <StyledView className="flex-1 bg-black items-center justify-center px-5">
-          <StyledView className="items-center w-full">
-            <StyledView
+        <View className="flex-1 bg-black items-center justify-center px-5">
+          <View className="items-center w-full">
+            <View
               style={{
                 width: 120,
                 height: 120,
@@ -391,9 +379,9 @@ const AddCard = () => {
                 style={{ width: 120, height: 120 }}
                 resizeMode="contain"
               />
-            </StyledView>
+            </View>
 
-            <StyledText
+            <Text
               className="text-white font-bold"
               style={{
                 fontSize: 24,
@@ -402,8 +390,8 @@ const AddCard = () => {
               }}
             >
               Card add Successfull!
-            </StyledText>
-            <StyledText
+            </Text>
+            <Text
               className="text-gray-400 text-center"
               style={{
                 fontSize: 15,
@@ -412,9 +400,9 @@ const AddCard = () => {
               }}
             >
               You can now use this card for your{"\n"}purchases and donations.
-            </StyledText>
+            </Text>
 
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => {
                 setShowSuccess(false);
                 router.back();
@@ -426,17 +414,17 @@ const AddCard = () => {
                 borderRadius: 15,
               }}
             >
-              <StyledText
+              <Text
                 className="text-black font-bold"
                 style={{ fontSize: 17, fontFamily: FONT.SemiBold }}
               >
                 Done
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledView>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
-    </StyledSafeAreaView>
+    </SafeAreaView>
   );
 };
 

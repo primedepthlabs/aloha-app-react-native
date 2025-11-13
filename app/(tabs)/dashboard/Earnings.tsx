@@ -10,7 +10,6 @@ import {
   Image,
   Modal,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft, Calendar, Copy } from "lucide-react-native";
 import {
   useFonts,
@@ -20,14 +19,7 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-import Svg, { Circle, Path } from "react-native-svg";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledScrollView = styled(ScrollView);
-const StyledImage = styled(Image);
+import Svg, { Circle } from "react-native-svg";
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -49,18 +41,16 @@ const EarningsDashboard = () => {
   const [historyVisible, setHistoryVisible] = useState(false);
   const [receiptVisible, setReceiptVisible] = useState(false);
 
-  // Filter states
   const [fromDate, setFromDate] = useState("09-10-2025");
   const [toDate, setToDate] = useState("09-11-2025");
   const [selectedDatePeriod, setSelectedDatePeriod] = useState("This Month");
   const [selectedSources, setSelectedSources] = useState<string[]>([]);
 
-  // Selected transaction for receipt
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
 
   if (!fontsLoaded) {
     return (
-      <View className="flex-1 items-center justify-center bg-black">
+      <View className="flex-1 bg-black justify-center items-center">
         <ActivityIndicator color="#FCCD34" />
       </View>
     );
@@ -82,43 +72,34 @@ const EarningsDashboard = () => {
   };
 
   const handleHistoryItemClick = (item: any) => {
-    // set selected transaction first
     setSelectedTransaction(item);
-
-    // close other modals that might block the receipt modal
     setFilterVisible(false);
     setHistoryVisible(false);
-
-    // now open the receipt modal
     setReceiptVisible(true);
   };
 
   const PeriodButton = ({ title, isSelected }: any) => (
-    <StyledTouchableOpacity
+    <TouchableOpacity
       onPress={() => setSelectedPeriod(title)}
       style={{
-        paddingTop: 8,
-        paddingRight: 12,
-        paddingBottom: 8,
-        paddingLeft: 12,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
         borderRadius: 8,
         backgroundColor: isSelected ? "#FCCD34" : "transparent",
-        minWidth: 52,
-        height: 33,
         alignItems: "center",
         justifyContent: "center",
       }}
     >
-      <StyledText
+      <Text
         style={{
           fontSize: 14,
           fontFamily: FONT.SemiBold,
-          color: isSelected ? "#000000" : "#6C6C70",
+          color: isSelected ? "#000" : "#6C6C70",
         }}
       >
         {title}
-      </StyledText>
-    </StyledTouchableOpacity>
+      </Text>
+    </TouchableOpacity>
   );
 
   const CircularChart = () => {
@@ -133,7 +114,7 @@ const EarningsDashboard = () => {
     const donationsPercent = 12;
 
     return (
-      <StyledView style={{ alignItems: "center", justifyContent: "center" }}>
+      <View style={{ alignItems: "center" }}>
         <Svg
           width={size}
           height={size}
@@ -183,89 +164,82 @@ const EarningsDashboard = () => {
             origin={`${center}, ${center}`}
           />
         </Svg>
-        <StyledView
-          style={{
-            position: "absolute",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <StyledText
+
+        {/* Center content */}
+        <View style={{ position: "absolute", alignItems: "center" }}>
+          <Text
             style={{
               fontSize: 11,
               fontFamily: FONT.Regular,
               color: "#8E8E93",
-              marginBottom: 4,
             }}
           >
             Total balance
-          </StyledText>
-          <StyledText
+          </Text>
+
+          <Text
             style={{
               fontSize: 10,
               fontFamily: FONT.Regular,
               color: "#FCCD34",
-              marginBottom: 8,
             }}
           >
             100%
-          </StyledText>
-          <StyledText
+          </Text>
+
+          <Text
             style={{
               fontSize: 24,
               fontFamily: FONT.SemiBold,
-              color: "#FFFFFF",
-              letterSpacing: -1,
+              color: "#FFF",
+              marginTop: 2,
             }}
           >
             1250 GEL
-          </StyledText>
-          <StyledText
+          </Text>
+
+          <Text
             style={{
               fontSize: 10,
               fontFamily: FONT.Regular,
               color: "#FCCD34",
-              marginTop: 4,
             }}
           >
             Last 7 days: +35.20 GEL
-          </StyledText>
-        </StyledView>
-      </StyledView>
+          </Text>
+        </View>
+      </View>
     );
   };
 
   const EarningItem = ({ title, amount, percentage, color }: any) => (
-    <StyledView style={{ marginBottom: 20 }}>
-      <StyledView
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 8,
-        }}
+    <View style={{ marginBottom: 20 }}>
+      <View
+        style={{ flexDirection: "row", justifyContent: "space-between" }}
       >
-        <StyledText
+        <Text
           style={{
             fontSize: 15,
             fontFamily: FONT.Regular,
-            color: "#FFFFFF",
+            color: "#FFF",
           }}
         >
           {title}
-        </StyledText>
-        <StyledView style={{ flexDirection: "row", alignItems: "center" }}>
-          <StyledText
+        </Text>
+
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Text
             style={{
               fontSize: 12,
               fontFamily: FONT.Regular,
-              color: "#FFFFFF",
+              color: "#FFF",
               marginRight: 8,
             }}
           >
             {amount}
-          </StyledText>
-          <StyledText
+          </Text>
+
+          <Text
             style={{
               fontSize: 12,
               fontFamily: FONT.Regular,
@@ -273,10 +247,11 @@ const EarningsDashboard = () => {
             }}
           >
             {percentage}
-          </StyledText>
-        </StyledView>
-      </StyledView>
-      <StyledView
+          </Text>
+        </View>
+      </View>
+
+      <View
         style={{
           height: 6,
           backgroundColor: "#2C2C2E",
@@ -284,7 +259,7 @@ const EarningsDashboard = () => {
           overflow: "hidden",
         }}
       >
-        <StyledView
+        <View
           style={{
             height: 6,
             width: `${parseInt(percentage)}%`,
@@ -292,8 +267,8 @@ const EarningsDashboard = () => {
             borderRadius: 3,
           }}
         />
-      </StyledView>
-    </StyledView>
+      </View>
+    </View>
   );
 
   const HistoryItem = ({
@@ -304,45 +279,45 @@ const EarningsDashboard = () => {
     isPositive,
     data,
   }: any) => (
-    <StyledTouchableOpacity
+    <TouchableOpacity
       onPress={() => handleHistoryItemClick(data)}
       style={{
         flexDirection: "row",
-        alignItems: "center",
         paddingVertical: 10,
         borderRadius: 12,
         marginBottom: 4,
       }}
     >
-      <StyledView
+      <View
         style={{
           width: 40,
           height: 40,
           backgroundColor: "#1F1F21",
-          borderRadius: 7.75,
+          borderRadius: 8,
           alignItems: "center",
           justifyContent: "center",
           marginRight: 16,
         }}
       >
-        <StyledImage
+        <Image
           source={icon}
           style={{ width: 22, height: 22 }}
           resizeMode="contain"
         />
-      </StyledView>
-      <StyledView style={{ flex: 1 }}>
-        <StyledText
+      </View>
+
+      <View style={{ flex: 1 }}>
+        <Text
           style={{
             fontSize: 16,
             fontFamily: FONT.Medium,
-            color: "#FFFFFF",
-            marginBottom: 4,
+            color: "#FFF",
           }}
         >
           {title}
-        </StyledText>
-        <StyledText
+        </Text>
+
+        <Text
           style={{
             fontSize: 13,
             fontFamily: FONT.Regular,
@@ -350,9 +325,10 @@ const EarningsDashboard = () => {
           }}
         >
           {date}
-        </StyledText>
-      </StyledView>
-      <StyledText
+        </Text>
+      </View>
+
+      <Text
         style={{
           fontSize: 15,
           fontFamily: FONT.Regular,
@@ -360,8 +336,8 @@ const EarningsDashboard = () => {
         }}
       >
         {amount}
-      </StyledText>
-    </StyledTouchableOpacity>
+      </Text>
+    </TouchableOpacity>
   );
 
   const historyData = [
@@ -416,89 +392,81 @@ const EarningsDashboard = () => {
   ];
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
 
-      {/* Header */}
-      <StyledView
+      {/* HEADER */}
+      <View
         style={{
           height: 60,
           flexDirection: "row",
-          alignItems: "center",
           justifyContent: "center",
-          paddingHorizontal: 20,
+          alignItems: "center",
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.back()}
           style={{
             position: "absolute",
             left: 20,
             width: 40,
             height: 40,
-            alignItems: "center",
             justifyContent: "center",
+            alignItems: "center",
           }}
         >
-          <ChevronLeft size={26} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
-          className="text-white"
+          <ChevronLeft size={26} color="#FFF" strokeWidth={2} />
+        </TouchableOpacity>
+
+        <Text
           style={{
+            color: "#FFF",
             fontSize: 18,
             fontFamily: FONT.SemiBold,
           }}
         >
           Dashboard
-        </StyledText>
-        <StyledTouchableOpacity
+        </Text>
+
+        <TouchableOpacity
           onPress={() => setFilterVisible(true)}
-          style={{
-            position: "absolute",
-            right: 20,
-            width: 40,
-            height: 40,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
+          style={{ position: "absolute", right: 20 }}
         >
-          <StyledImage
+          <Image
             source={require("../../../assets/images/filter-icon.png")}
             style={{ width: 20, height: 20 }}
-            resizeMode="contain"
           />
-        </StyledTouchableOpacity>
-      </StyledView>
+        </TouchableOpacity>
+      </View>
 
-      <StyledScrollView
+      {/* BODY */}
+      <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{
-          paddingHorizontal: 24,
-          paddingTop: 20,
-        }}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 20 }}
       >
-        {/* Period Selector */}
-        <StyledView
+        {/* PERIOD SELECTOR */}
+        <View
           style={{
             flexDirection: "row",
             justifyContent: "center",
-            gap: 4,
-            marginBottom: 32,
+            gap: 6,
+            marginBottom: 30,
           }}
         >
           <PeriodButton title="Day" isSelected={selectedPeriod === "Day"} />
           <PeriodButton title="Week" isSelected={selectedPeriod === "Week"} />
-          <PeriodButton title="Month" isSelected={selectedPeriod === "Month"} />
-        </StyledView>
+          <PeriodButton
+            title="Month"
+            isSelected={selectedPeriod === "Month"}
+          />
+        </View>
 
-        {/* Circular Chart */}
-        <StyledView style={{ marginBottom: 40 }}>
-          <CircularChart />
-        </StyledView>
+        {/* CHART */}
+        <CircularChart />
 
-        {/* Earnings Breakdown */}
-        <StyledView style={{ marginBottom: 32 }}>
+        {/* EARNING ITEMS */}
+        <View style={{ marginTop: 40 }}>
           <EarningItem
             title="Messages"
             amount="+400 GEL"
@@ -517,488 +485,379 @@ const EarningsDashboard = () => {
             percentage="32%"
             color="#AF52DE"
           />
-        </StyledView>
+        </View>
 
-        {/* Earnings History */}
-        <StyledView style={{ marginBottom: 40 }}>
-          <StyledView
+        {/* HISTORY */}
+        <View style={{ marginTop: 40 }}>
+          <View
             style={{
               flexDirection: "row",
               justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 16,
+              marginBottom: 12,
             }}
           >
-            <StyledText
+            <Text
               style={{
                 fontSize: 18,
                 fontFamily: FONT.Bold,
-                color: "#FFFFFF",
+                color: "#FFF",
               }}
             >
               Earnings history
-            </StyledText>
-            <StyledTouchableOpacity onPress={() => setHistoryVisible(true)}>
-              <StyledText
+            </Text>
+
+            <TouchableOpacity onPress={() => setHistoryVisible(true)}>
+              <Text
                 style={{
                   fontSize: 12,
-                  fontFamily: FONT.Regular,
                   color: "#8E8E93",
+                  fontFamily: FONT.Regular,
                 }}
               >
                 See all..
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
+              </Text>
+            </TouchableOpacity>
+          </View>
 
-          {historyData.slice(0, 4).map((item, index) => (
-            <HistoryItem key={index} {...item} data={item} />
+          {historyData.slice(0, 4).map((item, i) => (
+            <HistoryItem key={i} {...item} data={item} />
           ))}
-        </StyledView>
-      </StyledScrollView>
+        </View>
+      </ScrollView>
 
-      {/* Earnings History Modal */}
-      <Modal
-        animationType="slide"
-        transparent={false}
-        visible={historyVisible}
-        onRequestClose={() => setHistoryVisible(false)}
-      >
-        <StyledSafeAreaView className="flex-1 bg-black">
+      {/* ===== MODALS BELOW ===== */}
+
+      {/* HISTORY MODAL */}
+      <Modal visible={historyVisible} animationType="slide">
+        <SafeAreaView className="flex-1 bg-black">
           <StatusBar barStyle="light-content" />
 
-          {/* History Header */}
-          <StyledView
+          <View
             style={{
               height: 60,
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
-              paddingHorizontal: 20,
               position: "relative",
             }}
           >
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setHistoryVisible(false)}
-              style={{
-                position: "absolute",
-                left: 20,
-              }}
+              style={{ position: "absolute", left: 20 }}
             >
-              <ChevronLeft size={28} color="#FFFFFF" strokeWidth={2} />
-            </StyledTouchableOpacity>
-            <StyledText
-              className="text-white"
-              style={{
-                fontSize: 15,
-                fontFamily: FONT.SemiBold,
-              }}
+              <ChevronLeft size={28} color="#FFF" />
+            </TouchableOpacity>
+
+            <Text
+              style={{ fontFamily: FONT.SemiBold, fontSize: 16, color: "#FFF" }}
             >
               Earnings History
-            </StyledText>
-            <StyledTouchableOpacity
-              onPress={() => setFilterVisible(true)}
-              style={{
-                position: "absolute",
-                right: 20,
-              }}
-            >
-              <StyledImage
-                source={require("../../../assets/images/filter-icon.png")}
-                style={{ width: 20, height: 20 }}
-                resizeMode="contain"
-              />
-            </StyledTouchableOpacity>
-          </StyledView>
+            </Text>
+          </View>
 
-          <StyledScrollView
-            style={{ flex: 1 }}
-            contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 20 }}
-          >
-            {historyData.map((item, index) => (
-              <HistoryItem key={index} {...item} data={item} />
+          <ScrollView style={{ paddingHorizontal: 24 }}>
+            {historyData.map((item, i) => (
+              <HistoryItem key={i} {...item} data={item} />
             ))}
-            {historyData.map((item, index) => (
-              <HistoryItem key={`duplicate-${index}`} {...item} data={item} />
-            ))}
-          </StyledScrollView>
-        </StyledSafeAreaView>
+          </ScrollView>
+        </SafeAreaView>
       </Modal>
 
-      {/* Filter Modal */}
-      <Modal
-        animationType="slide"
-        transparent={false}
-        visible={filterVisible}
-        onRequestClose={() => setFilterVisible(false)}
-      >
-        <StyledSafeAreaView className="flex-1 bg-black">
+      {/* FILTER MODAL */}
+      <Modal visible={filterVisible} animationType="slide">
+        <SafeAreaView className="flex-1 bg-black">
           <StatusBar barStyle="light-content" />
 
-          {/* Filter Header */}
-          <StyledView
+          <View
             style={{
               height: 60,
               flexDirection: "row",
-              alignItems: "center",
               justifyContent: "center",
-              paddingHorizontal: 20,
-              position: "relative",
+              alignItems: "center",
             }}
           >
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setFilterVisible(false)}
-              style={{
-                position: "absolute",
-                left: 20,
-              }}
+              style={{ position: "absolute", left: 20 }}
             >
-              <ChevronLeft size={28} color="#FFFFFF" strokeWidth={2} />
-            </StyledTouchableOpacity>
-            <StyledText
-              className="text-white"
+              <ChevronLeft size={28} color="#FFF" />
+            </TouchableOpacity>
+
+            <Text
               style={{
                 fontSize: 15,
+                color: "#FFF",
                 fontFamily: FONT.SemiBold,
               }}
             >
               Filter
-            </StyledText>
-            <StyledTouchableOpacity
+            </Text>
+
+            <TouchableOpacity
               onPress={() => {
                 setSelectedDatePeriod("");
                 setSelectedSources([]);
               }}
-              style={{
-                position: "absolute",
-                right: 20,
-              }}
+              style={{ position: "absolute", right: 20 }}
             >
-              <StyledText
-                style={{
-                  color: "#FCCD34",
-                  fontSize: 14,
-                  fontFamily: FONT.Medium,
-                }}
-              >
+              <Text style={{ color: "#FCCD34", fontFamily: FONT.Medium }}>
                 Reset
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
+              </Text>
+            </TouchableOpacity>
+          </View>
 
-          <StyledScrollView style={{ flex: 1, paddingHorizontal: 20 }}>
-            {/* Date Range */}
-            <StyledText
-              className="text-[#ffffff]/50"
+          <ScrollView style={{ paddingHorizontal: 20 }}>
+            {/* DATE RANGE */}
+            <Text
               style={{
                 fontSize: 12,
-                fontFamily: FONT.Medium,
+                color: "#AAA",
                 marginTop: 20,
                 marginBottom: 12,
+                fontFamily: FONT.Medium,
               }}
             >
               Date range
-            </StyledText>
+            </Text>
 
-            <StyledView
-              style={{ flexDirection: "row", gap: 12, marginBottom: 16 }}
-            >
-              <StyledView style={{ flex: 1 }}>
-                <StyledText
-                  className="text-gray-400"
+            {/* FROM - TO */}
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              <View style={{ flex: 1 }}>
+                <Text
                   style={{
+                    color: "#AAA",
                     fontSize: 12,
-                    fontFamily: FONT.Regular,
-                    marginBottom: 8,
+                    marginBottom: 6,
                   }}
                 >
                   From
-                </StyledText>
-                <StyledView
+                </Text>
+
+                <View
                   style={{
                     backgroundColor: "#19191B",
                     borderRadius: 12,
                     borderWidth: 1,
                     borderColor: "#FCCD34",
-                    height: 48,
                     paddingHorizontal: 16,
+                    height: 48,
+                    justifyContent: "space-between",
                     flexDirection: "row",
                     alignItems: "center",
-                    justifyContent: "space-between",
                   }}
                 >
-                  <StyledText
-                    className="text-white"
-                    style={{
-                      fontSize: 13,
-                      fontFamily: FONT.Regular,
-                    }}
-                  >
-                    {fromDate}
-                  </StyledText>
-                  <Calendar size={20} color="#555E67" />
-                </StyledView>
-              </StyledView>
+                  <Text style={{ fontSize: 13, color: "#FFF" }}>{fromDate}</Text>
+                  <Calendar size={20} color="#555" />
+                </View>
+              </View>
 
-              <StyledView style={{ flex: 1 }}>
-                <StyledText
-                  className="text-gray-400"
+              <View style={{ flex: 1 }}>
+                <Text
                   style={{
-                    fontSize: 13,
-                    fontFamily: FONT.Regular,
-                    marginBottom: 8,
+                    color: "#AAA",
+                    fontSize: 12,
+                    marginBottom: 6,
                   }}
                 >
                   To
-                </StyledText>
-                <StyledView
+                </Text>
+
+                <View
                   style={{
                     backgroundColor: "#19191B",
                     borderRadius: 12,
-                    height: 48,
                     paddingHorizontal: 16,
+                    height: 48,
+                    justifyContent: "space-between",
                     flexDirection: "row",
                     alignItems: "center",
-                    justifyContent: "space-between",
                   }}
                 >
-                  <StyledText
-                    className="text-gray-400"
-                    style={{
-                      fontSize: 12,
-                      fontFamily: FONT.Regular,
-                    }}
-                  >
-                    {toDate}
-                  </StyledText>
-                  <Calendar size={20} color="#555E67" />
-                </StyledView>
-              </StyledView>
-            </StyledView>
+                  <Text style={{ fontSize: 13, color: "#AAA" }}>{toDate}</Text>
+                  <Calendar size={20} color="#555" />
+                </View>
+              </View>
+            </View>
 
-            {/* Period Buttons */}
-            <StyledView
-              style={{ flexDirection: "row", gap: 12, marginBottom: 24 }}
+            {/* PERIOD QUICK BUTTONS */}
+            <View
+              style={{ flexDirection: "row", gap: 12, marginTop: 20 }}
             >
               {["Today", "This Week", "This Month"].map((period) => (
-                <StyledTouchableOpacity
+                <TouchableOpacity
                   key={period}
                   onPress={() => setSelectedDatePeriod(period)}
                   style={{
                     backgroundColor: "#19191B",
-                    borderRadius: 11,
-                    paddingHorizontal: 20,
                     paddingVertical: 10,
-                    borderWidth: 1,
+                    paddingHorizontal: 20,
+                    borderRadius: 10,
+                    borderWidth: selectedDatePeriod === period ? 1 : 0,
                     borderColor:
                       selectedDatePeriod === period ? "#FCCD34" : "transparent",
                   }}
                 >
-                  <StyledText
+                  <Text
                     style={{
                       color:
-                        selectedDatePeriod === period ? "#FFFFFF" : "#555E67",
+                        selectedDatePeriod === period ? "#FFF" : "#555E67",
                       fontSize: 12,
-                      fontFamily: FONT.Regular,
                     }}
                   >
                     {period}
-                  </StyledText>
-                </StyledTouchableOpacity>
+                  </Text>
+                </TouchableOpacity>
               ))}
-            </StyledView>
+            </View>
 
-            {/* Transaction Source */}
-            <StyledText
-              className="text-[#ffffff]/50"
+            {/* SOURCE FILTER */}
+            <Text
               style={{
                 fontSize: 12,
-                fontFamily: FONT.Medium,
-                marginBottom: 12,
+                color: "#AAA",
+                marginTop: 24,
+                marginBottom: 10,
               }}
             >
               Transaction Source
-            </StyledText>
-            <StyledView
-              style={{
-                flexDirection: "row",
-                flexWrap: "wrap",
-                gap: 12,
-                marginBottom: 32,
-              }}
-            >
+            </Text>
+
+            <View style={{ flexDirection: "row", gap: 12, flexWrap: "wrap" }}>
               {["Messages", "Donations", "Calls", "Withdrawal"].map(
                 (source) => (
-                  <StyledTouchableOpacity
+                  <TouchableOpacity
                     key={source}
                     onPress={() => toggleSource(source)}
                     style={{
-                      backgroundColor: "#19191B",
-                      borderRadius: 15,
-                      paddingHorizontal: 10,
                       paddingVertical: 10,
-                      borderWidth: 1,
+                      paddingHorizontal: 12,
+                      backgroundColor: "#19191B",
+                      borderRadius: 12,
+                      borderWidth: selectedSources.includes(source) ? 1 : 0,
                       borderColor: selectedSources.includes(source)
                         ? "#FCCD34"
                         : "transparent",
                     }}
                   >
-                    <StyledText
+                    <Text
                       style={{
-                        color: selectedSources.includes(source)
-                          ? "#FFFFFF"
-                          : "#555E67",
                         fontSize: 12,
-                        fontFamily: FONT.Regular,
+                        color: selectedSources.includes(source)
+                          ? "#FFF"
+                          : "#555",
                       }}
                     >
                       {source}
-                    </StyledText>
-                  </StyledTouchableOpacity>
+                    </Text>
+                  </TouchableOpacity>
                 )
               )}
-            </StyledView>
-          </StyledScrollView>
+            </View>
+          </ScrollView>
 
-          {/* Apply Button */}
-          <StyledView
-            style={{ paddingHorizontal: 20, paddingBottom: 80, paddingTop: 5 }}
-          >
-            <StyledTouchableOpacity
+          {/* APPLY BUTTON */}
+          <View style={{ padding: 20 }}>
+            <TouchableOpacity
               onPress={() => setFilterVisible(false)}
               style={{
                 backgroundColor: "#FCCD34",
                 borderRadius: 25,
                 height: 48,
-                alignItems: "center",
                 justifyContent: "center",
+                alignItems: "center",
               }}
             >
-              <StyledText
-                className="text-black"
-                style={{
-                  fontSize: 17,
-                  fontFamily: FONT.SemiBold,
-                }}
-              >
-                Apply filters({getActiveFiltersCount()})
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledSafeAreaView>
+              <Text style={{ fontFamily: FONT.SemiBold, fontSize: 16 }}>
+                Apply filters ({getActiveFiltersCount()})
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
       </Modal>
 
-      {/* Receipt Modal */}
-      <Modal
-        animationType="slide"
-        transparent={false}
-        visible={receiptVisible}
-        onRequestClose={() => setReceiptVisible(false)}
-      >
-        <StyledSafeAreaView className="flex-1 bg-black">
+      {/* RECEIPT MODAL */}
+      <Modal visible={receiptVisible} animationType="slide">
+        <SafeAreaView className="flex-1 bg-black">
           <StatusBar barStyle="light-content" />
 
-          {/* Header */}
-          <StyledView
+          {/* HEADER */}
+          <View
             style={{
               height: 56,
-              flexDirection: "row",
-              alignItems: "center",
               justifyContent: "center",
-              paddingHorizontal: 14,
+              alignItems: "center",
               position: "relative",
             }}
           >
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setReceiptVisible(false)}
-              style={{
-                position: "absolute",
-                left: 12,
-                width: 40,
-                height: 40,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+              style={{ position: "absolute", left: 20 }}
             >
-              <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-            </StyledTouchableOpacity>
+              <ChevronLeft size={24} color="#FFF" />
+            </TouchableOpacity>
 
-            <StyledText
-              style={{
-                fontSize: 16,
-                fontFamily: FONT.SemiBold,
-                color: "#FFFFFF",
-              }}
-            >
+            <Text style={{ color: "#FFF", fontFamily: FONT.SemiBold }}>
               Message Fee History
-            </StyledText>
-          </StyledView>
+            </Text>
+          </View>
 
-          {/* Body (fixed layout - no scroll) */}
-          <StyledView
+          {/* BODY */}
+          <View
             style={{
               flex: 1,
-              paddingHorizontal: 20,
-              paddingTop: 6,
-              paddingBottom: 12,
-              justifyContent: "space-between", // keeps content distributed to fit screen
+              justifyContent: "space-between",
+              padding: 24,
             }}
           >
-            {/* Top content (icon + amount + subtitle) */}
-            <StyledView style={{ alignItems: "center", marginTop: 2 }}>
+            <View style={{ alignItems: "center" }}>
               <Image
                 source={require("../../../assets/images/Check.png")}
-                style={{ width: 40, height: 40 }}
-                resizeMode="contain"
+                style={{ width: 50, height: 50 }}
               />
 
-              <StyledText
+              <Text
                 style={{
                   fontSize: 20,
                   fontFamily: FONT.SemiBold,
-                  color: "#FFFFFF",
+                  color: "#FFF",
                   marginTop: 10,
                 }}
               >
-                {selectedTransaction?.amount || "+0.45 GEL"}
-              </StyledText>
+                {selectedTransaction?.amount}
+              </Text>
 
-              <StyledText
+              <Text
                 style={{
-                  fontSize: 11,
-                  fontFamily: FONT.Regular,
+                  fontSize: 12,
                   color: "#FCCD34",
-                  marginTop: 6,
+                  marginTop: 4,
                 }}
               >
                 Income successfully recorded
-              </StyledText>
-            </StyledView>
+              </Text>
+            </View>
 
-            {/* Middle content (compact cards stacked) */}
-            <StyledView style={{ flexShrink: 1, gap: 8 }}>
+            {/* DETAILS */}
+            <View style={{ gap: 12 }}>
               {/* Transaction details */}
-              <StyledText
+              <Text
                 style={{
-                  fontSize: 13,
+                  color: "#FFF",
                   fontFamily: FONT.SemiBold,
-                  color: "#FFFFFF",
-                  marginBottom: 6,
+                  marginBottom: 4,
                 }}
               >
                 Transaction details
-              </StyledText>
+              </Text>
 
-              <StyledView
+              <View
                 style={{
                   backgroundColor: "#19191B",
+                  padding: 12,
                   borderRadius: 12,
-                  paddingVertical: 10,
-                  paddingHorizontal: 12,
-                  marginBottom: 6,
                 }}
               >
-                <StyledView
+                <View
                   style={{
                     flexDirection: "row",
                     justifyContent: "space-between",
@@ -1007,273 +866,178 @@ const EarningsDashboard = () => {
                     borderBottomColor: "#2C2C2E",
                   }}
                 >
-                  <StyledText
-                    style={{
-                      fontSize: 13,
-                      fontFamily: FONT.Regular,
-                      color: "#6F6F70",
-                    }}
-                  >
-                    Transaction type:
-                  </StyledText>
-                  <StyledText
-                    style={{
-                      fontSize: 13,
-                      fontFamily: FONT.Medium,
-                      color: "#FFFFFF",
-                    }}
-                  >
-                    {selectedTransaction?.type || "Paid Message"}
-                  </StyledText>
-                </StyledView>
+                  <Text style={{ color: "#6F6F70" }}>Transaction type:</Text>
+                  <Text style={{ color: "#FFF" }}>
+                    {selectedTransaction?.type}
+                  </Text>
+                </View>
 
-                <StyledView
+                <View
                   style={{
                     flexDirection: "row",
                     justifyContent: "space-between",
                     paddingVertical: 6,
                   }}
                 >
-                  <StyledText
-                    style={{
-                      fontSize: 13,
-                      fontFamily: FONT.Regular,
-                      color: "#6F6F70",
-                    }}
-                  >
-                    Received from:
-                  </StyledText>
-                  <StyledText
-                    style={{
-                      fontSize: 13,
-                      fontFamily: FONT.Medium,
-                      color: "#FFFFFF",
-                    }}
-                  >
-                    {selectedTransaction?.from || "Ellen Smith"}
-                  </StyledText>
-                </StyledView>
-              </StyledView>
+                  <Text style={{ color: "#6F6F70" }}>Received from:</Text>
+                  <Text style={{ color: "#FFF" }}>
+                    {selectedTransaction?.from}
+                  </Text>
+                </View>
+              </View>
 
               {/* Income breakdown */}
-              <StyledText
+              <Text
                 style={{
-                  fontSize: 13,
+                  color: "#FFF",
                   fontFamily: FONT.SemiBold,
-                  color: "#FFFFFF",
-                  marginBottom: 6,
                 }}
               >
                 Income breakdown
-              </StyledText>
+              </Text>
 
-              <StyledView
+              <View
                 style={{
                   backgroundColor: "#1C1C1E",
+                  padding: 12,
                   borderRadius: 12,
-                  paddingVertical: 10,
-                  paddingHorizontal: 12,
-                  marginBottom: 6,
                 }}
               >
-                <StyledView
+                <View
                   style={{
                     flexDirection: "row",
                     justifyContent: "space-between",
-                    paddingVertical: 6,
                     borderBottomWidth: 1,
                     borderBottomColor: "#2C2C2E",
+                    paddingVertical: 6,
                   }}
                 >
-                  <StyledText
-                    style={{
-                      fontSize: 13,
-                      fontFamily: FONT.Regular,
-                      color: "#6F6F70",
-                    }}
-                  >
+                  <Text style={{ color: "#6F6F70" }}>
                     Gross amount charged
-                  </StyledText>
-                  <StyledText
-                    style={{
-                      fontSize: 13,
-                      fontFamily: FONT.Medium,
-                      color: "#FFFFFF",
-                    }}
-                  >
-                    {selectedTransaction?.gross || "0.50 GEL"}
-                  </StyledText>
-                </StyledView>
+                  </Text>
+                  <Text style={{ color: "#FFF" }}>
+                    {selectedTransaction?.gross}
+                  </Text>
+                </View>
 
-                <StyledView
+                <View
                   style={{
                     flexDirection: "row",
                     justifyContent: "space-between",
                     paddingVertical: 6,
                   }}
                 >
-                  <StyledText
-                    style={{
-                      fontSize: 13,
-                      fontFamily: FONT.Regular,
-                      color: "#6F6F70",
-                    }}
-                  >
-                    Platform service fee (10%)
-                  </StyledText>
-                  <StyledText
-                    style={{
-                      fontSize: 13,
-                      fontFamily: FONT.Medium,
-                      color: "#FFFFFF",
-                    }}
-                  >
-                    {selectedTransaction?.fee || "0.05 GEL"}
-                  </StyledText>
-                </StyledView>
-              </StyledView>
+                  <Text style={{ color: "#6F6F70" }}>
+                    Platform fee (10%)
+                  </Text>
+                  <Text style={{ color: "#FFF" }}>
+                    {selectedTransaction?.fee}
+                  </Text>
+                </View>
+              </View>
 
-              {/* Transaction info */}
-              <StyledText
+              {/* Info */}
+              <Text
                 style={{
-                  fontSize: 13,
+                  color: "#FFF",
                   fontFamily: FONT.SemiBold,
-                  color: "#FFFFFF",
-                  marginBottom: 6,
                 }}
               >
                 Transaction info
-              </StyledText>
+              </Text>
 
-              <StyledView
+              <View
                 style={{
                   backgroundColor: "#1C1C1E",
+                  padding: 12,
                   borderRadius: 12,
-                  paddingVertical: 10,
-                  paddingHorizontal: 12,
                 }}
               >
-                <StyledView
+                {/* Date */}
+                <View
                   style={{
                     flexDirection: "row",
                     justifyContent: "space-between",
-                    paddingVertical: 6,
                     borderBottomWidth: 1,
                     borderBottomColor: "#2C2C2E",
-                  }}
-                >
-                  <StyledText
-                    style={{
-                      fontSize: 13,
-                      fontFamily: FONT.Regular,
-                      color: "#6F6F70",
-                    }}
-                  >
-                    Date/Time:
-                  </StyledText>
-                  <StyledText
-                    style={{
-                      fontSize: 13,
-                      fontFamily: FONT.Medium,
-                      color: "#FFFFFF",
-                    }}
-                  >
-                    {selectedTransaction?.date || "1 May, 2025 08:22"}
-                  </StyledText>
-                </StyledView>
-
-                <StyledView
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
                     paddingVertical: 6,
                   }}
                 >
-                  <StyledText
-                    style={{
-                      fontSize: 13,
-                      fontFamily: FONT.Regular,
-                      color: "#6F6F70",
-                    }}
-                  >
-                    Transaction ID:
-                  </StyledText>
+                  <Text style={{ color: "#6F6F70" }}>Date/Time:</Text>
+                  <Text style={{ color: "#FFF" }}>
+                    {selectedTransaction?.date}
+                  </Text>
+                </View>
 
-                  <StyledView
-                    style={{ flexDirection: "row", alignItems: "center" }}
-                  >
-                    <StyledText
-                      style={{
-                        fontSize: 13,
-                        fontFamily: FONT.Medium,
-                        color: "#FFFFFF",
-                        marginRight: 6,
-                      }}
-                    >
-                      {selectedTransaction?.transactionId || "A1B2C4R4HD7"}
-                    </StyledText>
+                {/* Transaction ID */}
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    paddingVertical: 6,
+                    alignItems: "center",
+                  }}
+                >
+                  <Text style={{ color: "#6F6F70" }}>Transaction ID:</Text>
+
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Text style={{ color: "#FFF", marginRight: 6 }}>
+                      {selectedTransaction?.transactionId}
+                    </Text>
                     <Copy size={16} color="#FCCD34" />
-                  </StyledView>
-                </StyledView>
-              </StyledView>
-            </StyledView>
+                  </View>
+                </View>
+              </View>
+            </View>
 
-            {/* Bottom action buttons */}
-            <StyledView style={{ paddingTop: 10 }}>
-              <StyledTouchableOpacity
+            {/* Bottom Buttons */}
+            <View>
+              <TouchableOpacity
                 style={{
                   backgroundColor: "#FCCD34",
+                  height: 46,
                   borderRadius: 12,
-                  height: 48,
-                  alignItems: "center",
                   justifyContent: "center",
+                  alignItems: "center",
                   marginBottom: 10,
                 }}
-                onPress={() => {
-                  /* share logic */
-                }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 15,
-                    fontFamily: FONT.SemiBold,
                     color: "#000",
+                    fontFamily: FONT.SemiBold,
                   }}
                 >
                   Share receipt
-                </StyledText>
-              </StyledTouchableOpacity>
+                </Text>
+              </TouchableOpacity>
 
-              <StyledTouchableOpacity
+              <TouchableOpacity
                 style={{
-                  backgroundColor: "transparent",
-                  borderRadius: 12,
                   borderWidth: 1,
-                  borderColor: "#FFFFFF",
-                  height: 48,
-                  alignItems: "center",
+                  borderColor: "#FFF",
+                  height: 46,
+                  borderRadius: 12,
                   justifyContent: "center",
-                }}
-                onPress={() => {
-                  /* support logic */
+                  alignItems: "center",
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 15,
+                    color: "#FFF",
                     fontFamily: FONT.SemiBold,
-                    color: "#FFFFFF",
                   }}
                 >
                   Get support
-                </StyledText>
-              </StyledTouchableOpacity>
-            </StyledView>
-          </StyledView>
-        </StyledSafeAreaView>
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </SafeAreaView>
       </Modal>
-    </StyledSafeAreaView>
+    </SafeAreaView>
   );
 };
 

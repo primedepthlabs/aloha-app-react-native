@@ -11,7 +11,6 @@ import {
   TextInput,
   Modal,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft, Search, Trash2 } from "lucide-react-native";
 import {
   useFonts,
@@ -21,14 +20,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledScrollView = styled(ScrollView);
-const StyledImage = styled(Image);
-const StyledTextInput = styled(TextInput);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -111,15 +102,14 @@ const Followers = () => {
   );
 
   const FollowerItem = ({ follower }: { follower: Follower }) => (
-    <StyledView
+    <View
       style={{
         flexDirection: "row",
         alignItems: "center",
         paddingVertical: 12,
-        borderBottomWidth: 0,
       }}
     >
-      <StyledImage
+      <Image
         source={follower.avatar}
         style={{
           width: 60,
@@ -127,10 +117,10 @@ const Followers = () => {
           borderRadius: 30,
           marginRight: 16,
         }}
-        resizeMode="cover"
       />
-      <StyledView style={{ flex: 1 }}>
-        <StyledText
+
+      <View style={{ flex: 1 }}>
+        <Text
           style={{
             fontSize: 16,
             fontFamily: FONT.Medium,
@@ -139,8 +129,9 @@ const Followers = () => {
           }}
         >
           {follower.name}
-        </StyledText>
-        <StyledText
+        </Text>
+
+        <Text
           style={{
             fontSize: 12,
             fontFamily: FONT.Regular,
@@ -148,77 +139,73 @@ const Followers = () => {
           }}
         >
           Added {follower.addedDate}
-        </StyledText>
-      </StyledView>
-      <StyledTouchableOpacity
+        </Text>
+      </View>
+
+      <TouchableOpacity
+        onPress={() => handleDeletePress(follower)}
         style={{
           width: 40,
           height: 40,
           alignItems: "center",
           justifyContent: "center",
         }}
-        onPress={() => handleDeletePress(follower)}
       >
         <Trash2 size={22} color="#FFFFFF" />
-      </StyledTouchableOpacity>
-    </StyledView>
+      </TouchableOpacity>
+    </View>
   );
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
 
-      {/* Header */}
-      <StyledView
+      {/* HEADER */}
+      <View
         style={{
           height: 60,
           flexDirection: "row",
-          alignItems: "center",
           justifyContent: "center",
-          paddingHorizontal: 20,
+          alignItems: "center",
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.back()}
           style={{
             position: "absolute",
             left: 20,
             width: 40,
             height: 40,
-            alignItems: "center",
             justifyContent: "center",
+            alignItems: "center",
           }}
         >
-          <ChevronLeft size={26} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
-          style={{
-            fontSize: 15,
-            fontFamily: FONT.SemiBold,
-            color: "#FFFFFF",
-          }}
+          <ChevronLeft size={26} color="#FFF" />
+        </TouchableOpacity>
+
+        <Text
+          style={{ fontSize: 15, color: "#FFF", fontFamily: FONT.SemiBold }}
         >
           Followers
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
-      {/* Search Bar */}
-      <StyledView
-        style={{ paddingHorizontal: 20, paddingTop: 10, paddingBottom: 20 }}
-      >
-        <StyledView
+      {/* SEARCH BAR */}
+      <View style={{ paddingHorizontal: 20, paddingVertical: 20 }}>
+        <View
           style={{
             backgroundColor: "#1C1C1E",
             borderRadius: 12,
+            height: 48,
             flexDirection: "row",
             alignItems: "center",
             paddingHorizontal: 16,
-            height: 48,
           }}
         >
           <Search size={20} color="#6C6C70" />
-          <StyledTextInput
+
+          <TextInput
             placeholder="Search"
             placeholderTextColor="#6C6C70"
             value={searchQuery}
@@ -226,17 +213,17 @@ const Followers = () => {
             style={{
               flex: 1,
               marginLeft: 12,
+              color: "#FFF",
               fontSize: 15,
               fontFamily: FONT.Regular,
-              color: "#FFFFFF",
             }}
           />
-        </StyledView>
-      </StyledView>
+        </View>
+      </View>
 
-      {/* Followers Count */}
-      <StyledView style={{ paddingHorizontal: 20, paddingBottom: 10 }}>
-        <StyledText
+      {/* FOLLOWERS COUNT */}
+      <View style={{ paddingHorizontal: 20 }}>
+        <Text
           style={{
             fontSize: 16,
             fontFamily: FONT.SemiBold,
@@ -244,10 +231,11 @@ const Followers = () => {
           }}
         >
           {followers.length.toLocaleString()} Followers
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
-      <StyledScrollView
+      {/* LIST */}
+      <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 10 }}
       >
@@ -256,77 +244,76 @@ const Followers = () => {
             <FollowerItem key={follower.id} follower={follower} />
           ))
         ) : (
-          <StyledView
+          <View
             style={{
-              flex: 1,
               alignItems: "center",
               justifyContent: "center",
               paddingTop: 100,
             }}
           >
-            <StyledText
+            <Text
               style={{
                 fontSize: 15,
                 fontFamily: FONT.Regular,
                 color: "#6C6C70",
-                textAlign: "center",
               }}
             >
               No followers found
-            </StyledText>
-          </StyledView>
+            </Text>
+          </View>
         )}
-      </StyledScrollView>
+      </ScrollView>
 
-      {/* Delete Confirmation Modal */}
+      {/* DELETE CONFIRMATION MODAL */}
       <Modal
         visible={showDeleteModal}
         transparent
         animationType="fade"
         onRequestClose={() => setShowDeleteModal(false)}
       >
-        <StyledView
+        <View
           style={{
             flex: 1,
-            backgroundColor: "rgba(0, 0, 0, 0.8)",
-            alignItems: "center",
+            backgroundColor: "rgba(0,0,0,0.8)",
             justifyContent: "center",
-            paddingHorizontal: 23,
+            alignItems: "center",
+            paddingHorizontal: 20,
           }}
         >
-          <StyledView
+          <View
             style={{
               backgroundColor: "#19191B",
-              borderRadius: 16,
-              padding: 24,
               width: "100%",
               maxWidth: 340,
+              borderRadius: 16,
+              padding: 24,
             }}
           >
-            <StyledText
+            <Text
               style={{
                 fontSize: 15,
-                fontFamily: FONT.Regular,
                 color: "#FFFFFF",
                 textAlign: "center",
+                fontFamily: FONT.Regular,
                 marginBottom: 8,
               }}
             >
-              Are you sure you want to Delete
-            </StyledText>
-            <StyledText
+              Are you sure you want to delete
+            </Text>
+
+            <Text
               style={{
                 fontSize: 16,
-                fontFamily: FONT.SemiBold,
                 color: "#FCCD34",
                 textAlign: "center",
+                fontFamily: FONT.SemiBold,
                 marginBottom: 24,
               }}
             >
               {selectedFollower?.name} from followers?
-            </StyledText>
+            </Text>
 
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={handleDelete}
               style={{
                 paddingVertical: 14,
@@ -334,39 +321,37 @@ const Followers = () => {
                 borderBottomColor: "#3A3A3C",
               }}
             >
-              <StyledText
+              <Text
                 style={{
-                  fontSize: 15,
-                  fontFamily: FONT.Medium,
-                  color: "#FF453A",
                   textAlign: "center",
+                  color: "#FF453A",
+                  fontFamily: FONT.Medium,
+                  fontSize: 15,
                 }}
               >
                 Delete
-              </StyledText>
-            </StyledTouchableOpacity>
+              </Text>
+            </TouchableOpacity>
 
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setShowDeleteModal(false)}
-              style={{
-                paddingVertical: 14,
-              }}
+              style={{ paddingVertical: 14 }}
             >
-              <StyledText
+              <Text
                 style={{
-                  fontSize: 15,
-                  fontFamily: FONT.Medium,
-                  color: "#FFFFFF",
                   textAlign: "center",
+                  color: "#FFF",
+                  fontFamily: FONT.Medium,
+                  fontSize: 15,
                 }}
               >
                 Cancel
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledView>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
-    </StyledSafeAreaView>
+    </SafeAreaView>
   );
 };
 

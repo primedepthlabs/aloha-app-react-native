@@ -10,7 +10,6 @@ import {
   Modal,
   Image,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft, Calendar, Copy } from "lucide-react-native";
 import { Svg, Circle, Path } from "react-native-svg";
 import {
@@ -21,12 +20,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledScrollView = styled(ScrollView);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -130,7 +123,7 @@ const DonationHistoryScreen = () => {
   };
 
   const DonationItem = ({ donation }: any) => (
-    <StyledTouchableOpacity
+    <TouchableOpacity
       onPress={() => {
         setSelectedDonation(donation);
         setReceiptVisible(true);
@@ -144,7 +137,7 @@ const DonationHistoryScreen = () => {
         alignItems: "center",
       }}
     >
-      <StyledView
+      <View
         style={{
           marginRight: 12,
           width: 40,
@@ -166,10 +159,10 @@ const DonationHistoryScreen = () => {
           style={{ width: 28, height: 28 }}
           resizeMode="contain"
         />
-      </StyledView>
+      </View>
 
-      <StyledView style={{ flex: 1 }}>
-        <StyledText
+      <View style={{ flex: 1 }}>
+        <Text
           className="text-white"
           style={{
             fontSize: 16,
@@ -178,8 +171,8 @@ const DonationHistoryScreen = () => {
           }}
         >
           To: {donation.recipient}
-        </StyledText>
-        <StyledText
+        </Text>
+        <Text
           className="text-gray-400"
           style={{
             fontSize: 13,
@@ -187,11 +180,11 @@ const DonationHistoryScreen = () => {
           }}
         >
           {donation.date}
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
-      <StyledView style={{ alignItems: "flex-end" }}>
-        <StyledText
+      <View style={{ alignItems: "flex-end" }}>
+        <Text
           style={{
             fontSize: 16,
             fontFamily: FONT.SemiBold,
@@ -200,8 +193,8 @@ const DonationHistoryScreen = () => {
           }}
         >
           {donation.amount}
-        </StyledText>
-        <StyledText
+        </Text>
+        <Text
           className="text-white"
           style={{
             fontSize: 12,
@@ -209,17 +202,17 @@ const DonationHistoryScreen = () => {
           }}
         >
           {donation.paymentMethod}
-        </StyledText>
-      </StyledView>
-    </StyledTouchableOpacity>
+        </Text>
+      </View>
+    </TouchableOpacity>
   );
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <StyledView
+      <View
         style={{
           height: 60,
           flexDirection: "row",
@@ -229,7 +222,7 @@ const DonationHistoryScreen = () => {
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.back()}
           style={{
             position: "absolute",
@@ -241,8 +234,8 @@ const DonationHistoryScreen = () => {
           }}
         >
           <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
+        </TouchableOpacity>
+        <Text
           className="text-white"
           style={{
             fontSize: 18,
@@ -250,8 +243,8 @@ const DonationHistoryScreen = () => {
           }}
         >
           Donation History
-        </StyledText>
-        <StyledTouchableOpacity
+        </Text>
+        <TouchableOpacity
           onPress={() => setFilterVisible(true)}
           style={{
             position: "absolute",
@@ -270,11 +263,11 @@ const DonationHistoryScreen = () => {
               strokeLinecap="round"
             />
           </Svg>
-        </StyledTouchableOpacity>
-      </StyledView>
+        </TouchableOpacity>
+      </View>
 
       {/* Donations List */}
-      <StyledScrollView
+      <ScrollView
         style={{
           flex: 1,
           paddingHorizontal: 20,
@@ -284,7 +277,7 @@ const DonationHistoryScreen = () => {
         {donations.map((donation) => (
           <DonationItem key={donation.id} donation={donation} />
         ))}
-      </StyledScrollView>
+      </ScrollView>
 
       <Modal
         animationType="slide"
@@ -292,11 +285,11 @@ const DonationHistoryScreen = () => {
         visible={filterVisible}
         onRequestClose={() => setFilterVisible(false)}
       >
-        <StyledSafeAreaView className="flex-1 bg-black">
+        <SafeAreaView className="flex-1 bg-black">
           <StatusBar barStyle="light-content" />
 
           {/* Filter Header */}
-          <StyledView
+          <View
             style={{
               height: 60,
               flexDirection: "row",
@@ -306,7 +299,7 @@ const DonationHistoryScreen = () => {
               position: "relative",
             }}
           >
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setFilterVisible(false)}
               style={{
                 position: "absolute",
@@ -314,8 +307,8 @@ const DonationHistoryScreen = () => {
               }}
             >
               <ChevronLeft size={28} color="#FFFFFF" strokeWidth={2} />
-            </StyledTouchableOpacity>
-            <StyledText
+            </TouchableOpacity>
+            <Text
               className="text-white"
               style={{
                 fontSize: 20,
@@ -323,8 +316,8 @@ const DonationHistoryScreen = () => {
               }}
             >
               Filter
-            </StyledText>
-            <StyledTouchableOpacity
+            </Text>
+            <TouchableOpacity
               onPress={() => {
                 setSelectedPeriod("");
                 setSelectedSource([]);
@@ -335,7 +328,7 @@ const DonationHistoryScreen = () => {
                 right: 20,
               }}
             >
-              <StyledText
+              <Text
                 style={{
                   color: "#FCCD34",
                   fontSize: 16,
@@ -343,13 +336,13 @@ const DonationHistoryScreen = () => {
                 }}
               >
                 Reset
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
+              </Text>
+            </TouchableOpacity>
+          </View>
 
-          <StyledScrollView style={{ flex: 1, paddingHorizontal: 20 }}>
+          <ScrollView style={{ flex: 1, paddingHorizontal: 20 }}>
             {/* Date Range */}
-            <StyledText
+            <Text
               className="text-gray-400"
               style={{
                 fontSize: 14,
@@ -359,13 +352,13 @@ const DonationHistoryScreen = () => {
               }}
             >
               Date Range
-            </StyledText>
+            </Text>
 
-            <StyledView
+            <View
               style={{ flexDirection: "row", gap: 12, marginBottom: 16 }}
             >
-              <StyledView style={{ flex: 1 }}>
-                <StyledText
+              <View style={{ flex: 1 }}>
+                <Text
                   className="text-gray-400"
                   style={{
                     fontSize: 13,
@@ -374,8 +367,8 @@ const DonationHistoryScreen = () => {
                   }}
                 >
                   From
-                </StyledText>
-                <StyledView
+                </Text>
+                <View
                   style={{
                     backgroundColor: "#1C1C1E",
                     borderRadius: 12,
@@ -388,7 +381,7 @@ const DonationHistoryScreen = () => {
                     justifyContent: "space-between",
                   }}
                 >
-                  <StyledText
+                  <Text
                     className="text-white"
                     style={{
                       fontSize: 14,
@@ -396,13 +389,13 @@ const DonationHistoryScreen = () => {
                     }}
                   >
                     {fromDate}
-                  </StyledText>
+                  </Text>
                   <Calendar size={20} color="#555E67" />
-                </StyledView>
-              </StyledView>
+                </View>
+              </View>
 
-              <StyledView style={{ flex: 1 }}>
-                <StyledText
+              <View style={{ flex: 1 }}>
+                <Text
                   className="text-gray-400"
                   style={{
                     fontSize: 13,
@@ -411,8 +404,8 @@ const DonationHistoryScreen = () => {
                   }}
                 >
                   To
-                </StyledText>
-                <StyledView
+                </Text>
+                <View
                   style={{
                     backgroundColor: "#1C1C1E",
                     borderRadius: 12,
@@ -423,7 +416,7 @@ const DonationHistoryScreen = () => {
                     justifyContent: "space-between",
                   }}
                 >
-                  <StyledText
+                  <Text
                     className="text-gray-400"
                     style={{
                       fontSize: 14,
@@ -431,18 +424,18 @@ const DonationHistoryScreen = () => {
                     }}
                   >
                     {toDate}
-                  </StyledText>
+                  </Text>
                   <Calendar size={20} color="#555E67" />
-                </StyledView>
-              </StyledView>
-            </StyledView>
+                </View>
+              </View>
+            </View>
 
             {/* Period Buttons */}
-            <StyledView
+            <View
               style={{ flexDirection: "row", gap: 12, marginBottom: 24 }}
             >
               {["Today", "This Week", "This Month"].map((period) => (
-                <StyledTouchableOpacity
+                <TouchableOpacity
                   key={period}
                   onPress={() => setSelectedPeriod(period)}
                   style={{
@@ -455,7 +448,7 @@ const DonationHistoryScreen = () => {
                       selectedPeriod === period ? "#FCCD34" : "transparent",
                   }}
                 >
-                  <StyledText
+                  <Text
                     style={{
                       color: selectedPeriod === period ? "#FCCD34" : "#555E67",
                       fontSize: 14,
@@ -463,13 +456,13 @@ const DonationHistoryScreen = () => {
                     }}
                   >
                     {period}
-                  </StyledText>
-                </StyledTouchableOpacity>
+                  </Text>
+                </TouchableOpacity>
               ))}
-            </StyledView>
+            </View>
 
             {/* Payment Source */}
-            <StyledText
+            <Text
               className="text-gray-400"
               style={{
                 fontSize: 14,
@@ -478,12 +471,12 @@ const DonationHistoryScreen = () => {
               }}
             >
               Payment source
-            </StyledText>
-            <StyledView
+            </Text>
+            <View
               style={{ flexDirection: "row", gap: 12, marginBottom: 24 }}
             >
               {["Balance", "Card", "Apple Pay"].map((source) => (
-                <StyledTouchableOpacity
+                <TouchableOpacity
                   key={source}
                   onPress={() => toggleSource(source)}
                   style={{
@@ -498,7 +491,7 @@ const DonationHistoryScreen = () => {
                       : "transparent",
                   }}
                 >
-                  <StyledText
+                  <Text
                     style={{
                       color: selectedSource.includes(source)
                         ? "#FCCD34"
@@ -508,13 +501,13 @@ const DonationHistoryScreen = () => {
                     }}
                   >
                     {source}
-                  </StyledText>
-                </StyledTouchableOpacity>
+                  </Text>
+                </TouchableOpacity>
               ))}
-            </StyledView>
+            </View>
 
             {/* Payment Status */}
-            <StyledText
+            <Text
               className="text-gray-400"
               style={{
                 fontSize: 14,
@@ -523,12 +516,12 @@ const DonationHistoryScreen = () => {
               }}
             >
               Payment Status
-            </StyledText>
-            <StyledView
+            </Text>
+            <View
               style={{ flexDirection: "row", gap: 12, marginBottom: 32 }}
             >
               {["Approved", "Failed"].map((status) => (
-                <StyledTouchableOpacity
+                <TouchableOpacity
                   key={status}
                   onPress={() => toggleStatus(status)}
                   style={{
@@ -543,7 +536,7 @@ const DonationHistoryScreen = () => {
                       : "transparent",
                   }}
                 >
-                  <StyledText
+                  <Text
                     style={{
                       color: selectedStatus.includes(status)
                         ? "#FCCD34"
@@ -553,17 +546,17 @@ const DonationHistoryScreen = () => {
                     }}
                   >
                     {status}
-                  </StyledText>
-                </StyledTouchableOpacity>
+                  </Text>
+                </TouchableOpacity>
               ))}
-            </StyledView>
-          </StyledScrollView>
+            </View>
+          </ScrollView>
 
           {/* Apply Button */}
-          <StyledView
+          <View
             style={{ paddingHorizontal: 20, paddingBottom: 34, paddingTop: 20 }}
           >
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setFilterVisible(false)}
               style={{
                 backgroundColor: "#FCCD34",
@@ -573,7 +566,7 @@ const DonationHistoryScreen = () => {
                 justifyContent: "center",
               }}
             >
-              <StyledText
+              <Text
                 className="text-black"
                 style={{
                   fontSize: 17,
@@ -581,10 +574,10 @@ const DonationHistoryScreen = () => {
                 }}
               >
                 Apply Filters({getActiveFiltersCount()})
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledSafeAreaView>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
       </Modal>
 
       {/* Receipt Modal */}
@@ -594,11 +587,11 @@ const DonationHistoryScreen = () => {
         visible={receiptVisible}
         onRequestClose={() => setReceiptVisible(false)}
       >
-        <StyledSafeAreaView className="flex-1 bg-black">
+        <SafeAreaView className="flex-1 bg-black">
           <StatusBar barStyle="light-content" />
 
           {/* Receipt Header */}
-          <StyledView
+          <View
             style={{
               height: 60,
               flexDirection: "row",
@@ -608,7 +601,7 @@ const DonationHistoryScreen = () => {
               position: "relative",
             }}
           >
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setReceiptVisible(false)}
               style={{
                 position: "absolute",
@@ -616,8 +609,8 @@ const DonationHistoryScreen = () => {
               }}
             >
               <ChevronLeft size={28} color="#FFFFFF" strokeWidth={2} />
-            </StyledTouchableOpacity>
-            <StyledText
+            </TouchableOpacity>
+            <Text
               className="text-white"
               style={{
                 fontSize: 18,
@@ -625,12 +618,12 @@ const DonationHistoryScreen = () => {
               }}
             >
               Donation Receipt
-            </StyledText>
-          </StyledView>
+            </Text>
+          </View>
 
-          <StyledScrollView style={{ flex: 1, paddingHorizontal: 20 }}>
+          <ScrollView style={{ flex: 1, paddingHorizontal: 20 }}>
             {/* Success Icon */}
-            <StyledView
+            <View
               style={{ alignItems: "center", marginTop: 32, marginBottom: 24 }}
             >
               <Svg width="45" height="45" viewBox="0 0 80 80" fill="none">
@@ -650,10 +643,10 @@ const DonationHistoryScreen = () => {
                   strokeLinejoin="round"
                 />
               </Svg>
-            </StyledView>
+            </View>
 
             {/* Amount */}
-            <StyledText
+            <Text
               className="text-white text-center"
               style={{
                 fontSize: 24,
@@ -662,8 +655,8 @@ const DonationHistoryScreen = () => {
               }}
             >
               {selectedDonation?.amount.replace(" GEL", ".00 GEL")}
-            </StyledText>
-            <StyledText
+            </Text>
+            <Text
               className="text-center"
               style={{
                 fontSize: 14,
@@ -673,10 +666,10 @@ const DonationHistoryScreen = () => {
               }}
             >
               Successfully Donated
-            </StyledText>
+            </Text>
 
             {/* Donation Info */}
-            <StyledText
+            <Text
               className="text-white"
               style={{
                 fontSize: 14,
@@ -685,9 +678,9 @@ const DonationHistoryScreen = () => {
               }}
             >
               Donation Info
-            </StyledText>
+            </Text>
 
-            <StyledView
+            <View
               style={{
                 backgroundColor: "#1C1C1E",
                 borderRadius: 12,
@@ -695,7 +688,7 @@ const DonationHistoryScreen = () => {
                 marginBottom: 24,
               }}
             >
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
@@ -704,7 +697,7 @@ const DonationHistoryScreen = () => {
                   borderBottomColor: "#2C2C2E",
                 }}
               >
-                <StyledText
+                <Text
                   className="text-[#6F6F70]"
                   style={{
                     fontSize: 14,
@@ -712,8 +705,8 @@ const DonationHistoryScreen = () => {
                   }}
                 >
                   Sent to:
-                </StyledText>
-                <StyledText
+                </Text>
+                <Text
                   className="text-white"
                   style={{
                     fontSize: 14,
@@ -721,17 +714,17 @@ const DonationHistoryScreen = () => {
                   }}
                 >
                   {selectedDonation?.recipient}
-                </StyledText>
-              </StyledView>
+                </Text>
+              </View>
 
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
                   paddingVertical: 12,
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 14,
                     fontFamily: FONT.Regular,
@@ -739,8 +732,8 @@ const DonationHistoryScreen = () => {
                   }}
                 >
                   Date/Time:
-                </StyledText>
-                <StyledText
+                </Text>
+                <Text
                   className="text-white"
                   style={{
                     fontSize: 14,
@@ -748,12 +741,12 @@ const DonationHistoryScreen = () => {
                   }}
                 >
                   {selectedDonation?.date}
-                </StyledText>
-              </StyledView>
-            </StyledView>
+                </Text>
+              </View>
+            </View>
 
             {/* Payment Details */}
-            <StyledText
+            <Text
               className="text-white"
               style={{
                 fontSize: 16,
@@ -762,9 +755,9 @@ const DonationHistoryScreen = () => {
               }}
             >
               Payment Details
-            </StyledText>
+            </Text>
 
-            <StyledView
+            <View
               style={{
                 backgroundColor: "#1C1C1E",
                 borderRadius: 12,
@@ -772,7 +765,7 @@ const DonationHistoryScreen = () => {
                 marginBottom: 32,
               }}
             >
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
@@ -781,7 +774,7 @@ const DonationHistoryScreen = () => {
                   borderBottomColor: "#2C2C2E",
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 14,
                     fontFamily: FONT.Regular,
@@ -789,8 +782,8 @@ const DonationHistoryScreen = () => {
                   }}
                 >
                   Paid With:
-                </StyledText>
-                <StyledText
+                </Text>
+                <Text
                   className="text-white"
                   style={{
                     fontSize: 14,
@@ -798,10 +791,10 @@ const DonationHistoryScreen = () => {
                   }}
                 >
                   {selectedDonation?.paymentMethod}
-                </StyledText>
-              </StyledView>
+                </Text>
+              </View>
 
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
@@ -810,7 +803,7 @@ const DonationHistoryScreen = () => {
                   borderBottomColor: "#2C2C2E",
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 14,
                     fontFamily: FONT.Regular,
@@ -818,8 +811,8 @@ const DonationHistoryScreen = () => {
                   }}
                 >
                   Transaction Type:
-                </StyledText>
-                <StyledText
+                </Text>
+                <Text
                   className="text-white"
                   style={{
                     fontSize: 14,
@@ -827,10 +820,10 @@ const DonationHistoryScreen = () => {
                   }}
                 >
                   {selectedDonation?.transactionType}
-                </StyledText>
-              </StyledView>
+                </Text>
+              </View>
 
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
@@ -838,7 +831,7 @@ const DonationHistoryScreen = () => {
                   paddingVertical: 12,
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 14,
                     fontFamily: FONT.Regular,
@@ -846,11 +839,11 @@ const DonationHistoryScreen = () => {
                   }}
                 >
                   Transaction ID:
-                </StyledText>
-                <StyledView
+                </Text>
+                <View
                   style={{ flexDirection: "row", alignItems: "center" }}
                 >
-                  <StyledText
+                  <Text
                     className="text-white"
                     style={{
                       fontSize: 14,
@@ -859,16 +852,16 @@ const DonationHistoryScreen = () => {
                     }}
                   >
                     {selectedDonation?.transactionId}
-                  </StyledText>
+                  </Text>
                   <Copy size={16} color="#FCCD34" />
-                </StyledView>
-              </StyledView>
-            </StyledView>
-          </StyledScrollView>
+                </View>
+              </View>
+            </View>
+          </ScrollView>
 
           {/* Action Buttons */}
-          <StyledView style={{ paddingHorizontal: 20, paddingBottom: 20 }}>
-            <StyledTouchableOpacity
+          <View style={{ paddingHorizontal: 20, paddingBottom: 20 }}>
+            <TouchableOpacity
               style={{
                 backgroundColor: "#FCCD34",
                 borderRadius: 12,
@@ -878,7 +871,7 @@ const DonationHistoryScreen = () => {
                 marginBottom: 12,
               }}
             >
-              <StyledText
+              <Text
                 className="text-black"
                 style={{
                   fontSize: 16,
@@ -886,10 +879,10 @@ const DonationHistoryScreen = () => {
                 }}
               >
                 Share Receipt
-              </StyledText>
-            </StyledTouchableOpacity>
+              </Text>
+            </TouchableOpacity>
 
-            <StyledTouchableOpacity
+            <TouchableOpacity
               style={{
                 backgroundColor: "transparent",
                 borderRadius: 12,
@@ -900,7 +893,7 @@ const DonationHistoryScreen = () => {
                 justifyContent: "center",
               }}
             >
-              <StyledText
+              <Text
                 className="text-white"
                 style={{
                   fontSize: 16,
@@ -908,12 +901,12 @@ const DonationHistoryScreen = () => {
                 }}
               >
                 Get Support
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledSafeAreaView>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
       </Modal>
-    </StyledSafeAreaView>
+    </SafeAreaView>
   );
 };
 

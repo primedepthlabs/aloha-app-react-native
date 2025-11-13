@@ -8,16 +8,9 @@ import {
   ActivityIndicator,
   ScrollView,
   Modal,
-  TextInput,
   Image,
 } from "react-native";
-import { styled } from "nativewind";
-import {
-  ChevronLeft,
-  SlidersHorizontal,
-  Calendar,
-  Copy,
-} from "lucide-react-native";
+import { ChevronLeft, Calendar, Copy } from "lucide-react-native";
 import { Svg, Circle, Path } from "react-native-svg";
 import {
   useFonts,
@@ -28,21 +21,12 @@ import {
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
 
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledScrollView = styled(ScrollView);
-const StyledTextInput = styled(TextInput);
-
 const FONT = {
   Regular: "Poppins_400Regular",
   Medium: "Poppins_500Medium",
   SemiBold: "Poppins_600SemiBold",
   Bold: "Poppins_700Bold",
 };
-
-// Check Icon Component
 
 const DepositHistoryScreen = () => {
   const [fontsLoaded] = useFonts({
@@ -56,7 +40,6 @@ const DepositHistoryScreen = () => {
   const [receiptVisible, setReceiptVisible] = useState(false);
   const [selectedDeposit, setSelectedDeposit] = useState<any>(null);
 
-  // Filter states
   const [fromDate, setFromDate] = useState("09-10-2025");
   const [toDate, setToDate] = useState("09-11-2025");
   const [selectedPeriod, setSelectedPeriod] = useState("This Month");
@@ -129,7 +112,7 @@ const DepositHistoryScreen = () => {
   };
 
   const DepositItem = ({ deposit }: any) => (
-    <StyledTouchableOpacity
+    <TouchableOpacity
       onPress={() => {
         setSelectedDeposit(deposit);
         setReceiptVisible(true);
@@ -143,7 +126,7 @@ const DepositHistoryScreen = () => {
         alignItems: "center",
       }}
     >
-      <StyledView
+      <View
         style={{
           marginRight: 12,
           width: 46.153846740722656,
@@ -165,10 +148,10 @@ const DepositHistoryScreen = () => {
           style={{ width: 28, height: 28 }}
           resizeMode="contain"
         />
-      </StyledView>
+      </View>
 
-      <StyledView style={{ flex: 1 }}>
-        <StyledText
+      <View style={{ flex: 1 }}>
+        <Text
           className="text-white"
           style={{
             fontSize: 15,
@@ -177,8 +160,8 @@ const DepositHistoryScreen = () => {
           }}
         >
           {deposit.method}
-        </StyledText>
-        <StyledText
+        </Text>
+        <Text
           className="text-gray-400"
           style={{
             fontSize: 12,
@@ -186,9 +169,9 @@ const DepositHistoryScreen = () => {
           }}
         >
           {deposit.date}
-        </StyledText>
-      </StyledView>
-      <StyledText
+        </Text>
+      </View>
+      <Text
         style={{
           fontSize: 15,
           fontFamily: FONT.SemiBold,
@@ -196,16 +179,16 @@ const DepositHistoryScreen = () => {
         }}
       >
         {deposit.amount}
-      </StyledText>
-    </StyledTouchableOpacity>
+      </Text>
+    </TouchableOpacity>
   );
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <StyledView
+      <View
         style={{
           height: 60,
           flexDirection: "row",
@@ -215,7 +198,7 @@ const DepositHistoryScreen = () => {
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.back()}
           style={{
             position: "absolute",
@@ -227,8 +210,8 @@ const DepositHistoryScreen = () => {
           }}
         >
           <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
+        </TouchableOpacity>
+        <Text
           className="text-white"
           style={{
             fontSize: 18,
@@ -236,8 +219,8 @@ const DepositHistoryScreen = () => {
           }}
         >
           Deposit History
-        </StyledText>
-        <StyledTouchableOpacity
+        </Text>
+        <TouchableOpacity
           onPress={() => setFilterVisible(true)}
           style={{
             position: "absolute",
@@ -253,11 +236,11 @@ const DepositHistoryScreen = () => {
             style={{ width: 24, height: 24 }}
             resizeMode="contain"
           />
-        </StyledTouchableOpacity>
-      </StyledView>
+        </TouchableOpacity>
+      </View>
 
       {/* Deposits List */}
-      <StyledScrollView
+      <ScrollView
         style={{
           flex: 1,
           paddingHorizontal: 20,
@@ -267,7 +250,7 @@ const DepositHistoryScreen = () => {
         {deposits.map((deposit) => (
           <DepositItem key={deposit.id} deposit={deposit} />
         ))}
-      </StyledScrollView>
+      </ScrollView>
 
       {/* Filter Modal */}
       <Modal
@@ -276,11 +259,11 @@ const DepositHistoryScreen = () => {
         visible={filterVisible}
         onRequestClose={() => setFilterVisible(false)}
       >
-        <StyledSafeAreaView className="flex-1 bg-black">
+        <SafeAreaView className="flex-1 bg-black">
           <StatusBar barStyle="light-content" />
 
           {/* Filter Header */}
-          <StyledView
+          <View
             style={{
               height: 60,
               flexDirection: "row",
@@ -290,7 +273,7 @@ const DepositHistoryScreen = () => {
               position: "relative",
             }}
           >
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setFilterVisible(false)}
               style={{
                 position: "absolute",
@@ -298,8 +281,8 @@ const DepositHistoryScreen = () => {
               }}
             >
               <ChevronLeft size={28} color="#FFFFFF" strokeWidth={2} />
-            </StyledTouchableOpacity>
-            <StyledText
+            </TouchableOpacity>
+            <Text
               className="text-white"
               style={{
                 fontSize: 20,
@@ -307,8 +290,8 @@ const DepositHistoryScreen = () => {
               }}
             >
               Filter
-            </StyledText>
-            <StyledTouchableOpacity
+            </Text>
+            <TouchableOpacity
               onPress={() => {
                 setSelectedPeriod("");
                 setSelectedSource([]);
@@ -319,7 +302,7 @@ const DepositHistoryScreen = () => {
                 right: 20,
               }}
             >
-              <StyledText
+              <Text
                 style={{
                   color: "#FCCD34",
                   fontSize: 16,
@@ -327,13 +310,13 @@ const DepositHistoryScreen = () => {
                 }}
               >
                 Reset
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
+              </Text>
+            </TouchableOpacity>
+          </View>
 
-          <StyledScrollView style={{ flex: 1, paddingHorizontal: 20 }}>
+          <ScrollView style={{ flex: 1, paddingHorizontal: 20 }}>
             {/* Date Range */}
-            <StyledText
+            <Text
               className="text-gray-400"
               style={{
                 fontSize: 14,
@@ -343,13 +326,13 @@ const DepositHistoryScreen = () => {
               }}
             >
               Date Range
-            </StyledText>
+            </Text>
 
-            <StyledView
+            <View
               style={{ flexDirection: "row", gap: 12, marginBottom: 16 }}
             >
-              <StyledView style={{ flex: 1 }}>
-                <StyledText
+              <View style={{ flex: 1 }}>
+                <Text
                   className="text-gray-400"
                   style={{
                     fontSize: 13,
@@ -358,8 +341,8 @@ const DepositHistoryScreen = () => {
                   }}
                 >
                   From
-                </StyledText>
-                <StyledView
+                </Text>
+                <View
                   style={{
                     backgroundColor: "#1C1C1E",
                     borderRadius: 12,
@@ -372,7 +355,7 @@ const DepositHistoryScreen = () => {
                     justifyContent: "space-between",
                   }}
                 >
-                  <StyledText
+                  <Text
                     className="text-white"
                     style={{
                       fontSize: 14,
@@ -380,13 +363,13 @@ const DepositHistoryScreen = () => {
                     }}
                   >
                     {fromDate}
-                  </StyledText>
+                  </Text>
                   <Calendar size={20} color="#555E67" />
-                </StyledView>
-              </StyledView>
+                </View>
+              </View>
 
-              <StyledView style={{ flex: 1 }}>
-                <StyledText
+              <View style={{ flex: 1 }}>
+                <Text
                   className="text-gray-400"
                   style={{
                     fontSize: 13,
@@ -395,8 +378,8 @@ const DepositHistoryScreen = () => {
                   }}
                 >
                   To
-                </StyledText>
-                <StyledView
+                </Text>
+                <View
                   style={{
                     backgroundColor: "#1C1C1E",
                     borderRadius: 12,
@@ -407,7 +390,7 @@ const DepositHistoryScreen = () => {
                     justifyContent: "space-between",
                   }}
                 >
-                  <StyledText
+                  <Text
                     className="text-gray-400"
                     style={{
                       fontSize: 14,
@@ -415,18 +398,18 @@ const DepositHistoryScreen = () => {
                     }}
                   >
                     {toDate}
-                  </StyledText>
+                  </Text>
                   <Calendar size={20} color="#555E67" />
-                </StyledView>
-              </StyledView>
-            </StyledView>
+                </View>
+              </View>
+            </View>
 
             {/* Period Buttons */}
-            <StyledView
+            <View
               style={{ flexDirection: "row", gap: 12, marginBottom: 24 }}
             >
               {["Today", "This Week", "This Month"].map((period) => (
-                <StyledTouchableOpacity
+                <TouchableOpacity
                   key={period}
                   onPress={() => setSelectedPeriod(period)}
                   style={{
@@ -439,7 +422,7 @@ const DepositHistoryScreen = () => {
                       selectedPeriod === period ? "#FCCD34" : "transparent",
                   }}
                 >
-                  <StyledText
+                  <Text
                     style={{
                       color: selectedPeriod === period ? "#FCCD34" : "#555E67",
                       fontSize: 14,
@@ -447,13 +430,13 @@ const DepositHistoryScreen = () => {
                     }}
                   >
                     {period}
-                  </StyledText>
-                </StyledTouchableOpacity>
+                  </Text>
+                </TouchableOpacity>
               ))}
-            </StyledView>
+            </View>
 
             {/* Payment Source */}
-            <StyledText
+            <Text
               className="text-gray-400"
               style={{
                 fontSize: 14,
@@ -462,12 +445,12 @@ const DepositHistoryScreen = () => {
               }}
             >
               Payment source
-            </StyledText>
-            <StyledView
+            </Text>
+            <View
               style={{ flexDirection: "row", gap: 12, marginBottom: 24 }}
             >
               {["Apple Pay", "Card"].map((source) => (
-                <StyledTouchableOpacity
+                <TouchableOpacity
                   key={source}
                   onPress={() => toggleSource(source)}
                   style={{
@@ -482,7 +465,7 @@ const DepositHistoryScreen = () => {
                       : "transparent",
                   }}
                 >
-                  <StyledText
+                  <Text
                     style={{
                       color: selectedSource.includes(source)
                         ? "#FCCD34"
@@ -492,13 +475,13 @@ const DepositHistoryScreen = () => {
                     }}
                   >
                     {source}
-                  </StyledText>
-                </StyledTouchableOpacity>
+                  </Text>
+                </TouchableOpacity>
               ))}
-            </StyledView>
+            </View>
 
             {/* Payment Status */}
-            <StyledText
+            <Text
               className="text-gray-400"
               style={{
                 fontSize: 14,
@@ -507,12 +490,12 @@ const DepositHistoryScreen = () => {
               }}
             >
               Payment Status
-            </StyledText>
-            <StyledView
+            </Text>
+            <View
               style={{ flexDirection: "row", gap: 12, marginBottom: 32 }}
             >
               {["Approved", "Failed"].map((status) => (
-                <StyledTouchableOpacity
+                <TouchableOpacity
                   key={status}
                   onPress={() => toggleStatus(status)}
                   style={{
@@ -527,7 +510,7 @@ const DepositHistoryScreen = () => {
                       : "transparent",
                   }}
                 >
-                  <StyledText
+                  <Text
                     style={{
                       color: selectedStatus.includes(status)
                         ? "#FCCD34"
@@ -537,17 +520,17 @@ const DepositHistoryScreen = () => {
                     }}
                   >
                     {status}
-                  </StyledText>
-                </StyledTouchableOpacity>
+                  </Text>
+                </TouchableOpacity>
               ))}
-            </StyledView>
-          </StyledScrollView>
+            </View>
+          </ScrollView>
 
           {/* Apply Button */}
-          <StyledView
+          <View
             style={{ paddingHorizontal: 20, paddingBottom: 34, paddingTop: 20 }}
           >
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setFilterVisible(false)}
               style={{
                 backgroundColor: "#FCCD34",
@@ -557,7 +540,7 @@ const DepositHistoryScreen = () => {
                 justifyContent: "center",
               }}
             >
-              <StyledText
+              <Text
                 className="text-black"
                 style={{
                   fontSize: 17,
@@ -565,10 +548,10 @@ const DepositHistoryScreen = () => {
                 }}
               >
                 Apply Filters({getActiveFiltersCount()})
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledSafeAreaView>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
       </Modal>
 
       {/* Receipt Modal */}
@@ -578,11 +561,11 @@ const DepositHistoryScreen = () => {
         visible={receiptVisible}
         onRequestClose={() => setReceiptVisible(false)}
       >
-        <StyledSafeAreaView className="flex-1 bg-black">
+        <SafeAreaView className="flex-1 bg-black">
           <StatusBar barStyle="light-content" />
 
           {/* Receipt Header */}
-          <StyledView
+          <View
             style={{
               height: 60,
               flexDirection: "row",
@@ -592,7 +575,7 @@ const DepositHistoryScreen = () => {
               position: "relative",
             }}
           >
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setReceiptVisible(false)}
               style={{
                 position: "absolute",
@@ -600,8 +583,8 @@ const DepositHistoryScreen = () => {
               }}
             >
               <ChevronLeft size={28} color="#FFFFFF" strokeWidth={2} />
-            </StyledTouchableOpacity>
-            <StyledText
+            </TouchableOpacity>
+            <Text
               className="text-white"
               style={{
                 fontSize: 18,
@@ -609,12 +592,12 @@ const DepositHistoryScreen = () => {
               }}
             >
               Deposit Receipt
-            </StyledText>
-          </StyledView>
+            </Text>
+          </View>
 
-          <StyledScrollView style={{ flex: 1, paddingHorizontal: 20 }}>
+          <ScrollView style={{ flex: 1, paddingHorizontal: 20 }}>
             {/* Success Icon */}
-            <StyledView
+            <View
               style={{ alignItems: "center", marginTop: 32, marginBottom: 24 }}
             >
               <Svg width="45" height="45" viewBox="0 0 80 80" fill="none">
@@ -634,10 +617,10 @@ const DepositHistoryScreen = () => {
                   strokeLinejoin="round"
                 />
               </Svg>
-            </StyledView>
+            </View>
 
             {/* Amount */}
-            <StyledText
+            <Text
               className="text-white text-center"
               style={{
                 fontSize: 24,
@@ -646,8 +629,8 @@ const DepositHistoryScreen = () => {
               }}
             >
               {selectedDeposit?.amount.replace(" GEL", ".00 GEL")}
-            </StyledText>
-            <StyledText
+            </Text>
+            <Text
               className="text-center"
               style={{
                 fontSize: 12,
@@ -657,10 +640,10 @@ const DepositHistoryScreen = () => {
               }}
             >
               Successfully Added to Balance
-            </StyledText>
+            </Text>
 
             {/* Payment Details */}
-            <StyledText
+            <Text
               className="text-white"
               style={{
                 fontSize: 14,
@@ -669,9 +652,9 @@ const DepositHistoryScreen = () => {
               }}
             >
               Payment Details
-            </StyledText>
+            </Text>
 
-            <StyledView
+            <View
               style={{
                 backgroundColor: "#1C1C1E",
                 borderRadius: 12,
@@ -679,7 +662,7 @@ const DepositHistoryScreen = () => {
                 marginBottom: 24,
               }}
             >
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
@@ -688,7 +671,7 @@ const DepositHistoryScreen = () => {
                   borderBottomColor: "#2C2C2E",
                 }}
               >
-                <StyledText
+                <Text
                   className="text-[#6F6F70]"
                   style={{
                     fontSize: 14,
@@ -696,8 +679,8 @@ const DepositHistoryScreen = () => {
                   }}
                 >
                   Paid From:
-                </StyledText>
-                <StyledText
+                </Text>
+                <Text
                   className="text-white"
                   style={{
                     fontSize: 14,
@@ -705,10 +688,10 @@ const DepositHistoryScreen = () => {
                   }}
                 >
                   {selectedDeposit?.method}
-                </StyledText>
-              </StyledView>
+                </Text>
+              </View>
 
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
@@ -717,7 +700,7 @@ const DepositHistoryScreen = () => {
                   borderBottomColor: "#2C2C2E",
                 }}
               >
-                <StyledText
+                <Text
                   className="text-[#6F6F70]"
                   style={{
                     fontSize: 14,
@@ -725,8 +708,8 @@ const DepositHistoryScreen = () => {
                   }}
                 >
                   Date/Time:
-                </StyledText>
-                <StyledText
+                </Text>
+                <Text
                   className="text-white"
                   style={{
                     fontSize: 14,
@@ -734,17 +717,17 @@ const DepositHistoryScreen = () => {
                   }}
                 >
                   {selectedDeposit?.date}
-                </StyledText>
-              </StyledView>
+                </Text>
+              </View>
 
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
                   paddingVertical: 12,
                 }}
-              >
-                <StyledText
+                >
+                <Text
                   className="text-[#6F6F70]"
                   style={{
                     fontSize: 14,
@@ -752,8 +735,8 @@ const DepositHistoryScreen = () => {
                   }}
                 >
                   Transaction Type:
-                </StyledText>
-                <StyledText
+                </Text>
+                <Text
                   className="text-white"
                   style={{
                     fontSize: 14,
@@ -761,12 +744,12 @@ const DepositHistoryScreen = () => {
                   }}
                 >
                   {selectedDeposit?.type}
-                </StyledText>
-              </StyledView>
-            </StyledView>
+                </Text>
+              </View>
+            </View>
 
             {/* System Reference */}
-            <StyledText
+            <Text
               className="text-white"
               style={{
                 fontSize: 16,
@@ -775,9 +758,9 @@ const DepositHistoryScreen = () => {
               }}
             >
               System Reference
-            </StyledText>
+            </Text>
 
-            <StyledView
+            <View
               style={{
                 backgroundColor: "#1C1C1E",
                 borderRadius: 12,
@@ -785,7 +768,7 @@ const DepositHistoryScreen = () => {
                 marginBottom: 32,
               }}
             >
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
@@ -795,7 +778,7 @@ const DepositHistoryScreen = () => {
                   borderBottomColor: "#2C2C2E",
                 }}
               >
-                <StyledText
+                <Text
                   className="text-[#6F6F70]"
                   style={{
                     fontSize: 14,
@@ -803,11 +786,11 @@ const DepositHistoryScreen = () => {
                   }}
                 >
                   Transaction ID:
-                </StyledText>
-                <StyledView
+                </Text>
+                <View
                   style={{ flexDirection: "row", alignItems: "center" }}
                 >
-                  <StyledText
+                  <Text
                     className="text-white"
                     style={{
                       fontSize: 14,
@@ -816,19 +799,19 @@ const DepositHistoryScreen = () => {
                     }}
                   >
                     {selectedDeposit?.transactionId}
-                  </StyledText>
+                  </Text>
                   <Copy size={16} color="#FCCD34" />
-                </StyledView>
-              </StyledView>
+                </View>
+              </View>
 
-              <StyledView
+              <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
                   paddingVertical: 12,
                 }}
               >
-                <StyledText
+                <Text
                   className="text-[#6F6F70]"
                   style={{
                     fontSize: 14,
@@ -836,8 +819,8 @@ const DepositHistoryScreen = () => {
                   }}
                 >
                   Processing fee:
-                </StyledText>
-                <StyledText
+                </Text>
+                <Text
                   className="text-white"
                   style={{
                     fontSize: 14,
@@ -845,14 +828,14 @@ const DepositHistoryScreen = () => {
                   }}
                 >
                   {selectedDeposit?.processingFee}
-                </StyledText>
-              </StyledView>
-            </StyledView>
-          </StyledScrollView>
+                </Text>
+              </View>
+            </View>
+          </ScrollView>
 
           {/* Action Buttons */}
-          <StyledView style={{ paddingHorizontal: 20, paddingBottom: 20 }}>
-            <StyledTouchableOpacity
+          <View style={{ paddingHorizontal: 20, paddingBottom: 20 }}>
+            <TouchableOpacity
               style={{
                 backgroundColor: "#FCCD34",
                 borderRadius: 12,
@@ -862,7 +845,7 @@ const DepositHistoryScreen = () => {
                 marginBottom: 12,
               }}
             >
-              <StyledText
+              <Text
                 className="text-black"
                 style={{
                   fontSize: 16,
@@ -870,10 +853,10 @@ const DepositHistoryScreen = () => {
                 }}
               >
                 View Balance History
-              </StyledText>
-            </StyledTouchableOpacity>
+              </Text>
+            </TouchableOpacity>
 
-            <StyledTouchableOpacity
+            <TouchableOpacity
               style={{
                 backgroundColor: "transparent",
                 borderRadius: 12,
@@ -884,7 +867,7 @@ const DepositHistoryScreen = () => {
                 justifyContent: "center",
               }}
             >
-              <StyledText
+              <Text
                 className="text-white"
                 style={{
                   fontSize: 16,
@@ -892,12 +875,12 @@ const DepositHistoryScreen = () => {
                 }}
               >
                 Get Support
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledSafeAreaView>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
       </Modal>
-    </StyledSafeAreaView>
+    </SafeAreaView>
   );
 };
 

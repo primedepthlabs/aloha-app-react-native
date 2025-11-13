@@ -10,7 +10,6 @@ import {
   Image,
   ScrollView,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
 import {
   useFonts,
@@ -20,13 +19,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledScrollView = styled(ScrollView);
-const StyledImage = styled(Image);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -47,18 +39,18 @@ const Payout = () => {
 
   if (!fontsLoaded) {
     return (
-      <View className="flex-1 items-center justify-center bg-black">
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "black" }}>
         <ActivityIndicator color="#FCCD34" />
       </View>
     );
   }
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <StyledView
+      <View
         style={{
           height: 60,
           flexDirection: "row",
@@ -68,7 +60,7 @@ const Payout = () => {
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.back()}
           style={{
             position: "absolute",
@@ -80,8 +72,9 @@ const Payout = () => {
           }}
         >
           <ChevronLeft size={26} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
+        </TouchableOpacity>
+
+        <Text
           style={{
             fontSize: 15,
             fontFamily: FONT.SemiBold,
@@ -89,16 +82,16 @@ const Payout = () => {
           }}
         >
           Payout Rules
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
-      <StyledScrollView
+      <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 30 }}
       >
         {/* Bank Transfer Section */}
-        <StyledView style={{ marginBottom: 32 }}>
-          <StyledText
+        <View style={{ marginBottom: 32 }}>
+          <Text
             style={{
               fontSize: 18,
               fontFamily: FONT.Medium,
@@ -107,10 +100,10 @@ const Payout = () => {
             }}
           >
             Bank transfer
-          </StyledText>
+          </Text>
 
           {/* Bank Account Card */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             style={{
               backgroundColor: "#19191B",
               borderRadius: 12,
@@ -121,7 +114,7 @@ const Payout = () => {
             }}
             onPress={() => router.push("/addbank")}
           >
-            <StyledView
+            <View
               style={{
                 width: 48,
                 height: 48,
@@ -137,9 +130,10 @@ const Payout = () => {
                 style={{ width: 24, height: 24 }}
                 resizeMode="contain"
               />
-            </StyledView>
-            <StyledView style={{ flex: 1 }}>
-              <StyledText
+            </View>
+
+            <View style={{ flex: 1 }}>
+              <Text
                 style={{
                   fontSize: 15,
                   fontFamily: FONT.Medium,
@@ -147,13 +141,14 @@ const Payout = () => {
                 }}
               >
                 IBAN: GE**** 1234
-              </StyledText>
-            </StyledView>
+              </Text>
+            </View>
+
             <ChevronRight size={24} color="#6C6C70" strokeWidth={2} />
-          </StyledTouchableOpacity>
+          </TouchableOpacity>
 
           {/* Add Bank Account Button */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             style={{
               backgroundColor: "transparent",
               borderRadius: 12,
@@ -166,7 +161,7 @@ const Payout = () => {
             }}
             onPress={() => router.push("/(tabs)/dashboard/addbank")}
           >
-            <StyledText
+            <Text
               style={{
                 fontSize: 15,
                 fontFamily: FONT.Medium,
@@ -175,8 +170,8 @@ const Payout = () => {
               }}
             >
               +
-            </StyledText>
-            <StyledText
+            </Text>
+            <Text
               style={{
                 fontSize: 15,
                 fontFamily: FONT.Medium,
@@ -184,10 +179,10 @@ const Payout = () => {
               }}
             >
               Add bank account
-            </StyledText>
-          </StyledTouchableOpacity>
+            </Text>
+          </TouchableOpacity>
 
-          <StyledText
+          <Text
             style={{
               fontSize: 12,
               fontFamily: FONT.Regular,
@@ -196,12 +191,12 @@ const Payout = () => {
             }}
           >
             Maximum 3 accounts can be linked for payouts
-          </StyledText>
-        </StyledView>
+          </Text>
+        </View>
 
         {/* Auto Withdrawal Section */}
-        <StyledView style={{ marginBottom: 24 }}>
-          <StyledText
+        <View style={{ marginBottom: 24 }}>
+          <Text
             style={{
               fontSize: 18,
               fontFamily: FONT.Medium,
@@ -209,11 +204,11 @@ const Payout = () => {
               marginBottom: 20,
             }}
           >
-            Auto withdrawal one times per week
-          </StyledText>
+            Auto withdrawal one time per week
+          </Text>
 
-          {/* Enable Auto Withdrawal Toggle */}
-          <StyledView
+          {/* Toggle */}
+          <View
             style={{
               flexDirection: "row",
               alignItems: "center",
@@ -221,7 +216,7 @@ const Payout = () => {
               marginBottom: 16,
             }}
           >
-            <StyledText
+            <Text
               style={{
                 fontSize: 15,
                 fontFamily: FONT.Regular,
@@ -229,7 +224,8 @@ const Payout = () => {
               }}
             >
               Enable auto withdrawal
-            </StyledText>
+            </Text>
+
             <Switch
               trackColor={{ false: "#3E3E40", true: "#FCCD34" }}
               thumbColor="#FFFFFF"
@@ -237,28 +233,23 @@ const Payout = () => {
               onValueChange={setAutoWithdrawal}
               value={autoWithdrawal}
             />
-          </StyledView>
+          </View>
 
-          <StyledText
+          <Text
             style={{
               fontSize: 12,
               fontFamily: FONT.Regular,
               color: "#FCCD34",
             }}
           >
-            Automatic payouts are procceed every Monday
-          </StyledText>
-        </StyledView>
-      </StyledScrollView>
+            Automatic payouts are processed every Monday
+          </Text>
+        </View>
+      </ScrollView>
 
       {/* Save Button */}
-      <StyledView
-        style={{
-          paddingHorizontal: 20,
-          paddingBottom: 80,
-        }}
-      >
-        <StyledTouchableOpacity
+      <View style={{ paddingHorizontal: 20, paddingBottom: 80 }}>
+        <TouchableOpacity
           style={{
             width: 332,
             height: 45,
@@ -269,7 +260,7 @@ const Payout = () => {
             alignSelf: "center",
           }}
         >
-          <StyledText
+          <Text
             style={{
               fontSize: 17,
               fontFamily: FONT.SemiBold,
@@ -277,10 +268,10 @@ const Payout = () => {
             }}
           >
             Save changes
-          </StyledText>
-        </StyledTouchableOpacity>
-      </StyledView>
-    </StyledSafeAreaView>
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 };
 

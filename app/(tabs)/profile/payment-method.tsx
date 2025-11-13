@@ -9,7 +9,6 @@ import {
   ActivityIndicator,
   Modal,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft, MoreVertical } from "lucide-react-native";
 import {
   useFonts,
@@ -19,12 +18,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledImage = styled(Image);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -66,7 +59,7 @@ const PaymentMethodsScreen = () => {
   };
 
   const CardItem = ({ card }: any) => (
-    <StyledView
+    <View
       style={{
         height: 60,
         backgroundColor: "#1C1C1E",
@@ -78,8 +71,8 @@ const PaymentMethodsScreen = () => {
         marginBottom: 12,
       }}
     >
-      <StyledView className="flex-row items-center flex-1">
-        <StyledView
+      <View className="flex-row items-center flex-1">
+        <View
           style={{
             width: 40,
             height: 28,
@@ -92,13 +85,13 @@ const PaymentMethodsScreen = () => {
           }}
         >
           {/* Mastercard logo circles */}
-          <StyledView
+          <View
             style={{
               flexDirection: "row",
               alignItems: "center",
             }}
           >
-            <StyledView
+            <View
               style={{
                 width: 14,
                 height: 14,
@@ -107,7 +100,7 @@ const PaymentMethodsScreen = () => {
                 marginRight: -4,
               }}
             />
-            <StyledView
+            <View
               style={{
                 width: 14,
                 height: 14,
@@ -115,9 +108,9 @@ const PaymentMethodsScreen = () => {
                 backgroundColor: "#F79E1B",
               }}
             />
-          </StyledView>
-        </StyledView>
-        <StyledText
+          </View>
+        </View>
+        <Text
           className="text-white"
           style={{
             fontSize: 16,
@@ -125,9 +118,9 @@ const PaymentMethodsScreen = () => {
           }}
         >
           MASTERCARD {card.number}
-        </StyledText>
-      </StyledView>
-      <StyledTouchableOpacity
+        </Text>
+      </View>
+      <TouchableOpacity
         onPress={() => {
           setSelectedCard(card.id);
           setModalVisible(true);
@@ -140,16 +133,16 @@ const PaymentMethodsScreen = () => {
         }}
       >
         <MoreVertical size={20} color="#FFFFFF" strokeWidth={2} />
-      </StyledTouchableOpacity>
-    </StyledView>
+      </TouchableOpacity>
+    </View>
   );
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <StyledView
+      <View
         style={{
           height: 60,
           flexDirection: "row",
@@ -159,7 +152,7 @@ const PaymentMethodsScreen = () => {
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.back()}
           style={{
             position: "absolute",
@@ -171,8 +164,8 @@ const PaymentMethodsScreen = () => {
           }}
         >
           <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
+        </TouchableOpacity>
+        <Text
           className="text-white"
           style={{
             fontSize: 18,
@@ -180,11 +173,11 @@ const PaymentMethodsScreen = () => {
           }}
         >
           Payment Methods
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
       {/* Cards List */}
-      <StyledView
+      <View
         style={{
           paddingHorizontal: 20,
           marginTop: 32,
@@ -195,7 +188,7 @@ const PaymentMethodsScreen = () => {
         ))}
 
         {/* Add Card Button */}
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.push("/(tabs)/discover/addCard")}
           style={{
             height: 60,
@@ -209,7 +202,7 @@ const PaymentMethodsScreen = () => {
             marginTop: 8,
           }}
         >
-          <StyledText
+          <Text
             className="text-white"
             style={{
               fontSize: 18,
@@ -218,8 +211,8 @@ const PaymentMethodsScreen = () => {
             }}
           >
             Add Card
-          </StyledText>
-          <StyledText
+          </Text>
+          <Text
             className="text-white"
             style={{
               fontSize: 24,
@@ -227,9 +220,9 @@ const PaymentMethodsScreen = () => {
             }}
           >
             +
-          </StyledText>
-        </StyledTouchableOpacity>
-      </StyledView>
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Bottom Sheet Modal */}
       <Modal
@@ -238,7 +231,7 @@ const PaymentMethodsScreen = () => {
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           activeOpacity={1}
           onPress={() => setModalVisible(false)}
           style={{
@@ -247,7 +240,7 @@ const PaymentMethodsScreen = () => {
             justifyContent: "flex-end",
           }}
         >
-          <StyledView
+          <View
             style={{
               backgroundColor: "#1C1C1E",
               borderTopLeftRadius: 24,
@@ -257,7 +250,7 @@ const PaymentMethodsScreen = () => {
               paddingBottom: 40,
             }}
           >
-            <StyledTouchableOpacity
+            <TouchableOpacity
               style={{
                 height: 60,
                 alignItems: "center",
@@ -266,7 +259,7 @@ const PaymentMethodsScreen = () => {
                 borderBottomColor: "#3A3A3C",
               }}
             >
-              <StyledText
+              <Text
                 className="text-gray-400"
                 style={{
                   fontSize: 16,
@@ -274,10 +267,10 @@ const PaymentMethodsScreen = () => {
                 }}
               >
                 Edit details
-              </StyledText>
-            </StyledTouchableOpacity>
+              </Text>
+            </TouchableOpacity>
 
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={handleRemoveCard}
               style={{
                 height: 60,
@@ -287,7 +280,7 @@ const PaymentMethodsScreen = () => {
                 borderBottomColor: "#3A3A3C",
               }}
             >
-              <StyledText
+              <Text
                 className="text-gray-400"
                 style={{
                   fontSize: 16,
@@ -295,10 +288,10 @@ const PaymentMethodsScreen = () => {
                 }}
               >
                 Remove Card
-              </StyledText>
-            </StyledTouchableOpacity>
+              </Text>
+            </TouchableOpacity>
 
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setModalVisible(false)}
               style={{
                 height: 56,
@@ -309,7 +302,7 @@ const PaymentMethodsScreen = () => {
                 marginTop: 16,
               }}
             >
-              <StyledText
+              <Text
                 className="text-white"
                 style={{
                   fontSize: 16,
@@ -317,12 +310,12 @@ const PaymentMethodsScreen = () => {
                 }}
               >
                 Cancel
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledTouchableOpacity>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
       </Modal>
-    </StyledSafeAreaView>
+    </SafeAreaView>
   );
 };
 

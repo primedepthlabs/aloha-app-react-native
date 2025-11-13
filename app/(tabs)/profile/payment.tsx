@@ -8,7 +8,6 @@ import {
   Image,
   ActivityIndicator,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
 import {
   useFonts,
@@ -18,12 +17,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledImage = styled(Image);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -49,7 +42,7 @@ const PaymentScreen = () => {
   }
 
   const MenuItem = ({ icon, title, onPress }: any) => (
-    <StyledTouchableOpacity
+    <TouchableOpacity
       onPress={onPress}
       style={{
         height: 42,
@@ -60,8 +53,8 @@ const PaymentScreen = () => {
         marginBottom: 10,
       }}
     >
-      <StyledView className="flex-row items-center flex-1">
-        <StyledView
+      <View className="flex-row items-center flex-1">
+        <View
           style={{
             width: 40,
             height: 40,
@@ -70,14 +63,14 @@ const PaymentScreen = () => {
             justifyContent: "center",
           }}
         >
-          <StyledImage
+          <Image
             source={icon}
             style={{ width: 24, height: 24 }}
             resizeMode="contain"
           />
-        </StyledView>
-        <StyledView className="flex-1">
-          <StyledText
+        </View>
+        <View className="flex-1">
+          <Text
             className="text-white"
             style={{
               fontSize: 16,
@@ -85,19 +78,19 @@ const PaymentScreen = () => {
             }}
           >
             {title}
-          </StyledText>
-        </StyledView>
-      </StyledView>
+          </Text>
+        </View>
+      </View>
       <ChevronRight size={20} color="#8E8E93" strokeWidth={2} />
-    </StyledTouchableOpacity>
+    </TouchableOpacity>
   );
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <StyledView
+      <View
         style={{
           height: 60,
           flexDirection: "row",
@@ -107,7 +100,7 @@ const PaymentScreen = () => {
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.back()}
           style={{
             position: "absolute",
@@ -119,8 +112,8 @@ const PaymentScreen = () => {
           }}
         >
           <ChevronLeft size={28} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
+        </TouchableOpacity>
+        <Text
           className="text-white"
           style={{
             fontSize: 20,
@@ -128,11 +121,11 @@ const PaymentScreen = () => {
           }}
         >
           Payment Settings
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
       {/* Menu Items Container */}
-      <StyledView
+      <View
         style={{
           width: 331,
           height: 240,
@@ -166,8 +159,8 @@ const PaymentScreen = () => {
           title="Audio/Video call history"
           onPress={() => router.push("/(tabs)/profile/call-history")}
         />
-      </StyledView>
-    </StyledSafeAreaView>
+      </View>
+    </SafeAreaView>
   );
 };
 

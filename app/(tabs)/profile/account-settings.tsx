@@ -13,7 +13,6 @@ import {
   FlatList,
   Dimensions,
 } from "react-native";
-import { styled } from "nativewind";
 import {
   ChevronLeft,
   ChevronDown,
@@ -28,13 +27,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledScrollView = styled(ScrollView);
-const StyledTextInput = styled(TextInput);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -59,14 +51,12 @@ const AccountSettingsScreen = () => {
   const [gender, setGender] = useState("Woman");
   const [genderDropdownOpen, setGenderDropdownOpen] = useState(false);
 
-  // modal states
   const [saveModalVisible, setSaveModalVisible] = useState(false);
   const [editProfileVisible, setEditProfileVisible] = useState(false);
   const [blockedPeopleVisible, setBlockedPeopleVisible] = useState(false);
   const [unblockModalVisible, setUnblockModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
 
-  // saving lock to prevent double clicks
   const [isSaving, setIsSaving] = useState(false);
 
   const blockedUsers = [
@@ -101,10 +91,9 @@ const AccountSettingsScreen = () => {
     textColor = "white",
     onPress,
   }: any) => (
-    <StyledTouchableOpacity
+    <TouchableOpacity
       onPress={onPress}
       style={{
-        // use responsive width rather than fixed 330
         width: SCREEN_WIDTH - 48,
         height: 40,
         flexDirection: "row",
@@ -116,10 +105,10 @@ const AccountSettingsScreen = () => {
         marginBottom: 10,
       }}
     >
-      <StyledView
+      <View
         style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
       >
-        <StyledView
+        <View
           style={{
             width: 32,
             height: 32,
@@ -137,8 +126,8 @@ const AccountSettingsScreen = () => {
               backgroundColor: "#19191B",
             }}
           />
-        </StyledView>
-        <StyledText
+        </View>
+        <Text
           style={{
             fontSize: 16,
             fontFamily: FONT.Regular,
@@ -146,16 +135,16 @@ const AccountSettingsScreen = () => {
           }}
         >
           {title}
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
       <ChevronRight size={20} color="#8E8E93" strokeWidth={2} />
-    </StyledTouchableOpacity>
+    </TouchableOpacity>
   );
 
   const renderBlockedUser = ({ item }: any) => {
     return (
-      <StyledView
+      <View
         style={{
           flexDirection: "row",
           alignItems: "center",
@@ -164,7 +153,7 @@ const AccountSettingsScreen = () => {
           paddingHorizontal: 6,
         }}
       >
-        <StyledView style={{ flexDirection: "row", alignItems: "center" }}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Image
             source={item.image}
             style={{
@@ -174,7 +163,7 @@ const AccountSettingsScreen = () => {
               marginRight: 12,
             }}
           />
-          <StyledText
+          <Text
             style={{
               fontSize: 16,
               fontFamily: FONT.Medium,
@@ -182,10 +171,10 @@ const AccountSettingsScreen = () => {
             }}
           >
             {item.name}
-          </StyledText>
-        </StyledView>
+          </Text>
+        </View>
 
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => {
             setSelectedUser(item);
             setUnblockModalVisible(true);
@@ -201,7 +190,7 @@ const AccountSettingsScreen = () => {
             elevation: 2,
           }}
         >
-          <StyledText
+          <Text
             style={{
               fontSize: 14,
               fontFamily: FONT.Regular,
@@ -209,24 +198,19 @@ const AccountSettingsScreen = () => {
             }}
           >
             Unblock
-          </StyledText>
-        </StyledTouchableOpacity>
-      </StyledView>
+          </Text>
+        </TouchableOpacity>
+      </View>
     );
   };
 
-  // simulated save function — replace with your API call
   const saveProfile = async () => {
     setIsSaving(true);
     try {
-      // simulate network
       await new Promise((res) => setTimeout(res, 800));
-      // TODO: call your API here with ({ firstName, lastName, phone, gender })
-      // on success:
       setSaveModalVisible(false);
       setEditProfileVisible(false);
     } catch (e) {
-      // handle error (show toast/snackbar)
       console.warn("save failed", e);
     } finally {
       setIsSaving(false);
@@ -234,11 +218,11 @@ const AccountSettingsScreen = () => {
   };
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <StyledView
+      <View
         style={{
           height: 60,
           flexDirection: "row",
@@ -248,7 +232,7 @@ const AccountSettingsScreen = () => {
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.back()}
           style={{
             position: "absolute",
@@ -260,8 +244,8 @@ const AccountSettingsScreen = () => {
           }}
         >
           <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
+        </TouchableOpacity>
+        <Text
           className="text-white"
           style={{
             fontSize: 18,
@@ -269,10 +253,10 @@ const AccountSettingsScreen = () => {
           }}
         >
           Account Settings
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
-      <StyledScrollView
+      <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
           paddingHorizontal: 24,
@@ -304,7 +288,7 @@ const AccountSettingsScreen = () => {
           title="Log Out"
           onPress={() => {}}
         />
-      </StyledScrollView>
+      </ScrollView>
 
       {/* Edit Profile Modal */}
       <Modal
@@ -314,10 +298,10 @@ const AccountSettingsScreen = () => {
         onRequestClose={() => setEditProfileVisible(false)}
         presentationStyle="overFullScreen"
       >
-        <StyledSafeAreaView className="flex-1 bg-black">
+        <SafeAreaView className="flex-1 bg-black">
           <StatusBar barStyle="light-content" />
 
-          <StyledView
+          <View
             style={{
               height: 60,
               flexDirection: "row",
@@ -327,7 +311,7 @@ const AccountSettingsScreen = () => {
               position: "relative",
             }}
           >
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setEditProfileVisible(false)}
               style={{
                 position: "absolute",
@@ -339,8 +323,8 @@ const AccountSettingsScreen = () => {
               }}
             >
               <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-            </StyledTouchableOpacity>
-            <StyledText
+            </TouchableOpacity>
+            <Text
               className="text-white"
               style={{
                 fontSize: 18,
@@ -348,10 +332,10 @@ const AccountSettingsScreen = () => {
               }}
             >
               Edit Profile
-            </StyledText>
-          </StyledView>
+            </Text>
+          </View>
 
-          <StyledScrollView
+          <ScrollView
             style={{ flex: 1 }}
             contentContainerStyle={{
               paddingHorizontal: 24,
@@ -360,8 +344,8 @@ const AccountSettingsScreen = () => {
             }}
           >
             {/* First Name */}
-            <StyledView style={{ marginBottom: 16 }}>
-              <StyledView
+            <View style={{ marginBottom: 16 }}>
+              <View
                 style={{
                   backgroundColor: "#1C1C1E",
                   borderRadius: 12,
@@ -372,7 +356,7 @@ const AccountSettingsScreen = () => {
                   justifyContent: "space-between",
                 }}
               >
-                <StyledTextInput
+                <TextInput
                   value={firstName}
                   onChangeText={setFirstName}
                   placeholder="First Name"
@@ -393,12 +377,12 @@ const AccountSettingsScreen = () => {
                     resizeMode: "contain",
                   }}
                 />
-              </StyledView>
-            </StyledView>
+              </View>
+            </View>
 
             {/* Last Name */}
-            <StyledView style={{ marginBottom: 16 }}>
-              <StyledView
+            <View style={{ marginBottom: 16 }}>
+              <View
                 style={{
                   backgroundColor: "#1C1C1E",
                   borderRadius: 12,
@@ -409,7 +393,7 @@ const AccountSettingsScreen = () => {
                   justifyContent: "space-between",
                 }}
               >
-                <StyledTextInput
+                <TextInput
                   value={lastName}
                   onChangeText={setLastName}
                   placeholder="Last Name"
@@ -430,12 +414,12 @@ const AccountSettingsScreen = () => {
                     resizeMode: "contain",
                   }}
                 />
-              </StyledView>
-            </StyledView>
+              </View>
+            </View>
 
             {/* Phone */}
-            <StyledView style={{ marginBottom: 16 }}>
-              <StyledView
+            <View style={{ marginBottom: 16 }}>
+              <View
                 style={{
                   backgroundColor: "#1C1C1E",
                   borderRadius: 12,
@@ -446,7 +430,7 @@ const AccountSettingsScreen = () => {
                   justifyContent: "space-between",
                 }}
               >
-                <StyledTextInput
+                <TextInput
                   value={phone}
                   onChangeText={setPhone}
                   placeholder="Phone"
@@ -467,12 +451,12 @@ const AccountSettingsScreen = () => {
                     resizeMode: "contain",
                   }}
                 />
-              </StyledView>
-            </StyledView>
+              </View>
+            </View>
 
             {/* Gender Dropdown */}
-            <StyledView style={{ marginBottom: 24 }}>
-              <StyledTouchableOpacity
+            <View style={{ marginBottom: 24 }}>
+              <TouchableOpacity
                 onPress={() => setGenderDropdownOpen(!genderDropdownOpen)}
                 style={{
                   backgroundColor: genderDropdownOpen
@@ -488,7 +472,7 @@ const AccountSettingsScreen = () => {
                   borderColor: "#FCCD34",
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 16,
                     fontFamily: FONT.Regular,
@@ -496,16 +480,16 @@ const AccountSettingsScreen = () => {
                   }}
                 >
                   {gender}
-                </StyledText>
+                </Text>
                 {genderDropdownOpen ? (
                   <ChevronUp size={20} color="#FFFFFF" />
                 ) : (
                   <ChevronDown size={20} color="#FFFFFF" />
                 )}
-              </StyledTouchableOpacity>
+              </TouchableOpacity>
 
               {genderDropdownOpen && (
-                <StyledView
+                <View
                   style={{
                     backgroundColor: "#1C1C1E",
                     borderRadius: 12,
@@ -514,7 +498,7 @@ const AccountSettingsScreen = () => {
                   }}
                 >
                   {["Man", "Other"].map((option, index) => (
-                    <StyledTouchableOpacity
+                    <TouchableOpacity
                       key={option}
                       onPress={() => {
                         setGender(option);
@@ -527,7 +511,7 @@ const AccountSettingsScreen = () => {
                         borderBottomColor: "#2C2C2E",
                       }}
                     >
-                      <StyledText
+                      <Text
                         style={{
                           fontSize: 16,
                           fontFamily: FONT.Regular,
@@ -535,15 +519,15 @@ const AccountSettingsScreen = () => {
                         }}
                       >
                         {option}
-                      </StyledText>
-                    </StyledTouchableOpacity>
+                      </Text>
+                    </TouchableOpacity>
                   ))}
-                </StyledView>
+                </View>
               )}
-            </StyledView>
+            </View>
 
-            {/* Save Button (disabled while saving) */}
-            <StyledTouchableOpacity
+            {/* Save Button */}
+            <TouchableOpacity
               onPress={() => setSaveModalVisible(true)}
               disabled={isSaving}
               style={{
@@ -561,7 +545,7 @@ const AccountSettingsScreen = () => {
               {isSaving ? (
                 <ActivityIndicator />
               ) : (
-                <StyledText
+                <Text
                   style={{
                     fontSize: 18,
                     fontFamily: FONT.SemiBold,
@@ -569,11 +553,11 @@ const AccountSettingsScreen = () => {
                   }}
                 >
                   Save
-                </StyledText>
+                </Text>
               )}
-            </StyledTouchableOpacity>
+            </TouchableOpacity>
             {/* Bottom-fixed Contact Support */}
-            <StyledView
+            <View
               style={{
                 position: "absolute",
                 left: 0,
@@ -583,13 +567,13 @@ const AccountSettingsScreen = () => {
                 paddingHorizontal: 24,
               }}
             >
-              <StyledView
+              <View
                 style={{
                   alignItems: "center",
                   marginBottom: 0,
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 14,
                     fontFamily: FONT.Regular,
@@ -597,13 +581,13 @@ const AccountSettingsScreen = () => {
                   }}
                 >
                   Need Help?{" "}
-                  <StyledText style={{ color: "#FCCD34" }}>
+                  <Text style={{ color: "#FCCD34" }}>
                     Contact Support
-                  </StyledText>
-                </StyledText>
-              </StyledView>
-            </StyledView>
-          </StyledScrollView>
+                  </Text>
+                </Text>
+              </View>
+            </View>
+          </ScrollView>
 
           <Modal
             animationType="fade"
@@ -613,7 +597,7 @@ const AccountSettingsScreen = () => {
               if (!isSaving) setSaveModalVisible(false);
             }}
           >
-            <StyledView
+            <View
               style={{
                 flex: 1,
                 backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -622,7 +606,7 @@ const AccountSettingsScreen = () => {
                 paddingHorizontal: 40,
               }}
             >
-              <StyledView
+              <View
                 style={{
                   backgroundColor: "#2C2C2E",
                   borderRadius: 20,
@@ -631,7 +615,7 @@ const AccountSettingsScreen = () => {
                   maxWidth: 320,
                 }}
               >
-                <StyledText
+                <Text
                   className="text-white text-center"
                   style={{
                     fontSize: 16,
@@ -641,11 +625,11 @@ const AccountSettingsScreen = () => {
                   }}
                 >
                   Are you sure you want to save changes?
-                </StyledText>
+                </Text>
 
-                <StyledTouchableOpacity
+                <TouchableOpacity
                   onPress={async () => {
-                    if (isSaving) return; // guard
+                    if (isSaving) return;
                     await saveProfile();
                   }}
                   style={{
@@ -655,7 +639,7 @@ const AccountSettingsScreen = () => {
                     alignItems: "center",
                   }}
                 >
-                  <StyledText
+                  <Text
                     className="text-center"
                     style={{
                       fontSize: 16,
@@ -664,10 +648,10 @@ const AccountSettingsScreen = () => {
                     }}
                   >
                     {isSaving ? "Saving..." : "Save"}
-                  </StyledText>
-                </StyledTouchableOpacity>
+                  </Text>
+                </TouchableOpacity>
 
-                <StyledTouchableOpacity
+                <TouchableOpacity
                   onPress={() => {
                     if (!isSaving) setSaveModalVisible(false);
                   }}
@@ -676,7 +660,7 @@ const AccountSettingsScreen = () => {
                     alignItems: "center",
                   }}
                 >
-                  <StyledText
+                  <Text
                     className="text-white text-center"
                     style={{
                       fontSize: 16,
@@ -684,18 +668,15 @@ const AccountSettingsScreen = () => {
                     }}
                   >
                     Cancel
-                  </StyledText>
-                </StyledTouchableOpacity>
-              </StyledView>
-            </StyledView>
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </Modal>
-          {/* -------------------------
-              End nested Save Confirmation Modal
-              ------------------------- */}
-        </StyledSafeAreaView>
+        </SafeAreaView>
       </Modal>
 
-      {/* Blocked People Modal (updated — includes nested Unblock Confirmation Modal) */}
+      {/* Blocked People Modal */}
       <Modal
         animationType="slide"
         transparent={false}
@@ -703,9 +684,9 @@ const AccountSettingsScreen = () => {
         onRequestClose={() => setBlockedPeopleVisible(false)}
         presentationStyle="overFullScreen"
       >
-        <StyledSafeAreaView className="flex-1 bg-black">
+        <SafeAreaView className="flex-1 bg-black">
           <StatusBar barStyle="light-content" />
-          <StyledView
+          <View
             style={{
               height: 60,
               flexDirection: "row",
@@ -715,7 +696,7 @@ const AccountSettingsScreen = () => {
               position: "relative",
             }}
           >
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => setBlockedPeopleVisible(false)}
               style={{
                 position: "absolute",
@@ -727,8 +708,8 @@ const AccountSettingsScreen = () => {
               }}
             >
               <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-            </StyledTouchableOpacity>
-            <StyledText
+            </TouchableOpacity>
+            <Text
               className="text-white"
               style={{
                 fontSize: 18,
@@ -736,10 +717,10 @@ const AccountSettingsScreen = () => {
               }}
             >
               Blocked People
-            </StyledText>
-          </StyledView>
+            </Text>
+          </View>
 
-          <StyledView
+          <View
             style={{
               paddingHorizontal: 24,
               paddingTop: 8,
@@ -751,7 +732,7 @@ const AccountSettingsScreen = () => {
               keyExtractor={(item) => item.id.toString()}
               renderItem={renderBlockedUser}
               ItemSeparatorComponent={() => (
-                <StyledView
+                <View
                   style={{
                     height: 1,
                     backgroundColor: "transparent",
@@ -759,19 +740,16 @@ const AccountSettingsScreen = () => {
                 />
               )}
             />
-          </StyledView>
+          </View>
 
-          {/* -------------------------
-        Nested Unblock Confirmation Modal
-        (now guaranteed to display above the blocked-people screen)
-        ------------------------- */}
+          {/* Unblock Confirmation Modal */}
           <Modal
             animationType="fade"
             transparent={true}
             visible={unblockModalVisible}
             onRequestClose={() => setUnblockModalVisible(false)}
           >
-            <StyledView
+            <View
               style={{
                 flex: 1,
                 backgroundColor: "rgba(0, 0, 0, 0.7)",
@@ -780,7 +758,7 @@ const AccountSettingsScreen = () => {
                 paddingHorizontal: 40,
               }}
             >
-              <StyledView
+              <View
                 style={{
                   backgroundColor: "#2C2C2E",
                   borderRadius: 20,
@@ -789,7 +767,7 @@ const AccountSettingsScreen = () => {
                   maxWidth: 320,
                 }}
               >
-                <StyledText
+                <Text
                   className="text-white text-center"
                   style={{
                     fontSize: 16,
@@ -799,19 +777,14 @@ const AccountSettingsScreen = () => {
                   }}
                 >
                   Are you sure you want to{"\n"}Unblock{" "}
-                  <StyledText style={{ color: "#FCCD34" }}>
+                  <Text style={{ color: "#FCCD34" }}>
                     {selectedUser?.name}
-                  </StyledText>
+                  </Text>
                   ?
-                </StyledText>
+                </Text>
 
-                <StyledTouchableOpacity
+                <TouchableOpacity
                   onPress={() => {
-                    // Implement unblock logic here:
-                    // - remove user from blockedUsers source (call API / update state)
-                    // - optionally show a toast
-                    // then close modal(s)
-                    // example (if blockedUsers were in state): setBlockedUsers(prev => prev.filter(u => u.id !== selectedUser.id));
                     setUnblockModalVisible(false);
                   }}
                   style={{
@@ -821,7 +794,7 @@ const AccountSettingsScreen = () => {
                     alignItems: "center",
                   }}
                 >
-                  <StyledText
+                  <Text
                     className="text-center"
                     style={{
                       fontSize: 16,
@@ -830,17 +803,17 @@ const AccountSettingsScreen = () => {
                     }}
                   >
                     Unblock
-                  </StyledText>
-                </StyledTouchableOpacity>
+                  </Text>
+                </TouchableOpacity>
 
-                <StyledTouchableOpacity
+                <TouchableOpacity
                   onPress={() => setUnblockModalVisible(false)}
                   style={{
                     paddingVertical: 12,
                     alignItems: "center",
                   }}
                 >
-                  <StyledText
+                  <Text
                     className="text-white text-center"
                     style={{
                       fontSize: 16,
@@ -848,103 +821,14 @@ const AccountSettingsScreen = () => {
                     }}
                   >
                     Cancel
-                  </StyledText>
-                </StyledTouchableOpacity>
-              </StyledView>
-            </StyledView>
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </Modal>
-          {/* -------------------------
-        End nested Unblock Confirmation Modal
-        ------------------------- */}
-        </StyledSafeAreaView>
+        </SafeAreaView>
       </Modal>
-
-      {/* Unblock Confirmation Modal */}
-      <Modal
-        animationType="none"
-        transparent={true}
-        visible={unblockModalVisible}
-        onRequestClose={() => setUnblockModalVisible(false)}
-      >
-        <StyledView
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(0, 0, 0, 0.7)",
-            justifyContent: "center",
-            alignItems: "center",
-            paddingHorizontal: 40,
-          }}
-        >
-          <StyledView
-            style={{
-              backgroundColor: "#2C2C2E",
-              borderRadius: 20,
-              padding: 24,
-              width: "100%",
-              maxWidth: 320,
-            }}
-          >
-            <StyledText
-              className="text-white text-center"
-              style={{
-                fontSize: 16,
-                fontFamily: FONT.Regular,
-                marginBottom: 24,
-                lineHeight: 24,
-              }}
-            >
-              Are you sure you want to{"\n"}Unblock{" "}
-              <StyledText style={{ color: "#FCCD34" }}>
-                {selectedUser?.name}
-              </StyledText>
-              ?
-            </StyledText>
-
-            <StyledTouchableOpacity
-              onPress={() => {
-                // Implement unblock logic here
-                setUnblockModalVisible(false);
-              }}
-              style={{
-                paddingVertical: 12,
-                borderBottomWidth: 1,
-                borderBottomColor: "#3C3C3E",
-                alignItems: "center",
-              }}
-            >
-              <StyledText
-                className="text-center"
-                style={{
-                  fontSize: 16,
-                  fontFamily: FONT.Regular,
-                  color: "#FCCD34",
-                }}
-              >
-                Unblock
-              </StyledText>
-            </StyledTouchableOpacity>
-
-            <StyledTouchableOpacity
-              onPress={() => setUnblockModalVisible(false)}
-              style={{
-                paddingVertical: 12,
-                alignItems: "center",
-              }}
-            >
-              <StyledText
-                className="text-white text-center"
-                style={{
-                  fontSize: 16,
-                  fontFamily: FONT.Regular,
-                }}
-              >
-                Cancel
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledView>
-      </Modal>
-    </StyledSafeAreaView>
+    </SafeAreaView>
   );
 };
 

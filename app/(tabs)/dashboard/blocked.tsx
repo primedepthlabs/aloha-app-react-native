@@ -9,7 +9,6 @@ import {
   ScrollView,
   Image,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft } from "lucide-react-native";
 import {
   useFonts,
@@ -19,13 +18,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledScrollView = styled(ScrollView);
-const StyledImage = styled(Image);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -79,15 +71,14 @@ const Blocked = () => {
   };
 
   const BlockedUserItem = ({ user }: { user: BlockedUser }) => (
-    <StyledView
+    <View
       style={{
         flexDirection: "row",
         alignItems: "center",
         paddingVertical: 12,
-        borderBottomWidth: 0,
       }}
     >
-      <StyledImage
+      <Image
         source={user.avatar}
         style={{
           width: 60,
@@ -97,8 +88,9 @@ const Blocked = () => {
         }}
         resizeMode="cover"
       />
-      <StyledView style={{ flex: 1 }}>
-        <StyledText
+
+      <View style={{ flex: 1 }}>
+        <Text
           style={{
             fontSize: 16,
             fontFamily: FONT.Medium,
@@ -106,9 +98,10 @@ const Blocked = () => {
           }}
         >
           {user.name}
-        </StyledText>
-      </StyledView>
-      <StyledTouchableOpacity
+        </Text>
+      </View>
+
+      <TouchableOpacity
         style={{
           backgroundColor: "#FCCD34",
           borderRadius: 20,
@@ -117,7 +110,7 @@ const Blocked = () => {
         }}
         onPress={() => handleUnblock(user.id)}
       >
-        <StyledText
+        <Text
           style={{
             fontSize: 14,
             fontFamily: FONT.SemiBold,
@@ -125,17 +118,17 @@ const Blocked = () => {
           }}
         >
           Unblock
-        </StyledText>
-      </StyledTouchableOpacity>
-    </StyledView>
+        </Text>
+      </TouchableOpacity>
+    </View>
   );
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <StyledView
+      <View
         style={{
           height: 60,
           flexDirection: "row",
@@ -145,7 +138,7 @@ const Blocked = () => {
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => router.back()}
           style={{
             position: "absolute",
@@ -157,8 +150,9 @@ const Blocked = () => {
           }}
         >
           <ChevronLeft size={26} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
-        <StyledText
+        </TouchableOpacity>
+
+        <Text
           style={{
             fontSize: 15,
             fontFamily: FONT.SemiBold,
@@ -166,10 +160,10 @@ const Blocked = () => {
           }}
         >
           Blocked People
-        </StyledText>
-      </StyledView>
+        </Text>
+      </View>
 
-      <StyledScrollView
+      <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 30 }}
       >
@@ -178,7 +172,7 @@ const Blocked = () => {
             <BlockedUserItem key={user.id} user={user} />
           ))
         ) : (
-          <StyledView
+          <View
             style={{
               flex: 1,
               alignItems: "center",
@@ -186,7 +180,7 @@ const Blocked = () => {
               paddingTop: 100,
             }}
           >
-            <StyledText
+            <Text
               style={{
                 fontSize: 15,
                 fontFamily: FONT.Regular,
@@ -195,11 +189,11 @@ const Blocked = () => {
               }}
             >
               No blocked users
-            </StyledText>
-          </StyledView>
+            </Text>
+          </View>
         )}
-      </StyledScrollView>
-    </StyledSafeAreaView>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 

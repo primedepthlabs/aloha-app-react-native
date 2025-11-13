@@ -11,7 +11,6 @@ import {
   Image,
   Dimensions,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft } from "lucide-react-native";
 import {
   useFonts,
@@ -21,13 +20,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTextInput = styled(TextInput);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledScrollView = styled(ScrollView);
-const StyledSafeAreaView = styled(SafeAreaView);
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const FONT = {
@@ -69,37 +61,36 @@ const AddFunds = () => {
   };
 
   const handleContinue = () => {
-    // Implement continue logic
     console.log("Continue with amount:", amount, "payment:", selectedPayment);
   };
 
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
-      <StyledScrollView className="flex-1">
+      <ScrollView className="flex-1">
         {/* Header */}
-        <StyledView
+        <View
           className="flex-row items-center px-4"
           style={{ height: 44, marginTop: 8 }}
         >
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => router.back()}
             className="absolute left-4"
             style={{ zIndex: 10 }}
           >
             <ChevronLeft size={24} color="#fff" strokeWidth={2.5} />
-          </StyledTouchableOpacity>
-          <StyledText
+          </TouchableOpacity>
+          <Text
             className="text-white text-center flex-1 font-semibold"
             style={{ fontSize: 18, fontFamily: FONT.SemiBold }}
           >
             Add Funds
-          </StyledText>
-        </StyledView>
+          </Text>
+        </View>
 
-        <StyledView style={{ paddingHorizontal: 24, paddingTop: 20 }}>
+        <View style={{ paddingHorizontal: 24, paddingTop: 20 }}>
           {/* Current Balance Card */}
-          <StyledView
+          <View
             style={{
               width: 331,
               height: 69,
@@ -110,7 +101,7 @@ const AddFunds = () => {
               marginBottom: 24,
             }}
           >
-            <StyledText
+            <Text
               style={{
                 fontSize: 12,
                 fontFamily: FONT.Regular,
@@ -119,8 +110,8 @@ const AddFunds = () => {
               }}
             >
               Current Balance:
-            </StyledText>
-            <StyledText
+            </Text>
+            <Text
               style={{
                 fontSize: 20,
                 fontFamily: FONT.Bold,
@@ -128,11 +119,11 @@ const AddFunds = () => {
               }}
             >
               {balance} GEL
-            </StyledText>
-          </StyledView>
+            </Text>
+          </View>
 
           {/* Enter Amount Section */}
-          <StyledText
+          <Text
             style={{
               fontSize: 18,
               fontFamily: FONT.Medium,
@@ -141,9 +132,9 @@ const AddFunds = () => {
             }}
           >
             Enter amount
-          </StyledText>
+          </Text>
 
-          <StyledTextInput
+          <TextInput
             value={amount}
             onChangeText={setAmount}
             placeholder="50"
@@ -163,7 +154,7 @@ const AddFunds = () => {
           />
 
           {/* Select Payment Method Section */}
-          <StyledText
+          <Text
             style={{
               fontSize: 18,
               fontFamily: FONT.Medium,
@@ -172,10 +163,10 @@ const AddFunds = () => {
             }}
           >
             Select Payment Method
-          </StyledText>
+          </Text>
 
           {/* Apple Pay Option */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => handlePaymentSelect("apple")}
             style={{
               flexDirection: "row",
@@ -191,15 +182,15 @@ const AddFunds = () => {
               backgroundColor: "#1C1C1E",
             }}
           >
-            <StyledView className="flex-row items-center">
-              <StyledView className="w-10 h-10 rounded-[8px] mr-3 items-center justify-center">
+            <View className="flex-row items-center">
+              <View className="w-10 h-10 rounded-[8px] mr-3 items-center justify-center">
                 <Image
                   source={require("../../../assets/images/applepay.png")}
                   className="w-7 h-7"
                   resizeMode="contain"
                 />
-              </StyledView>
-              <StyledText
+              </View>
+              <Text
                 style={{
                   fontSize: 16,
                   fontFamily: FONT.Regular,
@@ -207,13 +198,13 @@ const AddFunds = () => {
                 }}
               >
                 Apple Pay
-              </StyledText>
-            </StyledView>
-            <StyledText className="text-gray-500 text-[20px]">›</StyledText>
-          </StyledTouchableOpacity>
+              </Text>
+            </View>
+            <Text className="text-gray-500 text-[20px]">›</Text>
+          </TouchableOpacity>
 
           {/* Card Option */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => handlePaymentSelect("card")}
             style={{
               flexDirection: "row",
@@ -229,15 +220,15 @@ const AddFunds = () => {
               backgroundColor: "#1C1C1E",
             }}
           >
-            <StyledView className="flex-row items-center flex-1">
-              <StyledView className="w-10 h-10 rounded-[8px] mr-3 items-center justify-center">
+            <View className="flex-row items-center flex-1">
+              <View className="w-10 h-10 rounded-[8px] mr-3 items-center justify-center">
                 <Image
                   source={require("../../../assets/images/profile/debitcard.png")}
                   className="w-6 h-6"
                   resizeMode="contain"
                 />
-              </StyledView>
-              <StyledText
+              </View>
+              <Text
                 style={{
                   fontSize: 16,
                   fontFamily: FONT.Regular,
@@ -245,18 +236,18 @@ const AddFunds = () => {
                 }}
               >
                 Credit/Debit Card
-              </StyledText>
-            </StyledView>
-            <StyledText className="text-gray-500 text-[20px]">
+              </Text>
+            </View>
+            <Text className="text-gray-500 text-[20px]">
               {showCardOptions ? "∧" : "›"}
-            </StyledText>
-          </StyledTouchableOpacity>
+            </Text>
+          </TouchableOpacity>
 
           {/* Card Options Expanded */}
           {showCardOptions && (
-            <StyledView style={{ marginBottom: 12 }}>
+            <View style={{ marginBottom: 12 }}>
               {/* MasterCard */}
-              <StyledTouchableOpacity
+              <TouchableOpacity
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
@@ -268,11 +259,11 @@ const AddFunds = () => {
                   marginBottom: 12,
                 }}
               >
-                <StyledView className="w-10 h-7 rounded-[6px] bg-red-600 mr-3 relative items-center justify-center">
-                  <StyledView className="w-5 h-5 bg-red-700 rounded-full absolute left-0" />
-                  <StyledView className="w-5 h-5 bg-orange-500 rounded-full absolute right-0" />
-                </StyledView>
-                <StyledText
+                <View className="w-10 h-7 rounded-[6px] bg-red-600 mr-3 relative items-center justify-center">
+                  <View className="w-5 h-5 bg-red-700 rounded-full absolute left-0" />
+                  <View className="w-5 h-5 bg-orange-500 rounded-full absolute right-0" />
+                </View>
+                <Text
                   style={{
                     fontSize: 15,
                     fontFamily: FONT.Regular,
@@ -280,11 +271,11 @@ const AddFunds = () => {
                   }}
                 >
                   MASTERCARD **** 5100
-                </StyledText>
-              </StyledTouchableOpacity>
+                </Text>
+              </TouchableOpacity>
 
               {/* Visa */}
-              <StyledTouchableOpacity
+              <TouchableOpacity
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
@@ -296,12 +287,12 @@ const AddFunds = () => {
                   marginBottom: 12,
                 }}
               >
-                <StyledView className="w-10 h-7 rounded-[6px] bg-blue-600 mr-3 items-center justify-center">
-                  <StyledText className="text-white font-bold text-[12px]">
+                <View className="w-10 h-7 rounded-[6px] bg-blue-600 mr-3 items-center justify-center">
+                  <Text className="text-white font-bold text-[12px]">
                     VISA
-                  </StyledText>
-                </StyledView>
-                <StyledText
+                  </Text>
+                </View>
+                <Text
                   style={{
                     fontSize: 15,
                     fontFamily: FONT.Regular,
@@ -309,11 +300,11 @@ const AddFunds = () => {
                   }}
                 >
                   VISA **** 5100
-                </StyledText>
-              </StyledTouchableOpacity>
+                </Text>
+              </TouchableOpacity>
 
               {/* Add Card Button */}
-              <StyledTouchableOpacity
+              <TouchableOpacity
                 onPress={() => router.push("/(tabs)/discover/addCard")}
                 style={{
                   width: SCREEN_WIDTH - 48,
@@ -327,7 +318,7 @@ const AddFunds = () => {
                   backgroundColor: "transparent",
                 }}
               >
-                <StyledText
+                <Text
                   style={{
                     fontSize: 16,
                     fontFamily: FONT.Medium,
@@ -335,13 +326,13 @@ const AddFunds = () => {
                   }}
                 >
                   + Add Card
-                </StyledText>
-              </StyledTouchableOpacity>
-            </StyledView>
+                </Text>
+              </TouchableOpacity>
+            </View>
           )}
 
           {/* Continue Button */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={handleContinue}
             style={{
               width: SCREEN_WIDTH - 48,
@@ -353,7 +344,7 @@ const AddFunds = () => {
               marginBottom: 32,
             }}
           >
-            <StyledText
+            <Text
               style={{
                 fontSize: 18,
                 fontFamily: FONT.SemiBold,
@@ -361,17 +352,17 @@ const AddFunds = () => {
               }}
             >
               Continue
-            </StyledText>
-          </StyledTouchableOpacity>
+            </Text>
+          </TouchableOpacity>
 
           {/* Contact Support */}
-          <StyledView
+          <View
             style={{
               alignItems: "center",
               marginBottom: 32,
             }}
           >
-            <StyledText
+            <Text
               style={{
                 fontSize: 15,
                 fontFamily: FONT.Regular,
@@ -379,14 +370,14 @@ const AddFunds = () => {
               }}
             >
               Need Help?{" "}
-              <StyledText style={{ color: "#FCCD34", fontFamily: FONT.Medium }}>
+              <Text style={{ color: "#FCCD34", fontFamily: FONT.Medium }}>
                 Contact Support
-              </StyledText>
-            </StyledText>
-          </StyledView>
-        </StyledView>
-      </StyledScrollView>
-    </StyledSafeAreaView>
+              </Text>
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 

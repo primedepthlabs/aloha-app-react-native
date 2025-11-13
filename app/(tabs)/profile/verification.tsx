@@ -12,7 +12,6 @@ import {
   Dimensions,
   Image,
 } from "react-native";
-import { styled } from "nativewind";
 import { ChevronLeft } from "lucide-react-native";
 import {
   useFonts,
@@ -22,13 +21,6 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledSafeAreaView = styled(SafeAreaView);
-const StyledScrollView = styled(ScrollView);
-const StyledTextInput = styled(TextInput);
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -114,11 +106,11 @@ const VerificationScreen = () => {
   // Step 1: Start Verification Screen
   if (step === 1) {
     return (
-      <StyledSafeAreaView className="flex-1 bg-black">
+      <SafeAreaView className="flex-1 bg-black">
         <StatusBar barStyle="light-content" />
 
         {/* Header */}
-        <StyledView
+        <View
           style={{
             height: 60,
             flexDirection: "row",
@@ -128,7 +120,7 @@ const VerificationScreen = () => {
             position: "relative",
           }}
         >
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => router.back()}
             style={{
               position: "absolute",
@@ -140,8 +132,8 @@ const VerificationScreen = () => {
             }}
           >
             <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-          </StyledTouchableOpacity>
-          <StyledText
+          </TouchableOpacity>
+          <Text
             className="text-white"
             style={{
               fontSize: 18,
@@ -149,10 +141,10 @@ const VerificationScreen = () => {
             }}
           >
             Verification
-          </StyledText>
-        </StyledView>
+          </Text>
+        </View>
 
-        <StyledScrollView
+        <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={{
             paddingHorizontal: 24,
@@ -162,7 +154,7 @@ const VerificationScreen = () => {
           }}
         >
           {/* Icon - Purple Icon Image */}
-          <StyledView
+          <View
             style={{
               width: 50,
               height: 47,
@@ -179,9 +171,9 @@ const VerificationScreen = () => {
                 resizeMode: "contain",
               }}
             />
-          </StyledView>
+          </View>
 
-          <StyledText
+          <Text
             style={{
               fontSize: 18,
               fontFamily: FONT.Bold,
@@ -190,10 +182,10 @@ const VerificationScreen = () => {
             }}
           >
             Start verification
-          </StyledText>
+          </Text>
 
           {/* Info Box */}
-          <StyledView
+          <View
             style={{
               width: SCREEN_WIDTH - 48,
               backgroundColor: "#1C1C1E",
@@ -202,7 +194,7 @@ const VerificationScreen = () => {
               marginBottom: 40,
             }}
           >
-            <StyledText
+            <Text
               style={{
                 fontSize: 18,
                 fontFamily: FONT.Medium,
@@ -212,8 +204,8 @@ const VerificationScreen = () => {
               }}
             >
               Why add your Email?
-            </StyledText>
-            <StyledText
+            </Text>
+            <Text
               style={{
                 fontSize: 15,
                 fontFamily: FONT.Regular,
@@ -226,11 +218,11 @@ const VerificationScreen = () => {
               updates and notifications, Provide a secondary way to recover your
               password or Passcode. Verify your account ownership in case of
               suspicious activity.
-            </StyledText>
-          </StyledView>
+            </Text>
+          </View>
 
           {/* Continue Button */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => setStep(2)}
             style={{
               backgroundColor: "#FCCD34",
@@ -242,7 +234,7 @@ const VerificationScreen = () => {
               marginBottom: 16,
             }}
           >
-            <StyledText
+            <Text
               style={{
                 fontSize: 18,
                 fontFamily: FONT.SemiBold,
@@ -250,11 +242,11 @@ const VerificationScreen = () => {
               }}
             >
               Continue verification
-            </StyledText>
-          </StyledTouchableOpacity>
+            </Text>
+          </TouchableOpacity>
 
           {/* Not Now Button */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => router.back()}
             style={{
               backgroundColor: "#1C1C1E",
@@ -265,7 +257,7 @@ const VerificationScreen = () => {
               justifyContent: "center",
             }}
           >
-            <StyledText
+            <Text
               style={{
                 fontSize: 18,
                 fontFamily: FONT.SemiBold,
@@ -273,21 +265,21 @@ const VerificationScreen = () => {
               }}
             >
               Not now
-            </StyledText>
-          </StyledTouchableOpacity>
-        </StyledScrollView>
-      </StyledSafeAreaView>
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </SafeAreaView>
     );
   }
 
   // Step 2: Enter Email Screen
   if (step === 2) {
     return (
-      <StyledSafeAreaView className="flex-1 bg-black">
+      <SafeAreaView className="flex-1 bg-black">
         <StatusBar barStyle="light-content" />
 
         {/* Header with Progress Bar */}
-        <StyledView
+        <View
           style={{
             height: 60,
             flexDirection: "row",
@@ -296,7 +288,7 @@ const VerificationScreen = () => {
             position: "relative",
           }}
         >
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={() => setStep(1)}
             style={{
               width: 40,
@@ -306,10 +298,10 @@ const VerificationScreen = () => {
             }}
           >
             <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-          </StyledTouchableOpacity>
+          </TouchableOpacity>
 
           {/* Progress Bar */}
-          <StyledView
+          <View
             style={{
               flex: 1,
               height: 4,
@@ -320,10 +312,10 @@ const VerificationScreen = () => {
             }}
           >
             <View className="w-1/3 h-full bg-yellow-500 rounded-full" />
-          </StyledView>
-        </StyledView>
+          </View>
+        </View>
 
-        <StyledScrollView
+        <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={{
             paddingHorizontal: 24,
@@ -331,7 +323,7 @@ const VerificationScreen = () => {
             paddingBottom: 40,
           }}
         >
-          <StyledText
+          <Text
             style={{
               fontSize: 24,
               fontFamily: FONT.SemiBold,
@@ -341,9 +333,9 @@ const VerificationScreen = () => {
             }}
           >
             Enter your email
-          </StyledText>
+          </Text>
 
-          <StyledText
+          <Text
             style={{
               fontSize: 15,
               fontFamily: FONT.Regular,
@@ -354,10 +346,10 @@ const VerificationScreen = () => {
             }}
           >
             Enter your email address to receive a 6-digit verification code
-          </StyledText>
+          </Text>
 
           {/* Email Input */}
-          <StyledTextInput
+          <TextInput
             value={email}
             onChangeText={setEmail}
             placeholder="Enter your email"
@@ -380,7 +372,7 @@ const VerificationScreen = () => {
           />
 
           {/* Send Button */}
-          <StyledTouchableOpacity
+          <TouchableOpacity
             onPress={handleSendVerificationCode}
             disabled={!email || isSending}
             style={{
@@ -397,7 +389,7 @@ const VerificationScreen = () => {
             {isSending ? (
               <ActivityIndicator color="#000000" />
             ) : (
-              <StyledText
+              <Text
                 style={{
                   fontSize: 18,
                   fontFamily: FONT.SemiBold,
@@ -405,11 +397,11 @@ const VerificationScreen = () => {
                 }}
               >
                 Send verification code
-              </StyledText>
+              </Text>
             )}
-          </StyledTouchableOpacity>
+          </TouchableOpacity>
 
-          <StyledText
+          <Text
             style={{
               fontSize: 14,
               fontFamily: FONT.Regular,
@@ -420,19 +412,19 @@ const VerificationScreen = () => {
           >
             We'll send a code to your inbox. Check your spam folder if you don't
             see it.
-          </StyledText>
-        </StyledScrollView>
-      </StyledSafeAreaView>
+          </Text>
+        </ScrollView>
+      </SafeAreaView>
     );
   }
 
   // Step 3: Verification Code Screen
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
 
       {/* Header with Progress Bar */}
-      <StyledView
+      <View
         style={{
           height: 60,
           flexDirection: "row",
@@ -441,7 +433,7 @@ const VerificationScreen = () => {
           position: "relative",
         }}
       >
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={() => setStep(2)}
           style={{
             width: 40,
@@ -451,10 +443,10 @@ const VerificationScreen = () => {
           }}
         >
           <ChevronLeft size={24} color="#FFFFFF" strokeWidth={2} />
-        </StyledTouchableOpacity>
+        </TouchableOpacity>
 
         {/* Progress Bar */}
-        <StyledView
+        <View
           style={{
             flex: 1,
             height: 4,
@@ -465,10 +457,10 @@ const VerificationScreen = () => {
           }}
         >
           <View className="w-2/3 h-full bg-yellow-500 rounded-full" />
-        </StyledView>
-      </StyledView>
+        </View>
+      </View>
 
-      <StyledScrollView
+      <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
           paddingHorizontal: 24,
@@ -476,7 +468,7 @@ const VerificationScreen = () => {
           paddingBottom: 40,
         }}
       >
-        <StyledText
+        <Text
           style={{
             fontSize: 24,
             fontFamily: FONT.SemiBold,
@@ -486,9 +478,9 @@ const VerificationScreen = () => {
           }}
         >
           Verification Code
-        </StyledText>
+        </Text>
 
-        <StyledText
+        <Text
           style={{
             fontSize: 14,
             fontFamily: FONT.Regular,
@@ -499,13 +491,13 @@ const VerificationScreen = () => {
           }}
         >
           We've sent an SMS with an activation code to{" "}
-          <StyledText style={{ color: "#FFFFFF", fontFamily: FONT.Regular }}>
+          <Text style={{ color: "#FFFFFF", fontFamily: FONT.Regular }}>
             {email || "Ellensio@gmail.com"}
-          </StyledText>
-        </StyledText>
+          </Text>
+        </Text>
 
         {/* Code Input Boxes */}
-        <StyledView
+        <View
           style={{
             flexDirection: "row",
             justifyContent: "space-between",
@@ -514,7 +506,7 @@ const VerificationScreen = () => {
           }}
         >
           {code.map((digit, index) => (
-            <StyledView
+            <View
               key={index}
               style={{
                 width: 52,
@@ -527,7 +519,7 @@ const VerificationScreen = () => {
                 justifyContent: "center",
               }}
             >
-              <StyledTextInput
+              <TextInput
                 ref={(el) => (inputRefs.current[index] = el)}
                 value={digit}
                 onChangeText={(text) => handleCodeChange(text, index)}
@@ -543,12 +535,12 @@ const VerificationScreen = () => {
                   height: "100%",
                 }}
               />
-            </StyledView>
+            </View>
           ))}
-        </StyledView>
+        </View>
 
         {/* Continue Button */}
-        <StyledTouchableOpacity
+        <TouchableOpacity
           onPress={handleContinue}
           disabled={!isCodeComplete || isSending}
           style={{
@@ -566,7 +558,7 @@ const VerificationScreen = () => {
           {isSending ? (
             <ActivityIndicator color="#000000" />
           ) : (
-            <StyledText
+            <Text
               style={{
                 fontSize: 18,
                 fontFamily: FONT.SemiBold,
@@ -574,19 +566,19 @@ const VerificationScreen = () => {
               }}
             >
               Continue
-            </StyledText>
+            </Text>
           )}
-        </StyledTouchableOpacity>
+        </TouchableOpacity>
 
         {/* Resend Code */}
-        <StyledView
+        <View
           style={{
             flexDirection: "row",
             justifyContent: "center",
             alignItems: "center",
           }}
         >
-          <StyledText
+          <Text
             style={{
               fontSize: 14,
               fontFamily: FONT.Regular,
@@ -594,9 +586,9 @@ const VerificationScreen = () => {
             }}
           >
             I didn't receive a code{" "}
-          </StyledText>
-          <StyledTouchableOpacity onPress={handleResendCode}>
-            <StyledText
+          </Text>
+          <TouchableOpacity onPress={handleResendCode}>
+            <Text
               style={{
                 fontSize: 16,
                 fontFamily: FONT.SemiBold,
@@ -604,19 +596,19 @@ const VerificationScreen = () => {
               }}
             >
               Resend
-            </StyledText>
-          </StyledTouchableOpacity>
-        </StyledView>
-      </StyledScrollView>
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
 
       {/* Success Modal */}
       <Modal
         visible={successModalVisible}
         transparent
         animationType="fade"
-        onRequestClose={() => {}}
+        onRequestClose={() => { }}
       >
-        <StyledView
+        <View
           style={{
             flex: 1,
             backgroundColor: "#000000",
@@ -625,8 +617,8 @@ const VerificationScreen = () => {
             paddingHorizontal: 20,
           }}
         >
-          <StyledView style={{ alignItems: "center", width: "100%" }}>
-            <StyledView
+          <View style={{ alignItems: "center", width: "100%" }}>
+            <View
               style={{
                 width: 120,
                 height: 120,
@@ -641,9 +633,9 @@ const VerificationScreen = () => {
                 style={{ width: 120, height: 120 }}
                 resizeMode="contain"
               />
-            </StyledView>
+            </View>
 
-            <StyledText
+            <Text
               style={{
                 fontSize: 24,
                 fontFamily: FONT.Medium,
@@ -653,9 +645,9 @@ const VerificationScreen = () => {
               }}
             >
               Email Successfully Verified!
-            </StyledText>
+            </Text>
 
-            <StyledText
+            <Text
               style={{
                 fontSize: 15,
                 fontFamily: FONT.Regular,
@@ -667,9 +659,9 @@ const VerificationScreen = () => {
             >
               Your email address has been successfully added to your account for
               future communications and recovery.
-            </StyledText>
+            </Text>
 
-            <StyledTouchableOpacity
+            <TouchableOpacity
               onPress={() => {
                 setSuccessModalVisible(false);
                 // Navigate to settings
@@ -684,7 +676,7 @@ const VerificationScreen = () => {
                 borderRadius: 15,
               }}
             >
-              <StyledText
+              <Text
                 style={{
                   fontSize: 15,
                   fontFamily: FONT.Bold,
@@ -692,12 +684,12 @@ const VerificationScreen = () => {
                 }}
               >
                 Go to settings
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledView>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
-    </StyledSafeAreaView>
+    </SafeAreaView>
   );
 };
 
