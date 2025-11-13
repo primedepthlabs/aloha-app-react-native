@@ -1,858 +1,905 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Modal,
-  SafeAreaView,
-  StatusBar,
-  Dimensions,
-  ActivityIndicator,
   Image,
+  Modal,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
-import { styled } from "nativewind";
-import { ChevronLeft } from "lucide-react-native";
 import {
-  useFonts,
-  Poppins_400Regular,
-  Poppins_500Medium,
-  Poppins_600SemiBold,
-  Poppins_700Bold,
-} from "@expo-google-fonts/poppins";
-import { router } from "expo-router";
+  Search,
+  Star,
+  MessageCircle,
+  MoreVertical,
+  ChevronLeft,
+} from "lucide-react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter, Link } from "expo-router";
+import { supabase } from "../../../supabaseClient";
 
-const StyledView = styled(View);
-const StyledText = styled(Text);
-const StyledTextInput = styled(TextInput);
-const StyledTouchableOpacity = styled(TouchableOpacity);
-const StyledScrollView = styled(ScrollView);
-const StyledSafeAreaView = styled(SafeAreaView);
+// Mock users with predefined IDs for Supabase integration
+const MOCK_USERS: User[] = [
+  {
+    id: "influencer-001", // This will be the influencer_profile.id in database
+    name: "Bam Margera",
+    role: "Actor",
+    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
+    isFavorite: false,
+    location: "Chicago, IL United States",
+    about:
+      "Gorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis. Class aptent taciti sociosqu ad litora to ...",
+    rating: 4,
+    isOnline: true,
+    gallery: [
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400",
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+    ],
+    isVerified: true,
+  },
+  {
+    id: "influencer-002",
+    name: "Sarah Johnson",
+    role: "Influencer",
+    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400",
+    isFavorite: true,
+    location: "Los Angeles, CA United States",
+    about:
+      "Gorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis.",
+    rating: 5,
+    isOnline: true,
+    gallery: [
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400",
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+    ],
+    isVerified: true,
+  },
+  {
+    id: "influencer-003",
+    name: "Mike Chen",
+    role: "Doctor",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+    isFavorite: false,
+    location: "New York, NY United States",
+    about:
+      "Gorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis.",
+    rating: 4,
+    isOnline: false,
+    gallery: [
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+    ],
+    isVerified: true,
+  },
+  {
+    id: "influencer-004",
+    name: "Emma Stone",
+    role: "Youtuber",
+    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
+    isFavorite: false,
+    location: "Miami, FL United States",
+    about:
+      "Gorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis.",
+    rating: 4,
+    isOnline: true,
+    gallery: [
+      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
+    ],
+    isVerified: true,
+  },
+];
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const FONT = {
-  Regular: "Poppins_400Regular",
-  Medium: "Poppins_500Medium",
-  SemiBold: "Poppins_600SemiBold",
-  Bold: "Poppins_700Bold",
-};
+interface Notification {
+  id: number;
+  type: "message" | "donation" | "system" | "video";
+  title: string;
+  subtitle?: string;
+  time: string;
+  icon: string;
+}
 
-const Donation = () => {
-  const [step, setStep] = useState(1);
-  const [selectedAmount, setSelectedAmount] = useState(10);
-  const [customAmount, setCustomAmount] = useState("");
-  const [message, setMessage] = useState("");
-  const [selectedPayment, setSelectedPayment] = useState("balance");
-  const [showCardOptions, setShowCardOptions] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [showFailed, setShowFailed] = useState(false);
+const MOCK_NOTIFICATIONS: Notification[] = [
+  {
+    id: 1,
+    type: "message",
+    title: "New message from Bam",
+    time: "2 hours ago",
+    icon: "message",
+  },
+  {
+    id: 2,
+    type: "donation",
+    title: "Donation sent successfully",
+    subtitle: "Tap to view conversation",
+    time: "",
+    icon: "heart",
+  },
+  {
+    id: 3,
+    type: "system",
+    title: "Low balance — add funds",
+    time: "2 hours ago",
+    icon: "settings",
+  },
+  {
+    id: 4,
+    type: "video",
+    title: "Video call accepted",
+    subtitle: "Tap to view conversation",
+    time: "",
+    icon: "video",
+  },
+];
 
-  const balance = 12;
-  const amounts = [5, 10, 50, 100];
+const ROLES = ["All", "Influencer", "Doctor", "Youtuber", "Actor"];
 
-  const handleAmountSelect = (amount: number) => {
-    setSelectedAmount(amount);
-    setCustomAmount("");
-  };
+export default function DiscoverScreen() {
+  const router = useRouter();
+  const [selectedTab, setSelectedTab] = useState<"everyone" | "favorites">(
+    "everyone"
+  );
+  const [notificationTab, setNotificationTab] = useState<
+    "all" | "messages" | "donations"
+  >("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [selectedRole, setSelectedRole] = useState("All");
+  const [showNotificationMenu, setShowNotificationMenu] = useState<
+    number | null
+  >(null);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  const handleNext = () => {
-    setStep(2);
-  };
-
-  const handleDonate = () => {
-    if (selectedPayment === "balance") {
-      setShowSuccess(true);
-    } else {
-      setShowFailed(true);
-    }
-  };
-
-  const handlePaymentSelect = (method: string) => {
-    setSelectedPayment(method);
-    if (method === "card") {
-      setShowCardOptions(!showCardOptions);
-    } else {
-      setShowCardOptions(false);
-    }
-  };
-
-  const resetFlow = () => {
-    setStep(1);
-    setSelectedAmount(10);
-    setCustomAmount("");
-    setMessage("");
-    setSelectedPayment("balance");
-    setShowCardOptions(false);
-  };
+  // Load influencers from Supabase on mount
   useEffect(() => {
-    if (!showSuccess && !showFailed) {
-      resetFlow();
-    }
-  }, [showSuccess, showFailed]);
+    loadInfluencersAndCurrentUser();
+  }, []);
 
-  const [fontsLoaded] = useFonts({
-    Poppins_400Regular,
-    Poppins_500Medium,
-    Poppins_600SemiBold,
-    Poppins_700Bold,
+  const loadInfluencersAndCurrentUser = async () => {
+    try {
+      setLoading(true);
+
+      // Get current user
+      const { data: authData, error: authError } =
+        await supabase.auth.getUser();
+      console.log("Current user in discover:", authData, authError);
+
+      if (authError || !authData.user) {
+        console.error("No authenticated user:", authError);
+      } else {
+        setCurrentUserId(authData.user.id);
+      }
+
+      // Fetch influencers from database with user data
+      const { data: influencersData, error: influencersError } = await supabase
+        .from("influencer_profiles")
+        .select(
+          `
+          *,
+          users!influencer_profiles_user_id_fkey (
+            full_name,
+            avatar_url
+          )
+        `
+        )
+        .eq("is_available", true)
+        .order("created_at", { ascending: false });
+
+      console.log("Influencers loaded:", influencersData, influencersError);
+
+      if (influencersError) {
+        console.error("Error loading influencers:", influencersError);
+        throw influencersError;
+      }
+
+      // Transform data to match User interface
+      const transformedUsers: User[] = (influencersData || []).map(
+        (influencer) => {
+          const userData = influencer.users || {};
+          return {
+            id: influencer.id,
+            name: influencer.display_name || userData.full_name || "Unknown",
+            role: influencer.category || "Influencer",
+            image:
+              influencer.profile_image_url ||
+              userData.avatar_url ||
+              "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
+            isFavorite: false, // TODO: Load from user favorites
+            location: "Location not specified", // Add location to influencer_profiles if needed
+            about: influencer.bio || "No bio available",
+            rating: parseFloat(influencer.average_rating) || 4,
+            isOnline: influencer.is_available || false,
+            gallery: [], // Add gallery_images column if needed
+            isVerified: true, // All influencers are verified
+          };
+        }
+      );
+
+      setUsers(transformedUsers);
+    } catch (error: any) {
+      console.error("Error in loadInfluencersAndCurrentUser:", error);
+      Alert.alert("Error", "Failed to load influencers");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleFavorite = async (userId: string) => {
+    // Update local state immediately for better UX
+    setUsers((prev) => {
+      const updated = prev.map((user) =>
+        user.id === userId ? { ...user, isFavorite: !user.isFavorite } : user
+      );
+
+      if (selectedUser && selectedUser.id === userId) {
+        const updatedSelected = updated.find((u) => u.id === userId) || null;
+        setSelectedUser(updatedSelected);
+      }
+
+      return updated;
+    });
+
+    // TODO: Save to database (create a favorites table)
+    try {
+      const user = users.find((u) => u.id === userId);
+      if (!user || !currentUserId) return;
+
+      if (user.isFavorite) {
+        // Remove from favorites
+        const { error } = await supabase
+          .from("user_favorites")
+          .delete()
+          .eq("user_id", currentUserId)
+          .eq("influencer_id", userId);
+
+        if (error) throw error;
+      } else {
+        // Add to favorites
+        const { error } = await supabase.from("user_favorites").insert({
+          user_id: currentUserId,
+          influencer_id: userId,
+        });
+
+        if (error) throw error;
+      }
+    } catch (error: any) {
+      console.error("Error toggling favorite:", error);
+      // Revert state on error
+      setUsers((prev) =>
+        prev.map((user) =>
+          user.id === userId ? { ...user, isFavorite: !user.isFavorite } : user
+        )
+      );
+    }
+  };
+
+  const navigateToChat = (user: User) => {
+    // Navigate to chat with proper parameters for Supabase integration
+    router.push({
+      pathname: "/(tabs)/chats/chat",
+      params: {
+        conversationId: "new", // Will create new conversation or find existing
+        influencerName: user.name,
+        influencerId: user.id,
+      },
+    });
+  };
+
+  const navigateToReport = () => {
+    console.log("Report pressed, closing menu and navigating to /report");
+    setShowProfileMenu(false);
+    setSelectedUser(null);
+    router.push("/(tabs)/discover/report");
+  };
+
+  const applyFilter = () => {
+    setShowFilterModal(false);
+  };
+
+  // Filter users based on selected tab, role, and search query
+  const filteredUsers = users.filter((user) => {
+    // Filter by favorites tab
+    if (selectedTab === "favorites" && !user.isFavorite) {
+      return false;
+    }
+
+    // Filter by selected role
+    if (selectedRole !== "All" && user.role !== selectedRole) {
+      return false;
+    }
+
+    // Filter by search query
+    if (searchQuery.trim() !== "") {
+      const query = searchQuery.toLowerCase();
+      const matchesName = user.name.toLowerCase().includes(query);
+      const matchesRole = user.role.toLowerCase().includes(query);
+      return matchesName || matchesRole;
+    }
+
+    return true;
   });
 
-  if (!fontsLoaded) {
+  const filteredNotifications =
+    notificationTab === "all"
+      ? MOCK_NOTIFICATIONS
+      : notificationTab === "messages"
+      ? MOCK_NOTIFICATIONS.filter((n) => n.type === "message")
+      : MOCK_NOTIFICATIONS.filter((n) => n.type === "donation");
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case "message":
+        return (
+          <View className="w-12 h-12 bg-[#19191B] rounded-2xl items-center justify-center">
+            <Image
+              source={require("../../../assets/images/mess-notification.png")}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          </View>
+        );
+      case "donation":
+        return (
+          <View className="w-12 h-12 bg-[#19191B] rounded-2xl items-center justify-center">
+            <Image
+              source={require("../../../assets/images/heart-notification.png")}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          </View>
+        );
+      case "system":
+        return (
+          <View className="w-12 h-12 bg-[#19191B] rounded-2xl items-center justify-center">
+            <Image
+              source={require("../../../assets/images/settings-notification.png")}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          </View>
+        );
+      case "video":
+        return (
+          <View className="w-12 h-12 bg-[#19191B] rounded-2xl items-center justify-center">
+            <Image
+              source={require("../../../assets/images/videocall-notification.png")}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          </View>
+        );
+      default:
+        return null;
+    }
+  };
+
+  if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-black">
-        <ActivityIndicator color="#FCCD34" />
+      <View className="flex-1 bg-black items-center justify-center">
+        <ActivityIndicator size="large" color="#FCCD34" />
+        <Text className="text-white mt-4">Loading influencers...</Text>
       </View>
     );
   }
 
-  if (step === 1) {
-    return (
-      <StyledSafeAreaView className="flex-1 bg-black">
-        <StatusBar barStyle="light-content" />
-        <StyledScrollView className="flex-1">
-          {/* Header */}
-          <StyledView
-            className="flex-row items-center px-4"
-            style={{ height: 44, marginTop: 8 }}
-          >
-            <StyledTouchableOpacity
-              className="absolute left-4"
-              style={{ zIndex: 10 }}
-            >
-              <ChevronLeft size={24} color="#fff" strokeWidth={2.5} />
-            </StyledTouchableOpacity>
-            <StyledText
-              className="text-white text-center flex-1 font-semibold"
-              style={{ fontSize: 18 }}
-            >
-              Donation
-            </StyledText>
-          </StyledView>
-
-          {/* Balance Card */}
-          <StyledView
-            className="flex-row items-center justify-between px-4"
-            style={{
-              width: 350,
-              height: 69,
-              marginLeft: 21,
-              marginTop: 20,
-              borderRadius: 15,
-              borderWidth: 0.3,
-              borderColor: "#FCCD34",
-
-              backgroundColor: "rgba(28, 28, 30, 0.8)",
-            }}
-          >
-            <StyledView>
-              <StyledText
-                className="text-gray-400"
-                style={{
-                  fontFamily: FONT.Regular,
-                  fontWeight: "400",
-                  fontSize: 12,
-                  lineHeight: 12,
-                  marginBottom: 4,
-                }}
-              >
-                Balance:
-              </StyledText>
-              <StyledText
-                className="text-white font-bold"
-                style={{ fontSize: 18, fontFamily: FONT.SemiBold }}
-              >
-                {balance} GEL
-              </StyledText>
-            </StyledView>
-            <StyledTouchableOpacity
-              className="bg-[#FCCD34] items-center justify-center"
-              style={{
-                width: 92,
-                height: 29,
-                borderRadius: 10,
-              }}
-            >
-              <StyledText
-                className="text-black font-semibold"
-                style={{ fontSize: 13 }}
-              >
-                + Add funds
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-
-          {/* Select Amount Section */}
-          <StyledView
-            style={{ paddingLeft: 21, paddingRight: 21, marginTop: 24 }}
-          >
-            <StyledText
-              className="text-white font-bold"
-              style={{
-                fontSize: 16,
-                marginBottom: 16,
-                fontFamily: FONT.Bold,
-              }}
-            >
-              Select amount
-            </StyledText>
-
-            {/* Amount Buttons Row */}
-            <StyledView
-              className="flex-row"
-              style={{
-                gap: 8,
-                marginBottom: 12,
-              }}
-            >
-              {amounts.map((amount) => (
-                <StyledTouchableOpacity
-                  key={amount}
-                  onPress={() => handleAmountSelect(amount)}
-                  className={`flex-1 items-center justify-center ${
-                    selectedAmount === amount && !customAmount
-                      ? "bg-yellow-400"
-                      : "bg-transparent"
-                  }`}
-                  style={{
-                    height: 48,
-                    borderRadius: 15,
-                    borderWidth:
-                      selectedAmount === amount && !customAmount ? 0 : 0.5,
-                    borderColor: "#3A3A3C",
-                  }}
-                >
-                  <StyledText
-                    className={`font-semibold ${
-                      selectedAmount === amount && !customAmount
-                        ? "text-black"
-                        : "text-white"
-                    }`}
-                    style={{ fontSize: 16, fontFamily: FONT.Medium }}
-                  >
-                    {amount} GEL
-                  </StyledText>
-                </StyledTouchableOpacity>
-              ))}
-            </StyledView>
-
-            {/* Custom Amount Input */}
-            <StyledTextInput
-              value={customAmount}
-              onChangeText={(text) => {
-                setCustomAmount(text);
-                setSelectedAmount(0);
-              }}
-              placeholder="Custom amount"
-              placeholderTextColor="#8E8E93"
-              className="bg-transparent text-white"
-              style={{
-                fontFamily: FONT.Regular,
-                height: 48,
-                borderRadius: 15,
-                borderWidth: 0.5,
-                backgroundColor: "#19191B",
-                borderColor: "#3A3A3C",
-                paddingHorizontal: 16,
-                fontSize: 16,
-                marginBottom: 24,
-              }}
-              keyboardType="numeric"
-            />
-
-            {/* Message Section */}
-            <StyledText
-              className="text-white font-bold"
-              style={{
-                fontSize: 15,
-                marginBottom: 12,
-                fontFamily: FONT.Medium,
-              }}
-            >
-              You can say something to Bam Margera
-            </StyledText>
-
-            <StyledView style={{ position: "relative", marginBottom: 24 }}>
-              <StyledTextInput
-                value={message}
-                onChangeText={setMessage}
-                placeholder="Type your message (Max 240 chars)"
-                placeholderTextColor="#8E8E93"
-                className="text-white"
-                multiline
-                maxLength={240}
-                style={{
-                  fontFamily: FONT.Regular,
-                  width: 349,
-                  height: 93,
-                  borderRadius: 17,
-                  borderWidth: 0.3,
-                  borderColor: "rgba(255, 255, 255, 0.2)",
-                  backgroundColor: "rgba(28, 28, 30, 0.8)",
-                  padding: 16,
-                  fontSize: 15,
-                  textAlignVertical: "top",
-                }}
-              />
-
-              <StyledText
-                className="text-gray-500 absolute"
-                style={{
-                  fontSize: 12,
-                  bottom: 12,
-                  right: 16,
-                  fontStyle: "italic",
-                }}
-              >
-                {message.length}/240
-              </StyledText>
-            </StyledView>
-
-            {/* Next Button */}
-            <StyledTouchableOpacity
-              onPress={handleNext}
-              className="bg-[#FCCD34] items-center justify-center"
-              style={{
-                width: 350,
-                height: 48,
-                borderRadius: 15,
-              }}
-            >
-              <StyledText
-                className="text-black font-bold"
-                style={{ fontSize: 17 }}
-              >
-                Next
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledScrollView>
-      </StyledSafeAreaView>
-    );
-  }
-
-  // Step 2: Payment Method Screen
   return (
-    <StyledSafeAreaView className="flex-1 bg-black">
-      <StatusBar barStyle="light-content" />
-      <StyledScrollView className="flex-1">
-        {/* Header */}
-        <StyledView
-          className="flex-row items-center px-4"
-          style={{ height: 44, marginTop: 8 }}
-        >
-          <StyledTouchableOpacity
-            onPress={() => setStep(1)}
-            className="absolute left-4"
-            style={{ zIndex: 10 }}
-          >
-            <ChevronLeft size={24} color="#fff" strokeWidth={2.5} />
-          </StyledTouchableOpacity>
-          <StyledText
-            className="text-white text-center flex-1 font-semibold"
-            style={{ fontSize: 18 }}
-          >
-            Donation
-          </StyledText>
-        </StyledView>
+    <View className="flex-1 bg-black">
+      {/* Header */}
+      <View className="pt-12 pb-4 px-6">
+        <View className="flex-row items-center justify-between mb-6">
+          <TouchableOpacity onPress={() => router.back()}>
+            <ChevronLeft size={28} color="#fff" />
+          </TouchableOpacity>
+          <Text className="text-white font-bold text-[18px]">Discover</Text>
+          <TouchableOpacity onPress={() => setShowNotificationModal(true)}>
+            <Image
+              source={require("../../../assets/images/bell-notification.png")}
+              style={{ width: 24, height: 28 }}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        </View>
 
-        {/* Amount Display */}
-        <StyledView
-          className="items-center justify-center"
-          style={{
-            width: 350,
-            marginLeft: 21,
-            marginTop: 10,
-            borderRadius: 15,
-            backgroundColor: "rgba(28, 28, 30, 0.8)",
-            paddingVertical: 16,
-            marginBottom: 24,
-          }}
-        >
-          <StyledText
-            className="text-gray-400"
-            style={{
-              fontSize: 12,
-              marginBottom: 4,
-              fontFamily: FONT.Regular,
-            }}
-          >
-            You are donating:
-          </StyledText>
-          <StyledText
-            className="text-yellow-400 font-bold"
-            style={{ fontSize: 18, fontFamily: FONT.SemiBold }}
-          >
-            {customAmount || selectedAmount} GEL
-          </StyledText>
-        </StyledView>
+        {/* Search Bar and Filter */}
+        <View className="flex-row items-center gap-[12px] mb-6">
+          {/* Search Bar */}
+          <View className="flex-1 h-[40px] flex-row items-center bg-black border border-[#3C3C3E] rounded-xl px-3">
+            <Search size={20} color="#fff" style={{ width: 20, height: 20 }} />
+            <TextInput
+              className="flex-1 text-white text-[15px] ml-2"
+              placeholder="Search"
+              placeholderTextColor="#8E8E93"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </View>
 
-        <StyledView
-          style={{
-            paddingLeft: 21,
-            paddingRight: 21,
-            marginTop: 5,
-          }}
-        >
-          <StyledText
-            className="text-white font-bold"
-            style={{
-              fontSize: 17.5,
-              marginBottom: 16,
-              fontFamily: FONT.Bold,
-            }}
+          {/* Filter Button */}
+          <TouchableOpacity
+            onPress={() => setShowFilterModal(true)}
+            className="w-[40px] h-[40px] items-center justify-center"
           >
-            Select Payment Method
-          </StyledText>
+            <Image
+              source={require("../../../assets/images/filter-icon.png")}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        </View>
 
-          {/* Balance Option */}
-          <StyledTouchableOpacity
-            onPress={() => handlePaymentSelect("balance")}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              width: 350,
-              height: 56,
-              borderRadius: 15,
-              paddingHorizontal: 16,
-              marginBottom: 8,
-              borderWidth: selectedPayment === "balance" ? 1 : 0.5,
-              borderColor:
-                selectedPayment === "balance" ? "#FCCD34" : "#3A3A3C",
-              backgroundColor: "rgba(28, 28, 30, 0.8)",
-            }}
+        {/* Tabs */}
+        <View className="flex-row bg-[#1C1C1E] rounded-[11.63px] p-[3.88px]">
+          <TouchableOpacity
+            onPress={() => setSelectedTab("everyone")}
+            activeOpacity={0.9}
+            className={`flex-1 items-center justify-center rounded-[11.63px] h-[32px] ${
+              selectedTab === "everyone" ? "bg-[#FCCD34]" : "bg-transparent"
+            }`}
           >
-            <StyledView className="flex-row items-center">
-              <StyledView className="w-10 h-10 rounded-[8px] mr-3 items-center justify-center">
-                <Image
-                  source={require("../../../assets/images/balance.png")}
-                  className="w-6 h-6"
-                  resizeMode="contain"
-                />
-              </StyledView>
-              <StyledText
-                className="text-white"
-                style={{ fontSize: 15, fontFamily: FONT.Regular }}
-              >
-                Balance
-              </StyledText>
-            </StyledView>
-            <StyledView
-              style={{
-                width: 20,
-                height: 20,
-                borderRadius: 10,
-                borderWidth: 2,
-                borderColor:
-                  selectedPayment === "balance" ? "#FCCD34" : "#8E8E93",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+            <Text
+              className={`text-[16px] ${
+                selectedTab === "everyone" ? "text-[#13131B]" : "text-[#8E8E93]"
+              }`}
             >
-              {selectedPayment === "balance" && (
-                <StyledView
-                  style={{
-                    width: 12,
-                    height: 12,
-                    borderRadius: 6,
-                    backgroundColor: "#FCCD34",
+              Everyone
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => setSelectedTab("favorites")}
+            activeOpacity={0.9}
+            className={`flex-1 items-center justify-center rounded-[11.63px] h-[32px] ${
+              selectedTab === "favorites" ? "bg-[#FCCD34]" : "bg-transparent"
+            }`}
+          >
+            <Text
+              className={`text-[16px] ${
+                selectedTab === "favorites" ? "text-black" : "text-[#8E8E93]"
+              }`}
+            >
+              Favorites
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* User Grid */}
+      <ScrollView
+        className="flex-1 px-6"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 24 }}
+      >
+        {filteredUsers.length === 0 ? (
+          <View className="flex-1 items-center justify-center py-20">
+            <Text className="text-gray-400 text-center text-base">
+              {selectedTab === "favorites"
+                ? "No favorites yet\nAdd influencers to your favorites!"
+                : "No influencers found\nTry adjusting your filters"}
+            </Text>
+          </View>
+        ) : (
+          <View className="flex-row flex-wrap justify-between pb-24">
+            {filteredUsers.map((user) => (
+              <TouchableOpacity
+                key={user.id}
+                className="w-[48%] mb-4"
+                onPress={() => setSelectedUser(user)}
+              >
+                <View
+                  className="relative rounded-3xl overflow-hidden"
+                  style={{ height: 260 }}
+                >
+                  <Image
+                    source={{ uri: user.image }}
+                    className="w-full h-full"
+                    resizeMode="cover"
+                  />
+
+                  {/* Gradient Overlay */}
+                  <LinearGradient
+                    colors={["rgba(0,0,0,0.9)", "transparent"]}
+                    start={{ x: 0.5, y: 1 }}
+                    end={{ x: 0.5, y: 0 }}
+                    style={{
+                      position: "absolute",
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      height: "60%",
+                    }}
+                  />
+
+                  {/* Favorite Star */}
+                  <TouchableOpacity
+                    className="absolute top-4 right-4 z-10"
+                    onPress={() => toggleFavorite(user.id)}
+                  >
+                    <Star
+                      size={26}
+                      color={user.isFavorite ? "#FCCD34" : "#fff"}
+                      fill={user.isFavorite ? "#FCCD34" : "transparent"}
+                      strokeWidth={2}
+                    />
+                  </TouchableOpacity>
+
+                  {/* User Info */}
+                  <View
+                    style={{
+                      position: "absolute",
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      alignItems: "center",
+                      paddingBottom: 16,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "#fff",
+                        fontSize: 20,
+                        fontWeight: "600",
+                        marginBottom: 2,
+                      }}
+                    >
+                      {user.name}
+                    </Text>
+
+                    <Text
+                      style={{
+                        color: "#E5E5E5",
+                        fontSize: 14,
+                        marginBottom: 8,
+                      }}
+                    >
+                      {user.role}
+                    </Text>
+
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onPress={() => navigateToChat(user)}
+                      style={{
+                        backgroundColor: "#FCCD34",
+                        borderRadius: 5,
+                        paddingVertical: 4,
+                        paddingHorizontal: 8,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        minWidth: 60,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: "black",
+                          fontWeight: "500",
+                          fontSize: 11,
+                        }}
+                      >
+                        Message
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </ScrollView>
+
+      {/* Filter Modal */}
+      <Modal
+        visible={showFilterModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowFilterModal(false)}
+      >
+        <View className="flex-1 justify-end">
+          <TouchableOpacity
+            className="flex-1 bg-black/50"
+            activeOpacity={1}
+            onPress={() => setShowFilterModal(false)}
+          />
+          <View className="bg-[#1C1C1E] rounded-t-3xl pt-2 pb-8">
+            {/* Handle Bar */}
+            <View className="items-center py-3">
+              <View className="w-10 h-1 bg-white/30 rounded-full" />
+            </View>
+
+            {/* Role List */}
+            <ScrollView
+              className="px-6"
+              style={{ maxHeight: 500 }}
+              showsVerticalScrollIndicator={false}
+            >
+              {ROLES.map((role, index) => (
+                <TouchableOpacity
+                  key={index}
+                  className="flex-row items-center justify-between px-6 py-5"
+                  onPress={() => setSelectedRole(role)}
+                >
+                  <Text
+                    className={`text-lg ${
+                      selectedRole === role ? "text-[#FCCD34]" : "text-white"
+                    }`}
+                  >
+                    {role}
+                  </Text>
+                  <View
+                    className={`w-6 h-6 rounded-full ${
+                      selectedRole === role
+                        ? "bg-[#FCCD34]"
+                        : "border-2 border-gray-500"
+                    } items-center justify-center`}
+                  >
+                    {selectedRole === role && (
+                      <View className="w-3 h-3 rounded-full bg-black" />
+                    )}
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Notification Modal - Keep your existing code */}
+      {/* Profile Detail Modal - Keep your existing code with updated navigateToChat */}
+
+      {/* Profile Detail Modal */}
+      <Modal
+        visible={selectedUser !== null}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setSelectedUser(null)}
+      >
+        {selectedUser && (
+          <View className="flex-1 bg-black">
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {/* Profile Image */}
+              <View className="relative" style={{ height: 600 }}>
+                <Image
+                  source={{ uri: selectedUser.image }}
+                  className="w-full h-full"
+                  resizeMode="cover"
+                />
+
+                {/* Back Button */}
+                <TouchableOpacity
+                  className="absolute top-12 left-6 w-10 h-10 bg-black/50 rounded-full items-center justify-center"
+                  onPress={() => {
+                    setSelectedUser(null);
+                    setShowProfileMenu(false);
                   }}
-                />
-              )}
-            </StyledView>
-          </StyledTouchableOpacity>
-
-          {/* Apple Pay Option */}
-          <StyledTouchableOpacity
-            onPress={() => handlePaymentSelect("apple")}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              width: 350,
-              height: 56,
-              borderRadius: 15,
-              paddingHorizontal: 16,
-              marginBottom: 8,
-              borderWidth: 0.5,
-              borderColor: "#3A3A3C",
-              backgroundColor: "rgba(28, 28, 30, 0.8)",
-            }}
-          >
-            <StyledView className="flex-row items-center">
-              <StyledView className="w-10 h-10 rounded-[8px] mr-3 items-center justify-center">
-                <Image
-                  source={require("../../../assets/images/applepay.png")}
-                  className="w-7 h-7"
-                  resizeMode="contain"
-                />
-              </StyledView>
-              <StyledText
-                className="text-white"
-                style={{ fontSize: 15, fontFamily: FONT.Regular }}
-              >
-                Apple Pay
-              </StyledText>
-            </StyledView>
-            <StyledText className="text-gray-500 text-[20px]">›</StyledText>
-          </StyledTouchableOpacity>
-
-          {/* Card Option */}
-          <StyledTouchableOpacity
-            onPress={() => handlePaymentSelect("card")}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              width: 350,
-              height: 56,
-              borderRadius: 15,
-              paddingHorizontal: 16,
-              marginBottom: showCardOptions ? 8 : 8,
-              borderWidth: selectedPayment === "card" ? 1 : 0.5,
-              borderColor: selectedPayment === "card" ? "#FCCD34" : "#3A3A3C",
-              backgroundColor: "rgba(28, 28, 30, 0.8)",
-            }}
-          >
-            <StyledView className="flex-row items-center flex-1">
-              <StyledView className="w-10 h-10 rounded-[8px] mr-3 items-center justify-center">
-                <Image
-                  source={require("../../../assets/images/creditcard.png")}
-                  className="w-6 h-6"
-                  resizeMode="contain"
-                />
-              </StyledView>
-              <StyledText
-                className="text-white"
-                style={{ fontSize: 15, fontFamily: FONT.Regular }}
-              >
-                Credit/Debit Card
-              </StyledText>
-            </StyledView>
-            <StyledText className="text-gray-500 text-[20px]">
-              {showCardOptions ? "∧" : "›"}
-            </StyledText>
-          </StyledTouchableOpacity>
-
-          {/* Card Options Expanded */}
-          {showCardOptions && (
-            <StyledView style={{ marginBottom: 8 }}>
-              {/* MasterCard */}
-              <StyledTouchableOpacity
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  width: 350,
-                  height: 56,
-                  backgroundColor: "#2C2C2E",
-                  borderRadius: 15,
-                  paddingHorizontal: 16,
-                  marginBottom: 8,
-                }}
-              >
-                <StyledView className="w-10 h-7 rounded-[6px] bg-red-600 mr-3 relative items-center justify-center">
-                  <StyledView className="w-5 h-5 bg-red-700 rounded-full absolute left-0" />
-                  <StyledView className="w-5 h-5 bg-orange-500 rounded-full absolute right-0" />
-                </StyledView>
-                <StyledText
-                  className="text-white"
-                  style={{ fontSize: 15, fontFamily: FONT.Regular }}
                 >
-                  MASTERCARD **** 5100
-                </StyledText>
-              </StyledTouchableOpacity>
+                  <ChevronLeft size={24} color="#fff" />
+                </TouchableOpacity>
 
-              {/* Visa */}
-              <StyledTouchableOpacity
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  width: 350,
-                  height: 56,
-                  backgroundColor: "#2C2C2E",
-                  borderRadius: 15,
-                  paddingHorizontal: 16,
-                  marginBottom: 8,
-                }}
-              >
-                <StyledView className="w-10 h-7 rounded-[6px] bg-blue-600 mr-3 items-center justify-center">
-                  <StyledText className="text-white font-bold text-[12px]">
-                    VISA
-                  </StyledText>
-                </StyledView>
-                <StyledText
-                  className="text-white"
-                  style={{ fontSize: 15, fontFamily: FONT.Regular }}
+                {/* Handle Bar */}
+                <View className="absolute top-3 left-0 right-0 items-center">
+                  <View className="w-10 h-1 bg-white/30 rounded-full" />
+                </View>
+
+                {/* More Options */}
+                <TouchableOpacity
+                  className="absolute top-12 right-6"
+                  onPress={() => setShowProfileMenu(!showProfileMenu)}
                 >
-                  VISA **** 5100
-                </StyledText>
-              </StyledTouchableOpacity>
-            </StyledView>
-          )}
+                  <MoreVertical size={24} color="#fff" />
+                </TouchableOpacity>
 
-          {/* Add Card Button */}
-          <StyledTouchableOpacity
-            onPress={() => router.push("/(tabs)/discover/addCard")}
-            style={{
-              width: 350,
-              height: 48,
-              borderRadius: 15,
-              borderWidth: 0.5,
-              borderColor: "#3A3A3C",
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 16,
-              backgroundColor: "transparent",
-            }}
-          >
-            <StyledText
-              className="text-white"
-              style={{ fontSize: 16, fontFamily: FONT.Medium }}
-            >
-              + Add Card
-            </StyledText>
-          </StyledTouchableOpacity>
+                {/* Profile Menu Dropdown */}
+                {showProfileMenu && (
+                  <View
+                    className="absolute rounded-xl overflow-hidden"
+                    style={{
+                      position: "absolute",
+                      top: 56,
+                      right: 16,
+                      width: 160,
+                      backgroundColor: "#19191B",
+                      borderRadius: 12,
+                      paddingVertical: 6,
+                      elevation: 6,
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 6 },
+                      shadowOpacity: 0.25,
+                      shadowRadius: 12,
+                    }}
+                  >
+                    <TouchableOpacity
+                      className="flex-row items-center px-3"
+                      style={{ height: 44 }}
+                      onPress={navigateToReport}
+                      activeOpacity={0.8}
+                    >
+                      <Image
+                        source={require("../../../assets/images/flag.png")}
+                        style={{ width: 16, height: 16, marginRight: 12 }}
+                        resizeMode="contain"
+                      />
+                      <Text className="text-white font-medium">Report</Text>
+                    </TouchableOpacity>
 
-          {/* Donate Button */}
-          <StyledTouchableOpacity
-            onPress={handleDonate}
-            style={{
-              width: 350,
-              height: 48,
-              borderRadius: 15,
-              backgroundColor: "#FCCD34",
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 12,
-            }}
-          >
-            <StyledText className="text-black text-[20px] mr-2">♥</StyledText>
-            <StyledText
-              className="text-black"
-              style={{ fontSize: 17, fontFamily: FONT.Medium }}
-            >
-              Donate now
-            </StyledText>
-          </StyledTouchableOpacity>
+                    <View
+                      style={{
+                        height: 1,
+                        backgroundColor: "#29292C",
+                        marginHorizontal: 8,
+                      }}
+                    />
 
-          <StyledText
-            className="text-gray-500 text-center"
-            style={{ fontSize: 13, fontFamily: FONT.Regular }}
-          >
-            Donation are non-refundable
-          </StyledText>
-        </StyledView>
-      </StyledScrollView>
+                    <TouchableOpacity
+                      className="flex-row items-center px-3"
+                      style={{ height: 44 }}
+                      onPress={() => {
+                        setShowProfileMenu(false);
+                        Alert.alert(
+                          "Block user",
+                          "Are you sure you want to block this user?",
+                          [
+                            { text: "Cancel", style: "cancel" },
+                            {
+                              text: "Block",
+                              style: "destructive",
+                              onPress: () => console.log("User blocked"),
+                            },
+                          ]
+                        );
+                      }}
+                      activeOpacity={0.8}
+                    >
+                      <Image
+                        source={require("../../../assets/images/cross.png")}
+                        style={{ width: 16, height: 16, marginRight: 12 }}
+                        resizeMode="contain"
+                      />
+                      <Text className="text-red-500 font-medium">Block</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
 
-      {/* Success Modal */}
-      <Modal visible={showSuccess} transparent animationType="fade">
-        <StyledView className="flex-1 bg-black items-center justify-center px-5">
-          <StyledView className="items-center w-full">
-            <StyledView
-              style={{
-                width: 120,
-                height: 120,
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 16,
-              }}
-            >
-              <Image
-                source={require("../../../assets/images/Check.png")}
-                style={{ width: 120, height: 120 }}
-                resizeMode="contain"
-              />
-            </StyledView>
+                {/* Profile Info Card */}
+                <View
+                  className="absolute bottom-0 left-0 right-0 rounded-t-3xl"
+                  style={{
+                    backgroundColor: "rgba(25, 25, 27, 0.85)",
+                    paddingTop: 24,
+                    paddingHorizontal: 24,
+                    paddingBottom: 24,
+                  }}
+                >
+                  <View className="flex-row items-center justify-between mb-4">
+                    <View className="flex-row items-center">
+                      <Text className="text-white text-2xl font-bold mr-2">
+                        {selectedUser.name}
+                      </Text>
+                      {selectedUser.isVerified && (
+                        <Image
+                          source={require("../../../assets/images/verified-badge.png")}
+                          style={{ width: 20, height: 20 }}
+                          resizeMode="contain"
+                        />
+                      )}
+                    </View>
+                    <TouchableOpacity
+                      className="w-12 h-12 bg-[#2C2C2E] rounded-full items-center justify-center"
+                      onPress={() => toggleFavorite(selectedUser.id)}
+                    >
+                      <Star
+                        size={24}
+                        color={selectedUser.isFavorite ? "#FCCD34" : "#fff"}
+                        fill={
+                          selectedUser.isFavorite ? "#FCCD34" : "transparent"
+                        }
+                      />
+                    </TouchableOpacity>
+                  </View>
 
-            <StyledText
-              className="text-white font-bold"
-              style={{
-                fontSize: 24,
-                marginBottom: 12,
-                fontFamily: FONT.Medium,
-              }}
-            >
-              Donation Successful!
-            </StyledText>
-            <StyledText
-              className="text-gray-400 text-center"
-              style={{ fontSize: 15, marginBottom: 32 }}
-            >
-              Your generous contribution will help{"\n"}make a difference.
-            </StyledText>
+                  <View className="flex-row items-center mb-5">
+                    <Text className="text-[#FCCD34] text-base font-semibold mr-2">
+                      {selectedUser.role}
+                    </Text>
+                  </View>
 
-            <StyledText
-              className="text-white"
-              style={{ fontSize: 18, marginBottom: 12 }}
-            >
-              Amount Donated
-            </StyledText>
-            <StyledView
-              style={{
-                borderRadius: 12,
-                borderWidth: 0.3,
-                borderColor: "#FCCD34",
-                paddingVertical: 24,
-                paddingHorizontal: 64,
-                marginBottom: 48,
-              }}
-            >
-              <StyledText
-                className="text-yellow-400 font-bold text-center"
-                style={{ fontSize: 28 }}
-              >
-                {customAmount || selectedAmount} GEL
-              </StyledText>
-            </StyledView>
+                  {/* Action Buttons */}
+                  <View className="mb-0">
+                    <TouchableOpacity
+                      className="bg-[#FCCD34] rounded-xl py-4 items-center justify-center mb-3"
+                      onPress={() => {
+                        setSelectedUser(null);
+                        navigateToChat(selectedUser);
+                      }}
+                    >
+                      <View className="flex-row items-center">
+                        <Image
+                          source={require("../../../assets/images/message.png")}
+                          style={{ width: 20, height: 20 }}
+                          resizeMode="contain"
+                        />
+                        <Text className="text-black text-base font-bold ml-2">
+                          Message
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      className="bg-transparent border-2 border-[#FCCD34] rounded-xl py-4 items-center justify-center"
+                      onPress={() => {
+                        setSelectedUser(null);
+                        router.push("/(tabs)/discover/donation");
+                      }}
+                    >
+                      <View className="flex-row items-center">
+                        <Image
+                          source={require("../../../assets/images/yellow-heart.png")}
+                          style={{ width: 20, height: 20, marginRight: 8 }}
+                          resizeMode="contain"
+                        />
+                        <Text className="text-[#FCCD34] text-base font-bold">
+                          Donation
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
 
-            <StyledTouchableOpacity
-              onPress={() => {
-                setShowSuccess(false);
-                resetFlow();
-                router.replace("/discover");
-              }}
-              className="bg-yellow-400 items-center justify-center"
-              style={{
-                width: 340,
-                height: 48,
-                borderRadius: 12,
-              }}
-            >
-              <StyledText
-                className="text-black font-bold"
-                style={{ fontSize: 17 }}
-              >
-                Done
-              </StyledText>
-            </StyledTouchableOpacity>
-          </StyledView>
-        </StyledView>
+              {/* About Section */}
+              <View className="px-6 py-4 bg-black">
+                <View className="mb-6">
+                  <Text className="text-white text-lg font-bold mb-2">
+                    About
+                  </Text>
+                  <Text className="text-[#8E8E93] mb-2 leading-6">
+                    {selectedUser.about}
+                  </Text>
+                  <TouchableOpacity>
+                    <Text className="text-[#6E6E73]">Read more...</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Gallery */}
+                {selectedUser.gallery && selectedUser.gallery.length > 0 && (
+                  <View className="mb-6">
+                    <View className="flex-row items-center justify-between mb-3">
+                      <Text className="text-white text-lg font-bold">
+                        Gallery
+                      </Text>
+                      <TouchableOpacity>
+                        <Text className="text-[#FCCD34] font-semibold">
+                          See all
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      className="flex-row"
+                    >
+                      {selectedUser.gallery.map((img, index) => (
+                        <Image
+                          key={index}
+                          source={{ uri: img }}
+                          className="w-32 h-48 rounded-2xl mr-3"
+                          resizeMode="cover"
+                        />
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
+              </View>
+            </ScrollView>
+          </View>
+        )}
       </Modal>
-
-      {/* Failed Modal */}
-      <Modal visible={showFailed} transparent animationType="fade">
-        <StyledView className="flex-1 bg-black items-center justify-center px-5">
-          <StyledTouchableOpacity
-            onPress={() => setShowFailed(false)}
-            className="absolute top-16 right-8"
-            style={{ zIndex: 10 }}
-          >
-            <StyledText className="text-white" style={{ fontSize: 32 }}>
-              ×
-            </StyledText>
-          </StyledTouchableOpacity>
-
-          <StyledView className="items-center w-full">
-            <StyledView
-              className="items-center justify-center"
-              style={{
-                width: 120,
-                height: 120,
-                marginBottom: 24,
-              }}
-            >
-              <Image
-                source={require("../../../assets/images/Failed.png")}
-                style={{ width: 80, height: 80 }}
-                resizeMode="contain"
-              />
-            </StyledView>
-
-            <StyledText
-              className="text-white font-bold"
-              style={{
-                fontSize: 24,
-                marginBottom: 12,
-                fontFamily: FONT.Medium,
-              }}
-            >
-              Payment Failed!
-            </StyledText>
-            <StyledText
-              className="text-gray-400 text-center"
-              style={{ fontSize: 15, marginBottom: 32 }}
-            >
-              An error occurred while processing your{"\n"}contribution
-            </StyledText>
-
-            <StyledText
-              className="text-white"
-              style={{ fontSize: 18, marginBottom: 12 }}
-            >
-              Amount Due
-            </StyledText>
-            <StyledView
-              style={{
-                borderRadius: 12,
-                borderWidth: 0.3,
-                borderColor: "#FCCD34",
-                paddingVertical: 24,
-                paddingHorizontal: 64,
-                marginBottom: 48,
-              }}
-            >
-              <StyledText
-                className="text-yellow-400 font-bold text-center"
-                style={{ fontSize: 28 }}
-              >
-                {customAmount || selectedAmount} GEL
-              </StyledText>
-            </StyledView>
-
-            <StyledTouchableOpacity
-              onPress={() => setShowFailed(false)}
-              className="bg-[#FCCD34] items-center justify-center"
-              style={{
-                width: 340,
-                height: 48,
-                borderRadius: 12,
-                marginBottom: 12,
-              }}
-            >
-              <StyledText
-                className="text-black font-bold"
-                style={{ fontSize: 17, fontFamily: FONT.Bold }}
-              >
-                Try again
-              </StyledText>
-            </StyledTouchableOpacity>
-
-            <StyledTouchableOpacity
-              onPress={() => {
-                setShowFailed(false);
-                resetFlow();
-                setStep(1);
-              }}
-              className="items-center justify-center"
-              style={{
-                width: 340,
-                height: 48,
-                borderRadius: 12,
-                backgroundColor: "#19191B",
-                marginBottom: 32,
-              }}
-            >
-              <StyledText
-                className="text-white font-bold"
-                style={{ fontSize: 17, fontFamily: FONT.Regular }}
-              >
-                Back
-              </StyledText>
-            </StyledTouchableOpacity>
-
-            <StyledText className="text-white" style={{ fontSize: 15 }}>
-              Need Help?{" "}
-              <StyledText className="text-[#FCCD34] ">
-                Contact Support
-              </StyledText>
-            </StyledText>
-          </StyledView>
-        </StyledView>
-      </Modal>
-    </StyledSafeAreaView>
+    </View>
   );
-};
-
-export default Donation;
+}

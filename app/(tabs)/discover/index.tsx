@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+// app/(tabs)/discover/index.tsx  (or wherever your DiscoverScreen file lives)
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,6 +9,7 @@ import {
   Image,
   Modal,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import {
   Search,
@@ -17,19 +19,22 @@ import {
   ChevronLeft,
 } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter, Link } from "expo-router";
+import { useRouter } from "expo-router";
+import { supabase } from "../../../supabaseClient"; // <- ensure this path is correct
 
+// --- Types ---
 interface User {
-  id: number;
+  id: string; // uuid
   name: string;
   role: string;
-  image: any;
-  isFavorite: boolean;
-  location: string;
-  about: string;
-  rating: number;
-  isOnline: boolean;
-  gallery: string[];
+  image: any; // local require or { uri: string }
+  isFavorite?: boolean;
+  location?: string;
+  about?: string;
+  rating?: number;
+  isOnline?: boolean;
+  gallery?: string[];
+  price_per_message?: number;
 }
 
 interface Notification {
@@ -41,74 +46,7 @@ interface Notification {
   icon: string;
 }
 
-const MOCK_USERS: User[] = [
-  {
-    id: 1,
-    name: "Bam Margera",
-    role: "Actor",
-    image: require("../../../assets/images/discover.png"),
-    isFavorite: false,
-    location: "Chicago, IL United States",
-    about:
-      "Gorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis. Class aptent taciti sociosqu ad litora to ...",
-    rating: 4,
-    isOnline: true,
-    gallery: [
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400",
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
-    ],
-  },
-  {
-    id: 2,
-    name: "Sarah Johnson",
-    role: "Influencer",
-    image: require("../../../assets/images/discover.png"),
-    isFavorite: true,
-    location: "Los Angeles, CA United States",
-    about:
-      "Gorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis.",
-    rating: 5,
-    isOnline: true,
-    gallery: [
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
-    ],
-  },
-  {
-    id: 3,
-    name: "Mike Chen",
-    role: "Doctor",
-    image: require("../../../assets/images/discover.png"),
-    isFavorite: false,
-    location: "New York, NY United States",
-    about:
-      "Gorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis.",
-    rating: 4,
-    isOnline: false,
-    gallery: [
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
-    ],
-  },
-  {
-    id: 4,
-    name: "Emma Stone",
-    role: "Youtuber",
-    image: require("../../../assets/images/discover.png"),
-    isFavorite: false,
-    location: "Miami, FL United States",
-    about:
-      "Gorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis.",
-    rating: 4,
-    isOnline: true,
-    gallery: [
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
-    ],
-  },
-];
-
+// --- Placeholder notifications (kept from your original) ---
 const MOCK_NOTIFICATIONS: Notification[] = [
   {
     id: 1,
@@ -144,8 +82,90 @@ const MOCK_NOTIFICATIONS: Notification[] = [
 
 const ROLES = ["All", "Influencer", "Doctor", "Youtuber", "Actor"];
 
+// Local placeholder image (same as your mock)
+const PLACEHOLDER_IMAGE = require("../../../assets/images/discover.png");
+
+// --- Helper functions for DB operations ---
+
+/**
+ * Ensure there is a row in your app 'users' table for the authenticated user.
+ * This is necessary when you use a separate 'users' app table joined to auth.
+ */
+async function createAppUserIfMissing(authUser: any) {
+  if (!authUser?.id) return;
+  const userId = authUser.id;
+  const newUser: any = {
+    id: userId,
+    full_name:
+      authUser.user_metadata?.full_name ??
+      authUser.user_metadata?.name ??
+      "Unnamed",
+    phone_number:
+      authUser.phone ??
+      authUser.user_metadata?.phone ??
+      authUser.user_metadata?.phone_number ??
+      null,
+    is_active: true,
+    is_verified: true,
+    user_type: "regular",
+    // add other required columns with defaults if your `users` table requires them
+  };
+
+  const { error } = await supabase
+    .from("users")
+    .upsert(newUser, { onConflict: "id", returning: "minimal" });
+
+  if (error) {
+    console.error("createAppUserIfMissing error:", error);
+    // don't throw to avoid breaking UI, but you may want to handle this up the stack
+  }
+}
+
+/**
+ * Ensure there is an influencer_profiles row for this user (upsert).
+ * Returns the influencer_profiles row or null.
+ */
+async function ensureInfluencerProfileForUser(userId: string) {
+  if (!userId) return null;
+
+  const defaultProfile = {
+    user_id: userId,
+    display_name: "New Creator",
+    bio: "",
+    category: "General",
+    profile_image_url: null,
+    cover_image_url: null,
+    price_per_message: 0.0,
+    price_per_minute_audio: 0.0,
+    price_per_minute_video: 0.0,
+    is_available: true,
+    auto_response_enabled: false,
+    auto_response_message: null,
+  };
+
+  // Upsert on user_id to avoid unique/foreign key errors (needs users.id to exist)
+  const { data, error } = await supabase
+    .from("influencer_profiles")
+    .upsert(defaultProfile, {
+      onConflict: "user_id",
+      returning: "representation",
+    })
+    .select();
+
+  if (error) {
+    console.error("ensureInfluencerProfileForUser error:", error);
+    // If you still see FK 23503, it means users row is missing or wrong userId.
+    return null;
+  }
+
+  return (data && data[0]) || null;
+}
+
+// --- Main component ---
 export default function DiscoverScreen() {
   const router = useRouter();
+
+  // UI state
   const [selectedTab, setSelectedTab] = useState<"everyone" | "favorites">(
     "everyone"
   );
@@ -154,7 +174,7 @@ export default function DiscoverScreen() {
   >("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<User[]>(MOCK_USERS);
+  const [users, setUsers] = useState<User[]>([]);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [selectedRole, setSelectedRole] = useState("All");
@@ -162,8 +182,10 @@ export default function DiscoverScreen() {
     number | null
   >(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const toggleFavorite = (userId: number) => {
+  // Favorites toggling (stored only in local UI; persist separately if needed)
+  const toggleFavorite = (userId: string) => {
     setUsers((prev) => {
       const updated = prev.map((user) =>
         user.id === userId ? { ...user, isFavorite: !user.isFavorite } : user
@@ -184,43 +206,32 @@ export default function DiscoverScreen() {
       params: {
         name: user.name,
         image:
-          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100",
-        isOnline: user.isOnline.toString(),
+          typeof user.image === "object"
+            ? undefined
+            : (user.image as string) ??
+              "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100",
+        isOnline: (user.isOnline || false).toString(),
       },
     });
   };
 
   const navigateToReport = () => {
-    console.log("Report pressed, closing menu and navigating to /report");
     setShowProfileMenu(false);
-    setSelectedUser(null); // Close the profile modal too
+    setSelectedUser(null);
     router.push("/(tabs)/discover/report");
   };
 
-  const applyFilter = () => {
-    setShowFilterModal(false);
-  };
-
-  // Filter users based on selected tab, role, and search query
+  // Build filtered users from fetched list
   const filteredUsers = users.filter((user) => {
-    // Filter by favorites tab
-    if (selectedTab === "favorites" && !user.isFavorite) {
-      return false;
-    }
+    if (selectedTab === "favorites" && !user.isFavorite) return false;
+    if (selectedRole !== "All" && user.role !== selectedRole) return false;
 
-    // Filter by selected role
-    if (selectedRole !== "All" && user.role !== selectedRole) {
-      return false;
-    }
-
-    // Filter by search query
     if (searchQuery.trim() !== "") {
       const query = searchQuery.toLowerCase();
       const matchesName = user.name.toLowerCase().includes(query);
-      const matchesRole = user.role.toLowerCase().includes(query);
+      const matchesRole = (user.role || "").toLowerCase().includes(query);
       return matchesName || matchesRole;
     }
-
     return true;
   });
 
@@ -278,6 +289,95 @@ export default function DiscoverScreen() {
     }
   };
 
+  // Fetch influencer profiles joined with users
+  const fetchInfluencers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.from("influencer_profiles")
+        .select(`
+          id,
+          user_id,
+          display_name,
+          bio,
+          category,
+          profile_image_url,
+          cover_image_url,
+          price_per_message,
+          is_available,
+          average_rating,
+          total_reviews,
+          users ( full_name, avatar_url )
+        `);
+
+      if (error) {
+        console.error("fetchInfluencers error:", error);
+        return;
+      }
+
+      const mapped: User[] = (data || []).map((row: any) => ({
+        id: row.id,
+        name: row.display_name ?? row.users?.full_name ?? "Unknown",
+        role: row.category ?? "Influencer",
+        image:
+          row.profile_image_url ?? row.users?.avatar_url ?? PLACEHOLDER_IMAGE,
+        about: row.bio,
+        rating: Number(row.average_rating) || 0,
+        isOnline: !!row.is_available,
+        price_per_message: Number(row.price_per_message) || 0,
+        gallery: [], // if you have a gallery table, fetch separately
+        isFavorite: false,
+      }));
+
+      setUsers(mapped);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Subscribe to changes on influencer_profiles (refetch on change)
+  useEffect(() => {
+    fetchInfluencers();
+
+    // Realtime subscription — refetch on any change
+    const channel = supabase
+      .channel("public:influencer_profiles")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "influencer_profiles" },
+        (payload) => {
+          // console.log("realtime payload:", payload);
+          fetchInfluencers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      // remove the channel
+      supabase.removeChannel(channel);
+    };
+  }, [fetchInfluencers]);
+
+  // Ensure current signed-in user has a users row and influencer_profiles row
+  useEffect(() => {
+    (async () => {
+      try {
+        const resp = await supabase.auth.getUser();
+        const authUser = resp?.data?.user;
+        if (authUser) {
+          // ensure your app users row exists
+          await createAppUserIfMissing(authUser);
+          // ensure influencer_profiles exists (safe to call; upsert will update)
+          await ensureInfluencerProfileForUser(authUser.id);
+          // finally refetch influencers to reflect any new data
+          await fetchInfluencers();
+        }
+      } catch (err) {
+        console.error("error ensuring user/profile:", err);
+      }
+    })();
+  }, [fetchInfluencers]);
+
+  // UI Rendering (adapted from your original code)
   return (
     <View className="flex-1 bg-black">
       {/* Header */}
@@ -365,6 +465,12 @@ export default function DiscoverScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 24 }}
       >
+        {loading && (
+          <View className="items-center justify-center py-6">
+            <ActivityIndicator size="small" color="#FCCD34" />
+          </View>
+        )}
+
         <View className="flex-row flex-wrap justify-between pb-24">
           {filteredUsers.map((user) => (
             <TouchableOpacity
@@ -524,8 +630,6 @@ export default function DiscoverScreen() {
                 </TouchableOpacity>
               ))}
             </ScrollView>
-
-            {/* Apply Button */}
           </View>
         </View>
       </Modal>
@@ -747,15 +851,14 @@ export default function DiscoverScreen() {
                   <View
                     className="absolute rounded-xl overflow-hidden"
                     style={{
-                      // Small, top-right aligned popup positioned under the More button
                       position: "absolute",
-                      top: 56, // just below the More button (top-12)
-                      right: 16, // align to the right edge
-                      width: 160, // compact width
+                      top: 56,
+                      right: 16,
+                      width: 160,
                       backgroundColor: "#19191B",
                       borderRadius: 12,
                       paddingVertical: 6,
-                      elevation: 6, // android shadow
+                      elevation: 6,
                       shadowColor: "#000",
                       shadowOffset: { width: 0, height: 6 },
                       shadowOpacity: 0.25,
@@ -913,7 +1016,11 @@ export default function DiscoverScreen() {
                     {selectedUser.about}
                   </Text>
                   <TouchableOpacity>
-                    <Text className="text-[#6E6E73]">Read more...</Text>
+                    <Text className="text-[#6E6E73]">
+                      Bam Margera is a celebrated actor, content creator, and
+                      entrepreneur known for blending boundary-pushing comedy
+                      with professional creativity....
+                    </Text>
                   </TouchableOpacity>
                 </View>
 
@@ -934,14 +1041,22 @@ export default function DiscoverScreen() {
                     showsHorizontalScrollIndicator={false}
                     className="flex-row"
                   >
-                    {selectedUser.gallery.map((img, index) => (
+                    {selectedUser.gallery?.length ? (
+                      selectedUser.gallery.map((img, index) => (
+                        <Image
+                          key={index}
+                          source={{ uri: img }}
+                          className="w-32 h-48 rounded-2xl mr-3"
+                          resizeMode="cover"
+                        />
+                      ))
+                    ) : (
                       <Image
-                        key={index}
-                        source={{ uri: img }}
+                        source={PLACEHOLDER_IMAGE}
                         className="w-32 h-48 rounded-2xl mr-3"
                         resizeMode="cover"
                       />
-                    ))}
+                    )}
                   </ScrollView>
                 </View>
               </View>
