@@ -20,11 +20,11 @@ export default function RootLayout() {
   });
 
 
-  useEffect(() => {
-    setTimeout(() => {
-      router.push("/(auth)");
-    }, 200);
-  }, [loaded]);
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     router.push("/(auth)");
+  //   }, 200);
+  // }, [loaded]);
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
