@@ -43,9 +43,73 @@ export default function ProfileScreen() {
     { id: 6, uri: null, size: "small" },
   ]);
 
-  const goNext = () => {
+  // SAVE BASIC USER INFO (called when user completes step 1 - name entry)
+  const saveBasicUserInfo = async () => {
+    setLoading(true);
+    try {
+      // Get current authenticated user
+      const { data: authData, error: userErr } = await supabase.auth.getUser();
+      console.log("supabase.auth.getUser result:", { authData, userErr });
+
+      const authUser = authData?.user;
+      const finalUserId = authUser?.id ?? userIdFromParams;
+
+      if (!finalUserId) {
+        Alert.alert("Error", "User not authenticated. Please login again.");
+        setLoading(false);
+        return false;
+      }
+
+      const fullName = `${firstName.trim()} ${lastName.trim()}`;
+
+      const row = {
+        id: finalUserId,
+        full_name: fullName,
+        phone_number: phoneNumberFromParams || null,
+        avatar_url: null, // Will be updated in step 2 if user adds photos
+        user_type: "User", // Matches DB enum: Influencer, Actor, Youtuber, Doctor, User
+        is_verified: true,
+        is_active: true,
+        gender: selectedGender,
+      };
+
+      console.log("Attempting to insert/update users row (step 1):", row);
+
+      // Use upsert to handle both new users and updates
+      const { data: upsertData, error: upsertError } = await supabase
+        .from("users")
+        .upsert(row, { onConflict: "id" })
+        .select();
+
+      console.log("Upsert response:", { upsertData, upsertError });
+
+      if (upsertError) {
+        console.error("Upsert error:", upsertError);
+        Alert.alert(
+          "DB error",
+          upsertError.message || JSON.stringify(upsertError)
+        );
+        setLoading(false);
+        return false;
+      }
+
+      console.log("Basic user info saved successfully");
+      return true;
+    } catch (error: any) {
+      console.error("Error saving basic user info:", error);
+      Alert.alert("Error", "An unexpected error occurred. Please try again.");
+      setLoading(false);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const goNext = async () => {
     if (step === 0) return setStep(1);
+    
     if (step === 1) {
+      // Validate name inputs
       if (!firstName.trim()) {
         setNameError("First name is required");
         return;
@@ -55,6 +119,12 @@ export default function ProfileScreen() {
         return;
       }
       setNameError("");
+
+      // SAVE USER DATA TO DATABASE
+      const saved = await saveBasicUserInfo();
+      if (!saved) return; // Don't proceed if save failed
+
+      // Move to photo upload step
       return setStep(2);
     }
   };
@@ -85,12 +155,11 @@ export default function ProfileScreen() {
         return null;
       }
 
-      // Use getPublicUrl result (older supabase clients return data.publicUrl)
+      // Use getPublicUrl result
       const publicObj = supabase.storage
         .from("user-photos")
         .getPublicUrl(data.path);
       console.log("getPublicUrl:", publicObj);
-      // publicObj.data.publicUrl exists in typical client
       return publicObj?.data?.publicUrl ?? null;
     } catch (error) {
       console.error("Error uploading image:", error);
@@ -101,7 +170,7 @@ export default function ProfileScreen() {
   const handleFinish = async () => {
     setLoading(true);
     try {
-      // Get current user to ensure we use the right authenticated user id
+      // Get current user
       const { data: authData, error: userErr } = await supabase.auth.getUser();
       console.log("supabase.auth.getUser result:", { authData, userErr });
 
@@ -114,7 +183,7 @@ export default function ProfileScreen() {
         return;
       }
 
-      // Upload photos
+      // Upload photos if any were selected
       const uploadedPhotos: string[] = [];
       for (const photo of photos) {
         if (photo.uri) {
@@ -123,47 +192,30 @@ export default function ProfileScreen() {
         }
       }
 
-      const fullName = `${firstName.trim()} ${lastName.trim()}`;
-      const avatarUrl = uploadedPhotos.length > 0 ? uploadedPhotos[0] : null;
+      // Update avatar_url if photos were uploaded
+      if (uploadedPhotos.length > 0) {
+        const avatarUrl = uploadedPhotos[0];
 
-      const row = {
-        id: finalUserId,
+        const { error: updateError } = await supabase
+          .from("users")
+          .update({ avatar_url: avatarUrl })
+          .eq("id", finalUserId);
 
-        full_name: fullName,
-        phone_number: phoneNumberFromParams || null,
-        avatar_url: avatarUrl,
-        user_type: "regular",
-        is_verified: true,
-        is_active: true,
-        gender: selectedGender,
-      };
-
-      console.log("Attempting to insert users row:", row);
-
-      const { data: insertData, error: insertError } = await supabase
-        .from("users")
-        .insert(row)
-        .select();
-
-      console.log("Insert response:", { insertData, insertError });
-
-      if (insertError) {
-        console.error("Insert error:", insertError);
-        Alert.alert(
-          "DB error",
-          insertError.message || JSON.stringify(insertError)
-        );
-        setLoading(false);
-        return;
+        if (updateError) {
+          console.error("Error updating avatar:", updateError);
+          // Don't block navigation, just log the error
+        } else {
+          console.log("Avatar updated successfully");
+        }
       }
 
       Alert.alert("Success", "Profile created successfully");
-      console.log("Profile created successfully, navigating to discover");
+      console.log("Profile completed, navigating to discover");
 
-      // Navigate to runtime route /discover
+      // Navigate to discover
       router.replace("/discover");
     } catch (error: any) {
-      console.error("Error creating profile (catch):", error);
+      console.error("Error finishing profile (catch):", error);
       Alert.alert("Error", "An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
@@ -171,8 +223,8 @@ export default function ProfileScreen() {
   };
 
   const handleSkip = () => {
+    // User data already saved in step 1, just navigate
     router.replace("/discover");
-    // handleFinish();
   };
 
   const pickImage = async (id: number) => {
@@ -236,10 +288,11 @@ export default function ProfileScreen() {
             </Text>
 
             <TouchableOpacity
-              className={`rounded-2xl py-5 px-6 mb-4 ${selectedGender === "Woman"
+              className={`rounded-2xl py-5 px-6 mb-4 ${
+                selectedGender === "Woman"
                   ? "border-2 border-yellow-500 bg-gray-900"
                   : "bg-gray-900"
-                }`}
+              }`}
               onPress={() => setSelectedGender("Woman")}
               disabled={loading}
             >
@@ -247,10 +300,11 @@ export default function ProfileScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              className={`rounded-2xl py-5 px-6 mb-4 ${selectedGender === "Man"
+              className={`rounded-2xl py-5 px-6 mb-4 ${
+                selectedGender === "Man"
                   ? "border-2 border-yellow-500 bg-gray-900"
                   : "bg-gray-900"
-                }`}
+              }`}
               onPress={() => setSelectedGender("Man")}
               disabled={loading}
             >
@@ -258,10 +312,11 @@ export default function ProfileScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              className={`rounded-2xl py-5 px-6 mb-8 ${selectedGender === "Other"
+              className={`rounded-2xl py-5 px-6 mb-8 ${
+                selectedGender === "Other"
                   ? "border-2 border-yellow-500 bg-gray-900"
                   : "bg-gray-900"
-                }`}
+              }`}
               onPress={() => setSelectedGender("Other")}
               disabled={loading}
             >
@@ -322,13 +377,19 @@ export default function ProfileScreen() {
             )}
 
             <TouchableOpacity
-              className="bg-[#FCCD34] rounded-2xl py-4 px-8 mb-3"
+              className={`rounded-2xl py-4 px-8 mb-3 ${
+                loading ? "bg-gray-700" : "bg-[#FCCD34]"
+              }`}
               onPress={goNext}
               disabled={loading}
             >
-              <Text className="text-white text-center text-lg font-semibold">
-                Continue
-              </Text>
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text className="text-white text-center text-lg font-semibold">
+                  Continue
+                </Text>
+              )}
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -484,8 +545,9 @@ export default function ProfileScreen() {
 
               <View>
                 <TouchableOpacity
-                  className={`rounded-2xl py-4 px-8 mb-4 ${loading ? "bg-gray-700" : "bg-[#FCCD34]"
-                    }`}
+                  className={`rounded-2xl py-4 px-8 mb-4 ${
+                    loading ? "bg-gray-700" : "bg-[#FCCD34]"
+                  }`}
                   onPress={handleFinish}
                   disabled={loading}
                 >

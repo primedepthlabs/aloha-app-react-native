@@ -126,16 +126,6 @@ export default function VerificationScreen() {
     setIsError(false);
     setErrorMessage("");
 
-    if (enteredCode === "123456") {
-      router.replace({
-        pathname: "/(auth)/profile",
-        params: {
-          // userId,
-          phoneNumber: fullPhoneNumber,
-        },
-      });
-    }
-
     try {
       console.log(
         "Verifying OTP — phone:",
@@ -238,11 +228,11 @@ export default function VerificationScreen() {
           userId,
           fullPhoneNumber,
         });
-        // use runtime route /profile (group folders removed)
+        // Navigate to profile with userId and phone number
         router.replace({
           pathname: "/(auth)/profile",
           params: {
-            userId,
+            userId: userId, // FIXED: Now passing the authenticated user ID
             phoneNumber: fullPhoneNumber,
           },
         });
@@ -287,10 +277,11 @@ export default function VerificationScreen() {
             <TextInput
               key={index}
               ref={(ref) => (inputRefs.current[index] = ref)}
-              className={`w-14 h-14 rounded-2xl text-white text-2xl text-center ${isError
+              className={`w-14 h-14 rounded-2xl text-white text-2xl text-center ${
+                isError
                   ? "border-2 border-red-500 bg-gray-800"
                   : "border-2 border-gray-700 bg-gray-800"
-                }`}
+              }`}
               maxLength={1}
               keyboardType="number-pad"
               value={digit}
@@ -308,8 +299,9 @@ export default function VerificationScreen() {
         )}
 
         <TouchableOpacity
-          className={`rounded-2xl py-4 px-8 mb-8 ${loading ? "bg-gray-700" : "bg-[#FCCD34]"
-            }`}
+          className={`rounded-2xl py-4 px-8 mb-8 ${
+            loading ? "bg-gray-700" : "bg-[#FCCD34]"
+          }`}
           onPress={handleContinue}
           disabled={loading || resending}
         >
