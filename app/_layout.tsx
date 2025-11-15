@@ -20,11 +20,13 @@ export default function RootLayout() {
   });
 
 
+  // add check for the auth user is present in the async storage then route accordingly
+
   // useEffect(() => {
   //   setTimeout(() => {
-  //     router.push("/(auth)");
+  //     router.push("/(tabs)/discover");
   //   }, 200);
-  // }, [loaded]);
+  // }, []);
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
