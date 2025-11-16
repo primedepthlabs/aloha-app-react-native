@@ -1,7 +1,7 @@
+import 'react-native-reanimated';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { router, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
 import "../global.css";
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -20,11 +20,13 @@ export default function RootLayout() {
   });
 
 
+  // add check for the auth user is present in the async storage then route accordingly
+
   // useEffect(() => {
   //   setTimeout(() => {
-  //     router.push("/(auth)");
+  //     router.push("/(tabs)/discover");
   //   }, 200);
-  // }, [loaded]);
+  // }, []);
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
