@@ -132,7 +132,7 @@ export default function ProfileScreen() {
         full_name: fullName,
         phone_number: phoneNumberFromParams || null,
         avatar_url: avatarUrl,
-        user_type: "regular",
+        user_type: "User",
         is_verified: true,
         is_active: true,
         gender: selectedGender,
@@ -236,10 +236,11 @@ export default function ProfileScreen() {
             </Text>
 
             <TouchableOpacity
-              className={`rounded-2xl py-5 px-6 mb-4 ${selectedGender === "Woman"
+              className={`rounded-2xl py-5 px-6 mb-4 ${
+                selectedGender === "Woman"
                   ? "border-2 border-yellow-500 bg-gray-900"
                   : "bg-gray-900"
-                }`}
+              }`}
               onPress={() => setSelectedGender("Woman")}
               disabled={loading}
             >
@@ -247,10 +248,11 @@ export default function ProfileScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              className={`rounded-2xl py-5 px-6 mb-4 ${selectedGender === "Man"
+              className={`rounded-2xl py-5 px-6 mb-4 ${
+                selectedGender === "Man"
                   ? "border-2 border-yellow-500 bg-gray-900"
                   : "bg-gray-900"
-                }`}
+              }`}
               onPress={() => setSelectedGender("Man")}
               disabled={loading}
             >
@@ -258,10 +260,11 @@ export default function ProfileScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              className={`rounded-2xl py-5 px-6 mb-8 ${selectedGender === "Other"
+              className={`rounded-2xl py-5 px-6 mb-8 ${
+                selectedGender === "Other"
                   ? "border-2 border-yellow-500 bg-gray-900"
                   : "bg-gray-900"
-                }`}
+              }`}
               onPress={() => setSelectedGender("Other")}
               disabled={loading}
             >
@@ -484,8 +487,9 @@ export default function ProfileScreen() {
 
               <View>
                 <TouchableOpacity
-                  className={`rounded-2xl py-4 px-8 mb-4 ${loading ? "bg-gray-700" : "bg-[#FCCD34]"
-                    }`}
+                  className={`rounded-2xl py-4 px-8 mb-4 ${
+                    loading ? "bg-gray-700" : "bg-[#FCCD34]"
+                  }`}
                   onPress={handleFinish}
                   disabled={loading}
                 >
