@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -22,6 +22,7 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
+import { supabase } from "../../../supabaseClient"; // Adjust path to your supabase client
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -50,6 +51,7 @@ interface Chat {
   isDoubleTick?: boolean;
   isSupport?: boolean;
   isPinned?: boolean;
+  conversationId?: string;
 }
 
 export default function ChatsPerson() {
@@ -60,6 +62,9 @@ export default function ChatsPerson() {
   const [swipedChatId, setSwipedChatId] = useState<string | null>(null);
   const [longPressedChat, setLongPressedChat] = useState<Chat | null>(null);
   const [showUnreadModal, setShowUnreadModal] = useState(false);
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -68,10 +73,6 @@ export default function ChatsPerson() {
     Poppins_700Bold,
   });
 
-  /**
-   * IMPORTANT: use a ref map to store an Animated.Value and PanResponder per chat.
-   * This ensures each chat has its own independent animation state.
-   */
   const swipeAnims = useRef<Record<string, Animated.Value>>({});
   const panResponders = useRef<Record<string, any>>({});
 
@@ -108,63 +109,6 @@ export default function ChatsPerson() {
     },
   ];
 
-  const chats: Chat[] = [
-    {
-      id: "support",
-      name: "Support",
-      message: "How to add my IBAN?",
-      time: "2:00",
-      image: require("../../../assets/images/dashboard/support-avatar.png"),
-      isVerified: true,
-      isOnline: false,
-      isDoubleTick: true,
-      isSupport: true,
-    },
-    {
-      id: "1",
-      name: "Bam Margera",
-      message: "I've been a fan of your movies for years",
-      time: "2:00",
-      image:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100",
-      isOnline: true,
-      isDoubleTick: false,
-      isVerified: false,
-      unreadCount: 5,
-      isPinned: true,
-    },
-    {
-      id: "2",
-      name: "Gyllinton",
-      message: "I don't know what you're ...",
-      time: "2:00",
-      image:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100",
-      isOnline: false,
-      isDoubleTick: true,
-      isVerified: true,
-    },
-    {
-      id: "3",
-      name: "Gyllinton",
-      message: "I don't know what you're ...",
-      time: "2:00",
-      isVerified: true,
-      isOnline: true,
-      isDoubleTick: true,
-      unreadCount: 3,
-    },
-    {
-      id: "4",
-      name: "Gyllinton",
-      message: "Yass.😘",
-      time: "Friday",
-      image:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100",
-      isOnline: true,
-    },
-  ];
-
   const allFavorites: FavoritePerson[] = [
     ...favorites,
     {
@@ -187,19 +131,147 @@ export default function ChatsPerson() {
     },
   ];
 
-  if (!fontsLoaded) {
+  // Fetch conversations from Supabase
+  useEffect(() => {
+    fetchConversations();
+  }, []);
+
+  const fetchConversations = async () => {
+    try {
+      setLoading(true);
+
+      // Get current user
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        console.error("No user logged in");
+        setLoading(false);
+        return;
+      }
+
+      setCurrentUserId(user.id);
+
+      const { data: conversations, error } = await supabase
+        .from("conversations")
+        .select(
+          `
+    id,
+    regular_user_id,
+    influencer_id,
+    last_message_at,
+    last_message_preview,
+    is_active,
+    influencer_profiles!conversations_influencer_id_fkey (
+      id,
+      display_name,
+      profile_image_url,
+      is_available,
+      user_id,
+      users!influencer_profiles_user_id_fkey (
+        is_verified
+      )
+    )
+  `
+        )
+        .eq("regular_user_id", user.id)
+        .eq("is_active", true)
+        .not("last_message_preview", "is", null)
+        .order("last_message_at", { ascending: false, nullsFirst: false });
+
+      if (error) {
+        console.error("Error fetching conversations:", error);
+        setLoading(false);
+        return;
+      }
+
+      // Transform data to Chat format
+      const transformedChats: Chat[] = conversations
+        .filter((conv) => conv.last_message_preview) // Only show conversations with messages
+        .map((conv) => {
+          const influencer = conv.influencer_profiles;
+          const isVerified = influencer?.users?.is_verified || false;
+
+          return {
+            id: conv.id,
+            conversationId: conv.id,
+            name: influencer?.display_name || "Unknown",
+            message: conv.last_message_preview || "",
+            time: formatTime(conv.last_message_at),
+            image: influencer?.profile_image_url
+              ? { uri: influencer.profile_image_url }
+              : undefined,
+            isVerified: isVerified,
+            isOnline: influencer?.is_available || false,
+            unreadCount: 0, // You can implement unread count separately
+            isDoubleTick: true,
+            isSupport: false,
+            isPinned: false,
+          };
+        });
+
+      // Add support chat at the beginning
+      const supportChat: Chat = {
+        id: "support",
+        name: "Support",
+        message: "How to add my IBAN?",
+        time: "2:00",
+        image: require("../../../assets/images/dashboard/support-avatar.png"),
+        isVerified: true,
+        isOnline: false,
+        isDoubleTick: true,
+        isSupport: true,
+      };
+
+      setChats([supportChat, ...transformedChats]);
+      setLoading(false);
+    } catch (err) {
+      console.error("Error in fetchConversations:", err);
+      setLoading(false);
+    }
+  };
+
+  // Format timestamp to display format
+  const formatTime = (timestamp: string | null) => {
+    if (!timestamp) return "";
+
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInHours = diffInMs / (1000 * 60 * 60);
+    const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
+
+    if (diffInHours < 24) {
+      // Show time for today
+      return date.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: false,
+      });
+    } else if (diffInDays < 7) {
+      // Show day name for this week
+      return date.toLocaleDateString("en-US", { weekday: "long" });
+    } else {
+      // Show date for older messages
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+    }
+  };
+
+  if (!fontsLoaded || loading) {
     return (
       <View className="flex-1 items-center justify-center bg-black">
-        <ActivityIndicator color="#FCCD34" />
+        <ActivityIndicator color="#FCCD34" size="large" />
       </View>
     );
   }
 
   // Constants for swipe distances
-  const RIGHT_SWIPE_MAX = 130; // for unpin (pinned chats)
-  const LEFT_SWIPE_MAX = -222; // 3 buttons x 74 width ~ 222 (adjust if you change button widths)
+  const RIGHT_SWIPE_MAX = 130;
+  const LEFT_SWIPE_MAX = -222;
 
-  // Create or return an Animated.Value for a chat id
   const getSwipeAnim = (chatId: string) => {
     if (!swipeAnims.current[chatId]) {
       swipeAnims.current[chatId] = new Animated.Value(0);
@@ -207,7 +279,6 @@ export default function ChatsPerson() {
     return swipeAnims.current[chatId];
   };
 
-  // Close all other swipes
   const closeAllExcept = (exceptId: string | null) => {
     Object.keys(swipeAnims.current).forEach((id) => {
       if (id !== exceptId) {
@@ -220,12 +291,10 @@ export default function ChatsPerson() {
     setSwipedChatId(exceptId);
   };
 
-  // Reset everything
   const resetAllSwipes = () => {
     closeAllExcept(null);
   };
 
-  // Create or return a cached PanResponder for a chat
   const getPanResponder = (chat: Chat) => {
     if (panResponders.current[chat.id]) return panResponders.current[chat.id];
 
@@ -240,46 +309,36 @@ export default function ChatsPerson() {
         );
       },
       onPanResponderGrant: () => {
-        // when user begins interacting, close other open chats
         closeAllExcept(chat.id);
       },
       onPanResponderMove: (_, gestureState) => {
-        // Only move this chat's animated value
         if (gestureState.dx < 0) {
-          // left swipe (show actions) clamp to LEFT_SWIPE_MAX
           const val = Math.max(gestureState.dx, LEFT_SWIPE_MAX);
           anim.setValue(val);
         } else if (gestureState.dx > 0 && chat.isPinned) {
-          // allow right swipe only for pinned chats (unpin)
           const val = Math.min(gestureState.dx, RIGHT_SWIPE_MAX);
           anim.setValue(val);
         } else {
-          // if not pinned, prevent right swipe beyond 0
           anim.setValue(Math.min(gestureState.dx, 0));
         }
       },
       onPanResponderRelease: (_, gestureState) => {
         const dx = gestureState.dx;
-        // Decide snapping
         if (dx < -80) {
-          // open left actions
           Animated.spring(anim, {
             toValue: LEFT_SWIPE_MAX,
             useNativeDriver: true,
           }).start(() => setSwipedChatId(chat.id));
         } else if (dx > 60 && chat.isPinned) {
-          // open right unpin
           Animated.spring(anim, {
             toValue: RIGHT_SWIPE_MAX,
             useNativeDriver: true,
           }).start(() => setSwipedChatId(chat.id));
         } else {
-          // snap back
           Animated.spring(anim, {
             toValue: 0,
             useNativeDriver: true,
           }).start(() => {
-            // if this was the open one, clear
             if (swipedChatId === chat.id) setSwipedChatId(null);
           });
         }
@@ -304,19 +363,31 @@ export default function ChatsPerson() {
   };
 
   const handleMarkAsRead = () => {
-    // TODO: Implement mark as read functionality
     setShowUnreadModal(false);
     setLongPressedChat(null);
   };
 
   const handlePinChat = () => {
-    // TODO: Implement pin functionality
     setShowUnreadModal(false);
     setLongPressedChat(null);
   };
 
-  const handleDeleteChat = () => {
-    // TODO: Implement delete functionality
+  const handleDeleteChat = async () => {
+    if (longPressedChat?.conversationId) {
+      try {
+        const { error } = await supabase
+          .from("conversations")
+          .update({ is_active: false })
+          .eq("id", longPressedChat.conversationId);
+
+        if (!error) {
+          // Remove from local state
+          setChats((prev) => prev.filter((c) => c.id !== longPressedChat.id));
+        }
+      } catch (err) {
+        console.error("Error deleting chat:", err);
+      }
+    }
     setShowUnreadModal(false);
     setLongPressedChat(null);
   };
@@ -429,344 +500,359 @@ export default function ChatsPerson() {
 
         {/* Chat List */}
         <View className="flex-1">
-          {chats.map((chat) => {
-            const anim = getSwipeAnim(chat.id);
-            const panResponder = getPanResponder(chat);
+          {chats.length === 0 ? (
+            <View className="items-center justify-center py-10">
+              <Text
+                className="text-gray-400 text-base"
+                style={{ fontFamily: FONT.Regular }}
+              >
+                No conversations yet
+              </Text>
+            </View>
+          ) : (
+            chats.map((chat) => {
+              const anim = getSwipeAnim(chat.id);
+              const panResponder = getPanResponder(chat);
 
-            return (
-              <View key={chat.id} style={{ position: "relative" }}>
-                {/* Unpin Button (Left side - shown when swiping RIGHT on pinned chat) */}
-                {swipedChatId === chat.id && (
-                  <>
-                    {chat.isPinned ? (
+              return (
+                <View key={chat.id} style={{ position: "relative" }}>
+                  {/* Unpin Button (Left side - shown when swiping RIGHT on pinned chat) */}
+                  {swipedChatId === chat.id && (
+                    <>
+                      {chat.isPinned ? (
+                        <Animated.View
+                          style={{
+                            position: "absolute",
+                            left: 0,
+                            top: 0,
+                            bottom: 0,
+                            justifyContent: "center",
+                            transform: [
+                              {
+                                translateX: 0,
+                              },
+                            ],
+                          }}
+                        >
+                          <Animated.View
+                            pointerEvents="box-none"
+                            style={{
+                              opacity: anim.interpolate({
+                                inputRange: [0, RIGHT_SWIPE_MAX],
+                                outputRange: [0, 1],
+                                extrapolate: "clamp",
+                              }),
+                            }}
+                          >
+                            <TouchableOpacity
+                              style={{
+                                width: 74,
+                                height: 67,
+                                backgroundColor: "#63AFF7",
+                                borderTopRightRadius: 10,
+                                borderBottomRightRadius: 10,
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                              onPress={() => {
+                                Animated.spring(anim, {
+                                  toValue: 0,
+                                  useNativeDriver: true,
+                                }).start(() => setSwipedChatId(null));
+                              }}
+                            >
+                              <Image
+                                source={require("../../../assets/images/dashboard/unpin.png")}
+                                style={{
+                                  width: 24,
+                                  height: 24,
+                                  resizeMode: "contain",
+                                  tintColor: "#FFFFFF",
+                                }}
+                              />
+                              <Text
+                                style={{
+                                  fontSize: 12,
+                                  fontFamily: FONT.SemiBold,
+                                  color: "#FFFFFF",
+                                  marginTop: 4,
+                                }}
+                              >
+                                Unpin
+                              </Text>
+                            </TouchableOpacity>
+                          </Animated.View>
+                        </Animated.View>
+                      ) : null}
+
+                      {/* Action Buttons (Right side - shown when swiping LEFT) */}
                       <Animated.View
                         style={{
                           position: "absolute",
-                          left: 0,
+                          right: 0,
                           top: 0,
                           bottom: 0,
-                          justifyContent: "center",
-                          transform: [
-                            {
-                              translateX: 0,
-                            },
-                          ],
+                          flexDirection: "row",
+                          alignItems: "center",
+                          opacity: anim.interpolate({
+                            inputRange: [LEFT_SWIPE_MAX, 0],
+                            outputRange: [1, 0],
+                            extrapolate: "clamp",
+                          }),
                         }}
+                        pointerEvents={
+                          swipedChatId === chat.id ? "auto" : "none"
+                        }
                       >
-                        <Animated.View
-                          pointerEvents="box-none"
+                        <TouchableOpacity
                           style={{
-                            opacity: anim.interpolate({
-                              inputRange: [0, RIGHT_SWIPE_MAX],
-                              outputRange: [0, 1],
-                              extrapolate: "clamp",
-                            }),
+                            width: 74,
+                            height: 68,
+                            backgroundColor: "#5856D6",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                          onPress={() => {
+                            Animated.spring(anim, {
+                              toValue: 0,
+                              useNativeDriver: true,
+                            }).start(() => setSwipedChatId(null));
                           }}
                         >
-                          <TouchableOpacity
+                          <Image
+                            source={require("../../../assets/images/dashboard/star.png")}
                             style={{
-                              width: 74,
-                              height: 67,
-                              backgroundColor: "#63AFF7",
-                              borderTopRightRadius: 10,
-                              borderBottomRightRadius: 10,
-                              alignItems: "center",
-                              justifyContent: "center",
+                              width: 18,
+                              height: 18,
+                              resizeMode: "contain",
+                              tintColor: "#FFFFFF",
                             }}
-                            onPress={() => {
-                              Animated.spring(anim, {
-                                toValue: 0,
-                                useNativeDriver: true,
-                              }).start(() => setSwipedChatId(null));
+                          />
+                          <Text
+                            style={{
+                              fontSize: 10,
+                              fontFamily: FONT.Regular,
+                              color: "#FFFFFF",
+                              marginTop: 4,
                             }}
                           >
-                            <Image
-                              source={require("../../../assets/images/dashboard/unpin.png")}
-                              style={{
-                                width: 24,
-                                height: 24,
-                                resizeMode: "contain",
-                                tintColor: "#FFFFFF",
-                              }}
-                            />
-                            <Text
-                              style={{
-                                fontSize: 12,
-                                fontFamily: FONT.SemiBold,
-                                color: "#FFFFFF",
-                                marginTop: 4,
-                              }}
-                            >
-                              Unpin
-                            </Text>
-                          </TouchableOpacity>
-                        </Animated.View>
-                      </Animated.View>
-                    ) : null}
-
-                    {/* Action Buttons (Right side - shown when swiping LEFT) */}
-                    <Animated.View
-                      style={{
-                        position: "absolute",
-                        right: 0,
-                        top: 0,
-                        bottom: 0,
-                        flexDirection: "row",
-                        alignItems: "center",
-                        opacity: anim.interpolate({
-                          inputRange: [LEFT_SWIPE_MAX, 0],
-                          outputRange: [1, 0],
-                          extrapolate: "clamp",
-                        }),
-                      }}
-                      pointerEvents={swipedChatId === chat.id ? "auto" : "none"}
-                    >
-                      <TouchableOpacity
-                        style={{
-                          width: 74,
-                          height: 68,
-                          backgroundColor: "#5856D6",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                        onPress={() => {
-                          Animated.spring(anim, {
-                            toValue: 0,
-                            useNativeDriver: true,
-                          }).start(() => setSwipedChatId(null));
-                        }}
-                      >
-                        <Image
-                          source={require("../../../assets/images/dashboard/star.png")}
-                          style={{
-                            width: 18,
-                            height: 18,
-                            resizeMode: "contain",
-                            tintColor: "#FFFFFF",
-                          }}
-                        />
-                        <Text
-                          style={{
-                            fontSize: 10,
-                            fontFamily: FONT.Regular,
-                            color: "#FFFFFF",
-                            marginTop: 4,
-                          }}
-                        >
-                          Add to
-                        </Text>
-                        <Text
-                          style={{
-                            fontSize: 10,
-                            fontFamily: FONT.Regular,
-                            color: "#FFFFFF",
-                          }}
-                        >
-                          favorites
-                        </Text>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        style={{
-                          width: 74,
-                          height: 68,
-                          backgroundColor: "#FCCD34",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                        onPress={() => {
-                          Animated.spring(anim, {
-                            toValue: 0,
-                            useNativeDriver: true,
-                          }).start(() => setSwipedChatId(null));
-                        }}
-                      >
-                        <Image
-                          source={require("../../../assets/images/dashboard/volume.png")}
-                          style={{
-                            width: 23,
-                            height: 21,
-                            resizeMode: "contain",
-                            tintColor: "#FFFFFF",
-                          }}
-                        />
-                        <Text
-                          style={{
-                            fontSize: 12,
-                            fontFamily: FONT.SemiBold,
-                            color: "#FFFFFF",
-                            marginTop: 4,
-                          }}
-                        >
-                          Unmute
-                        </Text>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        style={{
-                          width: 74,
-                          height: 68,
-                          backgroundColor: "#FF3B30",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                        onPress={() => {
-                          Animated.spring(anim, {
-                            toValue: 0,
-                            useNativeDriver: true,
-                          }).start(() => setSwipedChatId(null));
-                        }}
-                      >
-                        <Image
-                          source={require("../../../assets/images/dashboard/dustbin.png")}
-                          style={{
-                            width: 15,
-                            height: 15,
-                            resizeMode: "contain",
-                            tintColor: "#FFFFFF",
-                          }}
-                        />
-                        <Text
-                          style={{
-                            fontSize: 12,
-                            fontFamily: FONT.SemiBold,
-                            color: "#FFFFFF",
-                            marginTop: 4,
-                          }}
-                        >
-                          Delete
-                        </Text>
-                      </TouchableOpacity>
-                    </Animated.View>
-                  </>
-                )}
-
-                {/* Chat Item */}
-                <Animated.View
-                  style={{
-                    transform: [
-                      {
-                        translateX: anim,
-                      },
-                    ],
-                    backgroundColor: "#000000",
-                  }}
-                  {...panResponder.panHandlers}
-                >
-                  <TouchableOpacity
-                    className="flex-row items-center px-5 py-3"
-                    activeOpacity={0.7}
-                    onPress={() => {
-                      if (swipedChatId === chat.id) {
-                        Animated.spring(anim, {
-                          toValue: 0,
-                          useNativeDriver: true,
-                        }).start(() => setSwipedChatId(null));
-                      } else {
-                        if (chat.isSupport) {
-                          router.push("/(tabs)/dashboard/support");
-                        } else {
-                          router.push("/(tabs)/chats/chat");
-                        }
-                      }
-                    }}
-                    onLongPress={() => handleLongPress(chat)}
-                    delayLongPress={500}
-                  >
-                    {/* Profile Picture */}
-                    <View className="relative mr-4 w-[60px] h-[60px]">
-                      {chat.image ? (
-                        <Image
-                          source={
-                            typeof chat.image === "string"
-                              ? { uri: chat.image }
-                              : chat.image
-                          }
-                          style={{ width: 60, height: 60 }}
-                          className="rounded-full"
-                          resizeMode="cover"
-                        />
-                      ) : (
-                        <View className="w-[60px] h-[60px] rounded-full bg-gray-600 items-center justify-center">
+                            Add to
+                          </Text>
                           <Text
-                            className="text-white text-2xl"
+                            style={{
+                              fontSize: 10,
+                              fontFamily: FONT.Regular,
+                              color: "#FFFFFF",
+                            }}
+                          >
+                            favorites
+                          </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          style={{
+                            width: 74,
+                            height: 68,
+                            backgroundColor: "#FCCD34",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                          onPress={() => {
+                            Animated.spring(anim, {
+                              toValue: 0,
+                              useNativeDriver: true,
+                            }).start(() => setSwipedChatId(null));
+                          }}
+                        >
+                          <Image
+                            source={require("../../../assets/images/dashboard/volume.png")}
+                            style={{
+                              width: 23,
+                              height: 21,
+                              resizeMode: "contain",
+                              tintColor: "#FFFFFF",
+                            }}
+                          />
+                          <Text
+                            style={{
+                              fontSize: 12,
+                              fontFamily: FONT.SemiBold,
+                              color: "#FFFFFF",
+                              marginTop: 4,
+                            }}
+                          >
+                            Unmute
+                          </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          style={{
+                            width: 74,
+                            height: 68,
+                            backgroundColor: "#FF3B30",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                          onPress={() => {
+                            Animated.spring(anim, {
+                              toValue: 0,
+                              useNativeDriver: true,
+                            }).start(() => setSwipedChatId(null));
+                          }}
+                        >
+                          <Image
+                            source={require("../../../assets/images/dashboard/dustbin.png")}
+                            style={{
+                              width: 15,
+                              height: 15,
+                              resizeMode: "contain",
+                              tintColor: "#FFFFFF",
+                            }}
+                          />
+                          <Text
+                            style={{
+                              fontSize: 12,
+                              fontFamily: FONT.SemiBold,
+                              color: "#FFFFFF",
+                              marginTop: 4,
+                            }}
+                          >
+                            Delete
+                          </Text>
+                        </TouchableOpacity>
+                      </Animated.View>
+                    </>
+                  )}
+
+                  {/* Chat Item */}
+                  <Animated.View
+                    style={{
+                      transform: [
+                        {
+                          translateX: anim,
+                        },
+                      ],
+                      backgroundColor: "#000000",
+                    }}
+                    {...panResponder.panHandlers}
+                  >
+                    <TouchableOpacity
+                      className="flex-row items-center px-5 py-3"
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        if (swipedChatId === chat.id) {
+                          Animated.spring(anim, {
+                            toValue: 0,
+                            useNativeDriver: true,
+                          }).start(() => setSwipedChatId(null));
+                        } else {
+                          if (chat.isSupport) {
+                            router.push("/(tabs)/dashboard/support");
+                          } else {
+                            router.push("/(tabs)/chats/chat");
+                          }
+                        }
+                      }}
+                      onLongPress={() => handleLongPress(chat)}
+                      delayLongPress={500}
+                    >
+                      {/* Profile Picture */}
+                      <View className="relative mr-4 w-[60px] h-[60px]">
+                        {chat.image ? (
+                          <Image
+                            source={
+                              typeof chat.image === "string"
+                                ? { uri: chat.image }
+                                : chat.image
+                            }
+                            style={{ width: 60, height: 60 }}
+                            className="rounded-full"
+                            resizeMode="cover"
+                          />
+                        ) : (
+                          <View className="w-[60px] h-[60px] rounded-full bg-gray-600 items-center justify-center">
+                            <Text
+                              className="text-white text-2xl"
+                              style={{ fontFamily: FONT.SemiBold }}
+                            >
+                              {chat.name.charAt(0).toUpperCase()}
+                            </Text>
+                          </View>
+                        )}
+                        {chat.isOnline && (
+                          <View className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-black" />
+                        )}
+                      </View>
+
+                      {/* Chat Info */}
+                      <View className="flex-1">
+                        <View className="flex-row items-center mb-1">
+                          <Text
+                            className="text-white text-base"
                             style={{ fontFamily: FONT.SemiBold }}
                           >
-                            G
+                            {chat.name}
+                          </Text>
+                          {chat.isVerified && (
+                            <View className="ml-1 w-4 h-4 bg-[#FCCD34] rounded-full items-center justify-center">
+                              <Text className="text-black text-xs font-bold">
+                                ✓
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                        <Text
+                          className="text-gray-400 text-sm"
+                          style={{ fontFamily: FONT.Regular }}
+                          numberOfLines={1}
+                        >
+                          {chat.message}
+                        </Text>
+                      </View>
+
+                      {/* Time and Status */}
+                      <View className="items-end ml-3">
+                        <View className="flex-row items-center mb-1">
+                          {chat.isDoubleTick && (
+                            <Image
+                              source={require("../../../assets/images/double-tick.png")}
+                              style={{
+                                width: 16,
+                                height: 12,
+                                marginRight: 4,
+                                tintColor: chat.unreadCount
+                                  ? "#FCCD34"
+                                  : "#666",
+                              }}
+                              resizeMode="contain"
+                            />
+                          )}
+                          <Text
+                            className={`text-sm ${
+                              chat.unreadCount ? "text-white" : "text-gray-500"
+                            }`}
+                            style={{ fontFamily: FONT.Regular }}
+                          >
+                            {chat.time}
                           </Text>
                         </View>
-                      )}
-                      {chat.isOnline && (
-                        <View className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-black" />
-                      )}
-                    </View>
-
-                    {/* Chat Info */}
-                    <View className="flex-1">
-                      <View className="flex-row items-center mb-1">
-                        <Text
-                          className="text-white text-base"
-                          style={{ fontFamily: FONT.SemiBold }}
-                        >
-                          {chat.name}
-                        </Text>
-                        {chat.isVerified && (
-                          <View className="ml-1 w-4 h-4 bg-[#FCCD34] rounded-full items-center justify-center">
-                            <Text className="text-black text-xs font-bold">
-                              ✓
+                        {chat.unreadCount && chat.unreadCount > 0 && (
+                          <View className="w-6 h-6 bg-[#FCCD34] rounded-full items-center justify-center">
+                            <Text
+                              className="text-black text-xs"
+                              style={{ fontFamily: FONT.Bold }}
+                            >
+                              {chat.unreadCount}
                             </Text>
                           </View>
                         )}
                       </View>
-                      <Text
-                        className="text-gray-400 text-sm"
-                        style={{ fontFamily: FONT.Regular }}
-                        numberOfLines={1}
-                      >
-                        {chat.message}
-                      </Text>
-                    </View>
-
-                    {/* Time and Status */}
-                    <View className="items-end ml-3">
-                      <View className="flex-row items-center mb-1">
-                        {chat.isDoubleTick && (
-                          <Image
-                            source={require("../../../assets/images/double-tick.png")}
-                            style={{
-                              width: 16,
-                              height: 12,
-                              marginRight: 4,
-                              tintColor: chat.unreadCount ? "#FCCD34" : "#666",
-                            }}
-                            resizeMode="contain"
-                          />
-                        )}
-                        <Text
-                          className={`text-sm ${
-                            chat.unreadCount ? "text-white" : "text-gray-500"
-                          }`}
-                          style={{ fontFamily: FONT.Regular }}
-                        >
-                          {chat.time}
-                        </Text>
-                      </View>
-                      {chat.unreadCount && (
-                        <View className="w-6 h-6 bg-[#FCCD34] rounded-full items-center justify-center">
-                          <Text
-                            className="text-black text-xs"
-                            style={{ fontFamily: FONT.Bold }}
-                          >
-                            {chat.unreadCount}
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-                  </TouchableOpacity>
-                </Animated.View>
-              </View>
-            );
-          })}
+                    </TouchableOpacity>
+                  </Animated.View>
+                </View>
+              );
+            })
+          )}
         </View>
       </ScrollView>
 
@@ -784,12 +870,10 @@ export default function ChatsPerson() {
             onPress={() => setShowFilterModal(false)}
           />
           <View className="bg-[#1C1C1E] rounded-t-3xl pt-2 pb-8">
-            {/* Handle Bar */}
             <View className="items-center py-3">
               <View className="w-10 h-1 bg-white/30 rounded-full" />
             </View>
 
-            {/* Done Button */}
             <View className="flex-row justify-end px-6 pb-4">
               <TouchableOpacity onPress={() => setShowFilterModal(false)}>
                 <Text
@@ -801,7 +885,6 @@ export default function ChatsPerson() {
               </TouchableOpacity>
             </View>
 
-            {/* Filter Options */}
             <View className="px-6 pt-4">
               {["Unread", "Active", "Favorites"].map((option) => (
                 <TouchableOpacity
@@ -847,7 +930,6 @@ export default function ChatsPerson() {
         <View className="flex-1 bg-black">
           <StatusBar barStyle="light-content" />
 
-          {/* Header */}
           <View className="pt-12 pb-4 px-5">
             <View className="flex-row items-center justify-between mb-5">
               <TouchableOpacity onPress={() => setShowAllFavorites(false)}>
@@ -862,7 +944,6 @@ export default function ChatsPerson() {
               <View style={{ width: 28 }} />
             </View>
 
-            {/* Search Bar */}
             <View className="flex-row items-center gap-3">
               <View
                 className="flex-row items-center bg-[#000000]"
@@ -972,7 +1053,6 @@ export default function ChatsPerson() {
               borderRadius: 15,
             }}
           >
-            {/* Header Section with Chat Info */}
             <View
               style={{
                 backgroundColor: "#000000",
@@ -985,7 +1065,6 @@ export default function ChatsPerson() {
                 borderBottomColor: "rgba(255, 255, 255, 0.1)",
               }}
             >
-              {/* Back button and profile */}
               <View className="flex-row items-center mb-4">
                 <TouchableOpacity
                   onPress={() => {
@@ -1064,7 +1143,6 @@ export default function ChatsPerson() {
                 </View>
               </View>
 
-              {/* Unread Messages Label */}
               <Text
                 className="text-gray-400 text-center text-sm"
                 style={{ fontFamily: FONT.Regular }}
@@ -1073,7 +1151,6 @@ export default function ChatsPerson() {
               </Text>
             </View>
 
-            {/* Messages Section with Background */}
             <View
               style={{
                 flex: 1,
@@ -1084,7 +1161,6 @@ export default function ChatsPerson() {
                 className="flex-1 px-4 py-3"
                 contentContainerStyle={{ paddingBottom: 10 }}
               >
-                {/* Sample unread messages */}
                 {[
                   {
                     id: "1",
@@ -1174,11 +1250,9 @@ export default function ChatsPerson() {
               </ScrollView>
             </View>
 
-            {/* Action Buttons at Bottom */}
             <View
               style={{
                 position: "absolute",
-                // exact numbers from your spec (numbers are pixels in RN)
                 width: 192,
                 height: 10,
                 top: 450,
@@ -1190,17 +1264,14 @@ export default function ChatsPerson() {
                 opacity: 1,
                 paddingTop: 3.5,
                 paddingBottom: 3.5,
-                // shadow for iOS
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: 6 },
                 shadowOpacity: 0.4,
                 shadowRadius: 10,
-                // elevation for Android
                 elevation: 10,
                 justifyContent: "center",
               }}
             >
-              {/* Top rounded small corner radius already applied by borderRadius */}
               <TouchableOpacity
                 style={{
                   flexDirection: "row",

@@ -22,7 +22,8 @@ import { useRouter, Link } from "expo-router";
 import { supabase } from "../../../supabaseClient";
 
 interface User {
-  id: string;
+  id: string; // users.id
+  influencerProfileId?: string; // influencer_profiles.id <- important
   name: string;
   role: string;
   image: any;
@@ -99,6 +100,13 @@ export default function DiscoverScreen() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // simple UUID validator (v1-v5)
+  const isValidUUID = (s?: string) =>
+    !!s &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      s || ""
+    );
+
   // Fetch influencers from Supabase
   useEffect(() => {
     fetchInfluencers();
@@ -108,62 +116,74 @@ export default function DiscoverScreen() {
     try {
       setLoading(true);
 
-      // Fetch users with user_type = 'Influencer' and join with influencer_profiles
-      const { data: influencers, error } = await supabase
-        .from("users")
+      // Query influencer_profiles first (guarantees influencer_profiles.id is present)
+      const { data: profiles, error } = await supabase
+        .from("influencer_profiles")
         .select(
           `
+        id,
+        display_name,
+        bio,
+        profile_image_url,
+        average_rating,
+        is_available,
+        user_id,
+        users (
           id,
           full_name,
           avatar_url,
           user_type,
           is_verified,
-          influencer_profiles (
-            display_name,
-            bio,
-            profile_image_url,
-            average_rating,
-            is_available
-          )
-        `
+          is_active
         )
-        .eq("user_type", "Influencer")
-        .eq("is_active", true);
+      `
+        )
+        // optionally filter out inactive users; remove while debugging if needed
+        .is("users.is_active", true);
+
+      console.log("fetchInfluencers - supabase error:", error);
+      console.log(
+        "fetchInfluencers - raw profiles:",
+        JSON.stringify(profiles, null, 2)
+      );
 
       if (error) {
-        console.error("Error fetching influencers:", error);
+        console.error("Error fetching influencer_profiles:", error);
         Alert.alert("Error", "Failed to load influencers");
         return;
       }
 
-      // Transform Supabase data to match our User interface
-      const transformedUsers: User[] = (influencers || []).map(
-        (influencer) => ({
-          id: influencer.id,
-          name:
-            influencer.influencer_profiles?.[0]?.display_name ||
-            influencer.full_name,
-          role: "Influencer", // You can add a role field to influencer_profiles if needed
-          image: require("../../../assets/images/discover.png"), // Using mock image as requested
-          isFavorite: false, // This can be fetched from a favorites table later
-          location: "United States", // Add location to your schema if needed
-          about: influencer.influencer_profiles?.[0]?.bio || "No bio available",
-          rating: influencer.influencer_profiles?.[0]?.average_rating || 4,
-          isOnline: influencer.influencer_profiles?.[0]?.is_available || false,
-          gallery: [
-            "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
-            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
-            "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400",
-          ],
-          avatar_url:
-            influencer.avatar_url ||
-            influencer.influencer_profiles?.[0]?.profile_image_url,
-        })
+      // Map to User[]
+      const transformedUsers: User[] = (profiles || []).map((p: any) => ({
+        id: p.user_id, // users.id (useful)
+        influencerProfileId: p.id, // IMPORTANT: influencer_profiles.id
+        name: p.display_name || p.users?.full_name || "Unknown",
+        role: "Influencer",
+        image: p.profile_image_url
+          ? { uri: p.profile_image_url }
+          : require("../../../assets/images/discover.png"),
+        isFavorite: false,
+        location: "Unknown",
+        about: p.bio || "",
+        rating: p.average_rating || 4,
+        isOnline: p.is_available || false,
+        gallery: [
+          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
+          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+          "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400",
+        ],
+        avatar_url: p.users?.avatar_url || p.profile_image_url || undefined,
+      }));
+
+      // debug: verify mapping contains influencerProfileId
+      console.log(
+        "fetchInfluencers - mapped users:",
+        JSON.stringify(transformedUsers, null, 2)
       );
 
       setUsers(transformedUsers);
-    } catch (error) {
-      console.error("Error in fetchInfluencers:", error);
+    } catch (err) {
+      console.error("fetchInfluencers error:", err);
       Alert.alert("Error", "An unexpected error occurred");
     } finally {
       setLoading(false);
@@ -185,14 +205,38 @@ export default function DiscoverScreen() {
     });
   };
 
-  const navigateToChat = (user: User) => {
+  // Navigate to chat using influencer_profiles.id (influencerProfileId)
+  const navigateToChat = (user: User | null) => {
+    if (!user) {
+      console.warn("navigateToChat called without user");
+      Alert.alert("Error", "Unable to open chat: invalid user selected.");
+      return;
+    }
+
+    const influencerProfileId = user.influencerProfileId;
+    if (!influencerProfileId || !isValidUUID(influencerProfileId)) {
+      console.warn("Missing influencerProfileId for user:", user);
+      Alert.alert(
+        "Error",
+        "Unable to open chat: influencer profile information is missing."
+      );
+      return;
+    }
+
+    // debug log if needed:
+    // console.log("Navigating to chat with influencerId:", influencerProfileId);
+
     router.push({
-      pathname: "/chats",
+      pathname: "/(tabs)/chats/chat",
       params: {
+        influencerId: influencerProfileId, // must be influencer_profiles.id
         name: user.name,
         image:
-          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100",
-        isOnline: user.isOnline.toString(),
+          user.avatar_url ||
+          (user.image && typeof user.image === "string"
+            ? user.image
+            : "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100"),
+        isOnline: user.isOnline ? "true" : "false",
       },
     });
   };
