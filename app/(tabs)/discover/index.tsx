@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Image,
   Modal,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import {
   Search,
@@ -18,9 +19,10 @@ import {
 } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter, Link } from "expo-router";
+import { supabase } from "../../../supabaseClient";
 
 interface User {
-  id: number;
+  id: string;
   name: string;
   role: string;
   image: any;
@@ -30,6 +32,7 @@ interface User {
   rating: number;
   isOnline: boolean;
   gallery: string[];
+  avatar_url?: string;
 }
 
 interface Notification {
@@ -40,74 +43,6 @@ interface Notification {
   time: string;
   icon: string;
 }
-
-const MOCK_USERS: User[] = [
-  {
-    id: 1,
-    name: "Bam Margera",
-    role: "Actor",
-    image: require("../../../assets/images/discover.png"),
-    isFavorite: false,
-    location: "Chicago, IL United States",
-    about:
-      "Gorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis. Class aptent taciti sociosqu ad litora to ...",
-    rating: 4,
-    isOnline: true,
-    gallery: [
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400",
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
-    ],
-  },
-  {
-    id: 2,
-    name: "Sarah Johnson",
-    role: "Influencer",
-    image: require("../../../assets/images/discover.png"),
-    isFavorite: true,
-    location: "Los Angeles, CA United States",
-    about:
-      "Gorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis.",
-    rating: 5,
-    isOnline: true,
-    gallery: [
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
-    ],
-  },
-  {
-    id: 3,
-    name: "Mike Chen",
-    role: "Doctor",
-    image: require("../../../assets/images/discover.png"),
-    isFavorite: false,
-    location: "New York, NY United States",
-    about:
-      "Gorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis.",
-    rating: 4,
-    isOnline: false,
-    gallery: [
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
-    ],
-  },
-  {
-    id: 4,
-    name: "Emma Stone",
-    role: "Youtuber",
-    image: require("../../../assets/images/discover.png"),
-    isFavorite: false,
-    location: "Miami, FL United States",
-    about:
-      "Gorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis.",
-    rating: 4,
-    isOnline: true,
-    gallery: [
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
-    ],
-  },
-];
 
 const MOCK_NOTIFICATIONS: Notification[] = [
   {
@@ -154,7 +89,7 @@ export default function DiscoverScreen() {
   >("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<User[]>(MOCK_USERS);
+  const [users, setUsers] = useState<User[]>([]);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [selectedRole, setSelectedRole] = useState("All");
@@ -162,8 +97,80 @@ export default function DiscoverScreen() {
     number | null
   >(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const toggleFavorite = (userId: number) => {
+  // Fetch influencers from Supabase
+  useEffect(() => {
+    fetchInfluencers();
+  }, []);
+
+  const fetchInfluencers = async () => {
+    try {
+      setLoading(true);
+
+      // Fetch users with user_type = 'Influencer' and join with influencer_profiles
+      const { data: influencers, error } = await supabase
+        .from("users")
+        .select(
+          `
+          id,
+          full_name,
+          avatar_url,
+          user_type,
+          is_verified,
+          influencer_profiles (
+            display_name,
+            bio,
+            profile_image_url,
+            average_rating,
+            is_available
+          )
+        `
+        )
+        .eq("user_type", "Influencer")
+        .eq("is_active", true);
+
+      if (error) {
+        console.error("Error fetching influencers:", error);
+        Alert.alert("Error", "Failed to load influencers");
+        return;
+      }
+
+      // Transform Supabase data to match our User interface
+      const transformedUsers: User[] = (influencers || []).map(
+        (influencer) => ({
+          id: influencer.id,
+          name:
+            influencer.influencer_profiles?.[0]?.display_name ||
+            influencer.full_name,
+          role: "Influencer", // You can add a role field to influencer_profiles if needed
+          image: require("../../../assets/images/discover.png"), // Using mock image as requested
+          isFavorite: false, // This can be fetched from a favorites table later
+          location: "United States", // Add location to your schema if needed
+          about: influencer.influencer_profiles?.[0]?.bio || "No bio available",
+          rating: influencer.influencer_profiles?.[0]?.average_rating || 4,
+          isOnline: influencer.influencer_profiles?.[0]?.is_available || false,
+          gallery: [
+            "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
+            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+            "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400",
+          ],
+          avatar_url:
+            influencer.avatar_url ||
+            influencer.influencer_profiles?.[0]?.profile_image_url,
+        })
+      );
+
+      setUsers(transformedUsers);
+    } catch (error) {
+      console.error("Error in fetchInfluencers:", error);
+      Alert.alert("Error", "An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleFavorite = (userId: string) => {
     setUsers((prev) => {
       const updated = prev.map((user) =>
         user.id === userId ? { ...user, isFavorite: !user.isFavorite } : user
@@ -193,7 +200,7 @@ export default function DiscoverScreen() {
   const navigateToReport = () => {
     console.log("Report pressed, closing menu and navigating to /report");
     setShowProfileMenu(false);
-    setSelectedUser(null); // Close the profile modal too
+    setSelectedUser(null);
     router.push("/(tabs)/discover/report");
   };
 
@@ -203,17 +210,14 @@ export default function DiscoverScreen() {
 
   // Filter users based on selected tab, role, and search query
   const filteredUsers = users.filter((user) => {
-    // Filter by favorites tab
     if (selectedTab === "favorites" && !user.isFavorite) {
       return false;
     }
 
-    // Filter by selected role
     if (selectedRole !== "All" && user.role !== selectedRole) {
       return false;
     }
 
-    // Filter by search query
     if (searchQuery.trim() !== "") {
       const query = searchQuery.toLowerCase();
       const matchesName = user.name.toLowerCase().includes(query);
@@ -298,7 +302,6 @@ export default function DiscoverScreen() {
 
         {/* Search Bar and Filter */}
         <View className="flex-row items-center gap-[12px] mb-6">
-          {/* Search Bar */}
           <View className="flex-1 h-[40px] flex-row items-center bg-black border border-[#3C3C3E] rounded-xl px-3">
             <Search size={20} color="#fff" style={{ width: 20, height: 20 }} />
             <TextInput
@@ -310,7 +313,6 @@ export default function DiscoverScreen() {
             />
           </View>
 
-          {/* Filter Button */}
           <TouchableOpacity
             onPress={() => setShowFilterModal(true)}
             className="w-[40px] h-[40px] items-center justify-center"
@@ -360,117 +362,134 @@ export default function DiscoverScreen() {
       </View>
 
       {/* User Grid */}
-      <ScrollView
-        className="flex-1 px-6"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 24 }}
-      >
-        <View className="flex-row flex-wrap justify-between pb-24">
-          {filteredUsers.map((user) => (
-            <TouchableOpacity
-              key={user.id}
-              className="w-[48%] mb-4"
-              onPress={() => setSelectedUser(user)}
-            >
-              <View
-                className="relative rounded-3xl overflow-hidden"
-                style={{ height: 260 }}
+      {loading ? (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#FCCD34" />
+          <Text className="text-white mt-4">Loading influencers...</Text>
+        </View>
+      ) : filteredUsers.length === 0 ? (
+        <View className="flex-1 items-center justify-center px-6">
+          <Text className="text-white text-lg text-center">
+            {selectedTab === "favorites"
+              ? "No favorites yet"
+              : "No influencers found"}
+          </Text>
+          <Text className="text-[#8E8E93] text-center mt-2">
+            {selectedTab === "favorites"
+              ? "Add influencers to favorites to see them here"
+              : "Try adjusting your search or filters"}
+          </Text>
+        </View>
+      ) : (
+        <ScrollView
+          className="flex-1 px-6"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 24 }}
+        >
+          <View className="flex-row flex-wrap justify-between pb-24">
+            {filteredUsers.map((user) => (
+              <TouchableOpacity
+                key={user.id}
+                className="w-[48%] mb-4"
+                onPress={() => setSelectedUser(user)}
               >
-                <Image
-                  source={user.image}
-                  className="w-full h-full"
-                  resizeMode="cover"
-                />
-
-                {/* Gradient Overlay */}
-                <LinearGradient
-                  colors={["rgba(0,0,0,0.9)", "transparent"]}
-                  start={{ x: 0.5, y: 1 }}
-                  end={{ x: 0.5, y: 0 }}
-                  style={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: "60%",
-                  }}
-                />
-
-                {/* Favorite Star */}
-                <TouchableOpacity
-                  className="absolute top-4 right-4 z-10"
-                  onPress={() => toggleFavorite(user.id)}
-                >
-                  <Star
-                    size={26}
-                    color={user.isFavorite ? "#FCCD34" : "#fff"}
-                    fill={user.isFavorite ? "#FCCD34" : "transparent"}
-                    strokeWidth={2}
-                  />
-                </TouchableOpacity>
-
-                {/* User Info */}
                 <View
-                  style={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    alignItems: "center",
-                    paddingBottom: 16,
-                  }}
+                  className="relative rounded-3xl overflow-hidden"
+                  style={{ height: 260 }}
                 >
-                  <Text
-                    style={{
-                      color: "#fff",
-                      fontSize: 20,
-                      fontWeight: "600",
-                      marginBottom: 2,
-                    }}
-                  >
-                    {user.name}
-                  </Text>
+                  <Image
+                    source={user.image}
+                    className="w-full h-full"
+                    resizeMode="cover"
+                  />
 
-                  <Text
+                  <LinearGradient
+                    colors={["rgba(0,0,0,0.9)", "transparent"]}
+                    start={{ x: 0.5, y: 1 }}
+                    end={{ x: 0.5, y: 0 }}
                     style={{
-                      color: "#E5E5E5",
-                      fontSize: 14,
-                      marginBottom: 8,
+                      position: "absolute",
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      height: "60%",
                     }}
-                  >
-                    {user.role}
-                  </Text>
+                  />
 
                   <TouchableOpacity
-                    activeOpacity={0.8}
-                    onPress={() => navigateToChat(user)}
+                    className="absolute top-4 right-4 z-10"
+                    onPress={() => toggleFavorite(user.id)}
+                  >
+                    <Star
+                      size={26}
+                      color={user.isFavorite ? "#FCCD34" : "#fff"}
+                      fill={user.isFavorite ? "#FCCD34" : "transparent"}
+                      strokeWidth={2}
+                    />
+                  </TouchableOpacity>
+
+                  <View
                     style={{
-                      backgroundColor: "#FCCD34",
-                      borderRadius: 5,
-                      paddingVertical: 4,
-                      paddingHorizontal: 8,
-                      flexDirection: "row",
+                      position: "absolute",
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
                       alignItems: "center",
-                      justifyContent: "center",
-                      minWidth: 60,
+                      paddingBottom: 16,
                     }}
                   >
                     <Text
                       style={{
-                        color: "black",
-                        fontWeight: "500",
-                        fontSize: 11,
+                        color: "#fff",
+                        fontSize: 20,
+                        fontWeight: "600",
+                        marginBottom: 2,
                       }}
                     >
-                      Message
+                      {user.name}
                     </Text>
-                  </TouchableOpacity>
+
+                    <Text
+                      style={{
+                        color: "#E5E5E5",
+                        fontSize: 14,
+                        marginBottom: 8,
+                      }}
+                    >
+                      {user.role}
+                    </Text>
+
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onPress={() => navigateToChat(user)}
+                      style={{
+                        backgroundColor: "#FCCD34",
+                        borderRadius: 5,
+                        paddingVertical: 4,
+                        paddingHorizontal: 8,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        minWidth: 60,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: "black",
+                          fontWeight: "500",
+                          fontSize: 11,
+                        }}
+                      >
+                        Message
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </ScrollView>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+      )}
 
       {/* Filter Modal */}
       <Modal
@@ -486,12 +505,10 @@ export default function DiscoverScreen() {
             onPress={() => setShowFilterModal(false)}
           />
           <View className="bg-[#1C1C1E] rounded-t-3xl pt-2 pb-8">
-            {/* Handle Bar */}
             <View className="items-center py-3">
               <View className="w-10 h-1 bg-white/30 rounded-full" />
             </View>
 
-            {/* Role List */}
             <ScrollView
               className="px-6"
               style={{ maxHeight: 500 }}
@@ -524,8 +541,6 @@ export default function DiscoverScreen() {
                 </TouchableOpacity>
               ))}
             </ScrollView>
-
-            {/* Apply Button */}
           </View>
         </View>
       </Modal>
@@ -549,7 +564,6 @@ export default function DiscoverScreen() {
               <View style={{ width: 28 }} />
             </View>
 
-            {/* Notification Tabs */}
             <View className="flex-row items-center px-4 py-3 bg-black">
               <TouchableOpacity
                 onPress={() => setNotificationTab("all")}
@@ -628,7 +642,6 @@ export default function DiscoverScreen() {
             </View>
           </View>
 
-          {/* Notifications List */}
           <ScrollView
             className="flex-1 px-6"
             showsVerticalScrollIndicator={false}
@@ -671,7 +684,6 @@ export default function DiscoverScreen() {
                   </TouchableOpacity>
                 </View>
 
-                {/* Notification Menu */}
                 {showNotificationMenu === notification.id && (
                   <View className="mt-2 bg-[#2C2C2E] rounded-xl overflow-hidden">
                     <TouchableOpacity className="flex-row items-center px-4 py-3 border-b border-[#3C3C3E]">
@@ -710,7 +722,6 @@ export default function DiscoverScreen() {
         {selectedUser && (
           <View className="flex-1 bg-black">
             <ScrollView showsVerticalScrollIndicator={false}>
-              {/* Profile Image */}
               <View className="relative" style={{ height: 600 }}>
                 <Image
                   source={selectedUser.image}
@@ -718,7 +729,6 @@ export default function DiscoverScreen() {
                   resizeMode="cover"
                 />
 
-                {/* Back Button */}
                 <TouchableOpacity
                   className="absolute top-12 left-6 w-10 h-10 bg-black/50 rounded-full items-center justify-center"
                   onPress={() => {
@@ -729,12 +739,10 @@ export default function DiscoverScreen() {
                   <ChevronLeft size={24} color="#fff" />
                 </TouchableOpacity>
 
-                {/* Handle Bar */}
                 <View className="absolute top-3 left-0 right-0 items-center">
                   <View className="w-10 h-1 bg-white/30 rounded-full" />
                 </View>
 
-                {/* More Options */}
                 <TouchableOpacity
                   className="absolute top-12 right-6"
                   onPress={() => setShowProfileMenu(!showProfileMenu)}
@@ -742,27 +750,24 @@ export default function DiscoverScreen() {
                   <MoreVertical size={24} color="#fff" />
                 </TouchableOpacity>
 
-                {/* Profile Menu Dropdown */}
                 {showProfileMenu && (
                   <View
                     className="absolute rounded-xl overflow-hidden"
                     style={{
-                      // Small, top-right aligned popup positioned under the More button
                       position: "absolute",
-                      top: 56, // just below the More button (top-12)
-                      right: 16, // align to the right edge
-                      width: 160, // compact width
+                      top: 56,
+                      right: 16,
+                      width: 160,
                       backgroundColor: "#19191B",
                       borderRadius: 12,
                       paddingVertical: 6,
-                      elevation: 6, // android shadow
+                      elevation: 6,
                       shadowColor: "#000",
                       shadowOffset: { width: 0, height: 6 },
                       shadowOpacity: 0.25,
                       shadowRadius: 12,
                     }}
                   >
-                    {/* Report */}
                     <TouchableOpacity
                       className="flex-row items-center px-3"
                       style={{
@@ -787,7 +792,6 @@ export default function DiscoverScreen() {
                       }}
                     />
 
-                    {/* Block */}
                     <TouchableOpacity
                       className="flex-row items-center px-3"
                       style={{
@@ -820,7 +824,6 @@ export default function DiscoverScreen() {
                   </View>
                 )}
 
-                {/* Profile Info Card - Overlapping */}
                 <View
                   className="absolute bottom-0 left-0 right-0 rounded-t-3xl"
                   style={{
@@ -861,7 +864,6 @@ export default function DiscoverScreen() {
                     </Text>
                   </View>
 
-                  {/* Action Buttons */}
                   <View className="mb-0">
                     <TouchableOpacity
                       className="bg-[#FCCD34] rounded-xl py-4 items-center justify-center mb-3"
@@ -903,7 +905,6 @@ export default function DiscoverScreen() {
                 </View>
               </View>
 
-              {/* About Section - Below the card */}
               <View className="px-6 py-4 bg-black">
                 <View className="mb-6">
                   <Text className="text-white text-lg font-bold mb-2">
@@ -917,7 +918,6 @@ export default function DiscoverScreen() {
                   </TouchableOpacity>
                 </View>
 
-                {/* Gallery */}
                 <View className="mb-6">
                   <View className="flex-row items-center justify-between mb-3">
                     <Text className="text-white text-lg font-bold">
