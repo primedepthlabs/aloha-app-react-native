@@ -21,8 +21,12 @@ import {
   Poppins_600SemiBold,
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
-import { router } from "expo-router";
-import { supabase } from "../../../supabaseClient"; // Adjust path to your supabase client
+import { router, useFocusEffect } from "expo-router";
+import { supabase } from "../../../supabaseClient";
+import {
+  getCurrentUser,
+  verifyAuthentication
+} from "../../../utils/authHelpers";
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -52,6 +56,7 @@ interface Chat {
   isSupport?: boolean;
   isPinned?: boolean;
   conversationId?: string;
+  influencerId?: string;
 }
 
 export default function ChatsPerson() {
@@ -136,48 +141,119 @@ export default function ChatsPerson() {
     fetchConversations();
   }, []);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchConversations();
+    }, [])
+  );
+
   const fetchConversations = async () => {
     try {
       setLoading(true);
 
-      // Get current user
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        console.error("No user logged in");
+      // Step 1: Verify user is authenticated using helper function
+      const isAuthenticated = await verifyAuthentication();
+      if (!isAuthenticated) {
+        console.error("User not authenticated");
         setLoading(false);
         return;
       }
 
-      setCurrentUserId(user.id);
+      // Step 2: Get current user data using helper function
+      const currentUser = await getCurrentUser();
+      if (!currentUser) {
+        console.error("Unable to retrieve user data");
+        setLoading(false);
+        return;
+      }
 
-      const { data: conversations, error } = await supabase
-        .from("conversations")
-        .select(
-          `
-    id,
-    regular_user_id,
-    influencer_id,
-    last_message_at,
-    last_message_preview,
-    is_active,
-    influencer_profiles!conversations_influencer_id_fkey (
-      id,
-      display_name,
-      profile_image_url,
-      is_available,
-      user_id,
-      users!influencer_profiles_user_id_fkey (
-        is_verified
-      )
-    )
-  `
-        )
-        .eq("regular_user_id", user.id)
-        .eq("is_active", true)
-        .not("last_message_preview", "is", null)
-        .order("last_message_at", { ascending: false, nullsFirst: false });
+      setCurrentUserId(currentUser.id);
+      console.log("Current user ID:", currentUser.id);
+
+      // Step 3: Check if current user is an influencer or regular user
+      const { data: userProfile, error: profileError } = await supabase
+        .from("users")
+        .select("user_type")
+        .eq("id", currentUser.id)
+        .single();
+
+      if (profileError) {
+        console.error("Error fetching user profile:", profileError);
+        setLoading(false);
+        return;
+      }
+
+      console.log("User type:", userProfile.user_type);
+
+      // Step 4: Build the base query with explicit relationships
+      let query;
+
+      if (userProfile.user_type === "Influencer") {
+        // For influencers, get their influencer profile ID first
+        const { data: influencerProfile, error: influencerError } = await supabase
+          .from("influencer_profiles")
+          .select("id")
+          .eq("user_id", currentUser.id)
+          .single();
+
+        if (influencerError) {
+          console.error("Error fetching influencer profile:", influencerError);
+          setLoading(false);
+          return;
+        }
+
+        console.log("Influencer profile ID:", influencerProfile.id);
+
+        // Query for conversations where current user is the influencer
+        query = supabase
+          .from("conversations")
+          .select(`
+          id,
+          regular_user_id,
+          influencer_id,
+          last_message_at,
+          last_message_preview,
+          is_active,
+          created_at,
+          updated_at,
+          regular_user:regular_user_id(
+            id,
+            full_name,
+            avatar_url,
+            is_verified
+          )
+        `)
+          .eq("influencer_id", influencerProfile.id)
+          .eq("is_active", true)
+          .order("last_message_at", { ascending: false });
+
+      } else {
+        // For regular users, query for conversations where they are the regular user
+        query = supabase
+          .from("conversations")
+          .select(`
+          id,
+          regular_user_id,
+          influencer_id,
+          last_message_at,
+          last_message_preview,
+          is_active,
+          created_at,
+          updated_at,
+          influencer:influencer_id(
+            id,
+            display_name,
+            profile_image_url,
+            is_available,
+            user_id
+          )
+        `)
+          .eq("regular_user_id", currentUser.id)
+          .eq("is_active", true)
+          .order("last_message_at", { ascending: false });
+      }
+
+      const { data: conversations, error } = await query;
 
       if (error) {
         console.error("Error fetching conversations:", error);
@@ -185,32 +261,80 @@ export default function ChatsPerson() {
         return;
       }
 
-      // Transform data to Chat format
-      const transformedChats: Chat[] = conversations
-        .filter((conv) => conv.last_message_preview) // Only show conversations with messages
-        .map((conv) => {
-          const influencer = conv.influencer_profiles;
-          const isVerified = influencer?.users?.is_verified || false;
+      console.log(`Found ${conversations?.length || 0} conversations`);
+      console.log("Conversations:", conversations);
 
-          return {
-            id: conv.id,
-            conversationId: conv.id,
-            name: influencer?.display_name || "Unknown",
-            message: conv.last_message_preview || "",
-            time: formatTime(conv.last_message_at),
-            image: influencer?.profile_image_url
-              ? { uri: influencer.profile_image_url }
-              : undefined,
-            isVerified: isVerified,
-            isOnline: influencer?.is_available || false,
-            unreadCount: 0, // You can implement unread count separately
-            isDoubleTick: true,
-            isSupport: false,
-            isPinned: false,
-          };
+      // Step 5: Transform data to Chat format
+      const transformedChats: Chat[] = [];
+
+      for (const conv of conversations || []) {
+        let chatName = "Unknown";
+        let chatImage = require("../../../assets/images/discover.png");
+        let isVerified = false;
+        let isOnline = false;
+        let influencerId = null;
+
+        if (userProfile.user_type === "Influencer") {
+          // For influencers, show regular user's info
+          const regularUser = conv.regular_user;
+          chatName = regularUser?.full_name || "Unknown User";
+          chatImage = regularUser?.avatar_url
+            ? { uri: regularUser.avatar_url }
+            : require("../../../assets/images/discover.png");
+          isVerified = regularUser?.is_verified || false;
+          isOnline = true; // Regular users are always considered online for now
+
+          // For influencers, we need to get the influencer ID separately
+          const { data: influencerProfile } = await supabase
+            .from("influencer_profiles")
+            .select("id")
+            .eq("user_id", currentUser.id)
+            .single();
+
+          influencerId = influencerProfile?.id || null;
+        } else {
+          // For regular users, show influencer's info
+          const influencer = conv.influencer;
+          chatName = influencer?.display_name || "Unknown Influencer";
+          chatImage = influencer?.profile_image_url
+            ? { uri: influencer.profile_image_url }
+            : require("../../../assets/images/discover.png");
+          isOnline = influencer?.is_available || false;
+          influencerId = influencer?.id;
+
+          // Get verification status separately to avoid the join conflict
+          if (influencer?.user_id) {
+            const { data: influencerUser } = await supabase
+              .from("users")
+              .select("is_verified")
+              .eq("id", influencer.user_id)
+              .single();
+
+            isVerified = influencerUser?.is_verified || false;
+          }
+        }
+
+        // Only include conversations with messages or show empty ones
+        const unreadCount = await getUnreadCount(conv.id, currentUser.id);
+
+        transformedChats.push({
+          id: conv.id,
+          conversationId: conv.id,
+          influencerId: influencerId,
+          name: chatName,
+          message: conv.last_message_preview || "No messages yet",
+          time: formatTime(conv.last_message_at),
+          image: chatImage,
+          isVerified: isVerified,
+          isOnline: isOnline,
+          unreadCount: unreadCount,
+          isDoubleTick: true,
+          isSupport: false,
+          isPinned: false,
         });
+      }
 
-      // Add support chat at the beginning
+      // Step 6: Add support chat at the beginning for all users
       const supportChat: Chat = {
         id: "support",
         name: "Support",
@@ -219,6 +343,7 @@ export default function ChatsPerson() {
         image: require("../../../assets/images/dashboard/support-avatar.png"),
         isVerified: true,
         isOnline: false,
+        unreadCount: 0,
         isDoubleTick: true,
         isSupport: true,
       };
@@ -228,6 +353,29 @@ export default function ChatsPerson() {
     } catch (err) {
       console.error("Error in fetchConversations:", err);
       setLoading(false);
+    }
+  };
+
+  // Get unread message count for a conversation
+  const getUnreadCount = async (conversationId: string, userId: string): Promise<number> => {
+    try {
+      const { data: unreadMessages, error } = await supabase
+        .from("messages")
+        .select("id")
+        .eq("conversation_id", conversationId)
+        .neq("sender_id", userId)
+        .eq("is_read", false)
+        .is("deleted_at", null);
+
+      if (error) {
+        console.error("Error fetching unread count:", error);
+        return 0;
+      }
+
+      return unreadMessages?.length || 0;
+    } catch (error) {
+      console.error("Error in getUnreadCount:", error);
+      return 0;
     }
   };
 
@@ -242,17 +390,14 @@ export default function ChatsPerson() {
     const diffInDays = diffInMs / (1000 * 60 * 60 * 24);
 
     if (diffInHours < 24) {
-      // Show time for today
       return date.toLocaleTimeString("en-US", {
         hour: "numeric",
         minute: "2-digit",
         hour12: false,
       });
     } else if (diffInDays < 7) {
-      // Show day name for this week
-      return date.toLocaleDateString("en-US", { weekday: "long" });
+      return date.toLocaleDateString("en-US", { weekday: "short" });
     } else {
-      // Show date for older messages
       return date.toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
@@ -260,10 +405,104 @@ export default function ChatsPerson() {
     }
   };
 
+  // Handle chat press - navigate to chat screen with proper parameters
+  const handleChatPress = (chat: Chat) => {
+    if (swipedChatId === chat.id) {
+      const anim = getSwipeAnim(chat.id);
+      Animated.spring(anim, {
+        toValue: 0,
+        useNativeDriver: true,
+      }).start(() => setSwipedChatId(null));
+    } else {
+      if (chat.isSupport) {
+        router.push("/(tabs)/dashboard/support");
+      } else if (chat.conversationId) {
+        router.push({
+          pathname: "/(tabs)/chats/chat",
+          params: {
+            conversationId: chat.conversationId,
+            name: chat.name,
+            image: typeof chat.image === 'string' ? chat.image : '',
+            isOnline: chat.isOnline ? "true" : "false",
+            isVerified: chat.isVerified ? "true" : "false"
+          }
+        });
+      } else {
+        console.error("No conversation ID found for chat:", chat.id);
+      }
+    }
+  };
+
+  // Handle delete chat
+  const handleDeleteChat = async () => {
+    if (longPressedChat?.conversationId) {
+      try {
+        const { error } = await supabase
+          .from("conversations")
+          .update({ is_active: false })
+          .eq("id", longPressedChat.conversationId);
+
+        if (!error) {
+          setChats((prev) => prev.filter((c) => c.id !== longPressedChat.id));
+          console.log("Chat deleted successfully");
+        } else {
+          console.error("Error deleting chat:", error);
+        }
+      } catch (err) {
+        console.error("Error deleting chat:", err);
+      }
+    }
+    setShowUnreadModal(false);
+    setLongPressedChat(null);
+  };
+
+  // Handle mark as read
+  const handleMarkAsRead = async () => {
+    if (longPressedChat?.conversationId && currentUserId) {
+      try {
+        const { error } = await supabase
+          .from("messages")
+          .update({
+            is_read: true,
+            read_at: new Date().toISOString()
+          })
+          .eq("conversation_id", longPressedChat.conversationId)
+          .neq("sender_id", currentUserId)
+          .eq("is_read", false);
+
+        if (!error) {
+          setChats(prev =>
+            prev.map(chat =>
+              chat.id === longPressedChat.id
+                ? { ...chat, unreadCount: 0 }
+                : chat
+            )
+          );
+          console.log("Messages marked as read");
+        } else {
+          console.error("Error marking messages as read:", error);
+        }
+      } catch (err) {
+        console.error("Error in handleMarkAsRead:", err);
+      }
+    }
+    setShowUnreadModal(false);
+    setLongPressedChat(null);
+  };
+
+  // Handle pin chat
+  const handlePinChat = () => {
+    setShowUnreadModal(false);
+    setLongPressedChat(null);
+  };
+
   if (!fontsLoaded || loading) {
     return (
       <View className="flex-1 items-center justify-center bg-black">
         <ActivityIndicator color="#FCCD34" size="large" />
+        <Text className="text-white mt-4" style={{ fontFamily: FONT.Regular }}>
+          Loading chats...
+        </Text>
       </View>
     );
   }
@@ -356,40 +595,8 @@ export default function ChatsPerson() {
   };
 
   const handleLongPress = (chat: Chat) => {
-    if (chat.unreadCount && chat.unreadCount > 0) {
-      setLongPressedChat(chat);
-      setShowUnreadModal(true);
-    }
-  };
-
-  const handleMarkAsRead = () => {
-    setShowUnreadModal(false);
-    setLongPressedChat(null);
-  };
-
-  const handlePinChat = () => {
-    setShowUnreadModal(false);
-    setLongPressedChat(null);
-  };
-
-  const handleDeleteChat = async () => {
-    if (longPressedChat?.conversationId) {
-      try {
-        const { error } = await supabase
-          .from("conversations")
-          .update({ is_active: false })
-          .eq("id", longPressedChat.conversationId);
-
-        if (!error) {
-          // Remove from local state
-          setChats((prev) => prev.filter((c) => c.id !== longPressedChat.id));
-        }
-      } catch (err) {
-        console.error("Error deleting chat:", err);
-      }
-    }
-    setShowUnreadModal(false);
-    setLongPressedChat(null);
+    setLongPressedChat(chat);
+    setShowUnreadModal(true);
   };
 
   return (
@@ -454,7 +661,7 @@ export default function ChatsPerson() {
         </View>
       </View>
 
-      <ScrollView className="flex-1">
+      <ScrollView className="flex-1" onScroll={resetAllSwipes}>
         {/* Favorites Section */}
         <View className="px-5 mb-4">
           <View className="flex-row items-center justify-between mb-4">
@@ -507,6 +714,12 @@ export default function ChatsPerson() {
                 style={{ fontFamily: FONT.Regular }}
               >
                 No conversations yet
+              </Text>
+              <Text
+                className="text-gray-500 text-sm mt-2"
+                style={{ fontFamily: FONT.Regular }}
+              >
+                Start chatting with influencers to see conversations here
               </Text>
             </View>
           ) : (
@@ -693,12 +906,7 @@ export default function ChatsPerson() {
                             alignItems: "center",
                             justifyContent: "center",
                           }}
-                          onPress={() => {
-                            Animated.spring(anim, {
-                              toValue: 0,
-                              useNativeDriver: true,
-                            }).start(() => setSwipedChatId(null));
-                          }}
+                          onPress={handleDeleteChat}
                         >
                           <Image
                             source={require("../../../assets/images/dashboard/dustbin.png")}
@@ -739,20 +947,7 @@ export default function ChatsPerson() {
                     <TouchableOpacity
                       className="flex-row items-center px-5 py-3"
                       activeOpacity={0.7}
-                      onPress={() => {
-                        if (swipedChatId === chat.id) {
-                          Animated.spring(anim, {
-                            toValue: 0,
-                            useNativeDriver: true,
-                          }).start(() => setSwipedChatId(null));
-                        } else {
-                          if (chat.isSupport) {
-                            router.push("/(tabs)/dashboard/support");
-                          } else {
-                            router.push("/(tabs)/chats/chat");
-                          }
-                        }
-                      }}
+                      onPress={() => handleChatPress(chat)}
                       onLongPress={() => handleLongPress(chat)}
                       delayLongPress={500}
                     >
@@ -810,10 +1005,9 @@ export default function ChatsPerson() {
                         </Text>
                       </View>
 
-                      {/* Time and Status (fixed) */}
+                      {/* Time and Status */}
                       <View className="items-end ml-3" accessible={false}>
                         <View className="flex-row items-center mb-1">
-                          {/* Render double tick only as a component or nothing */}
                           {chat.isDoubleTick ? (
                             <Image
                               source={require("../../../assets/images/double-tick.png")}
@@ -829,11 +1023,9 @@ export default function ChatsPerson() {
                             />
                           ) : null}
 
-                          {/* Ensure chat.time is always rendered inside Text */}
                           <Text
-                            className={`text-sm ${
-                              chat.unreadCount ? "text-white" : "text-gray-500"
-                            }`}
+                            className={`text-sm ${chat.unreadCount ? "text-white" : "text-gray-500"
+                              }`}
                             style={{ fontFamily: FONT.Regular }}
                             numberOfLines={1}
                             ellipsizeMode="tail"
@@ -842,9 +1034,8 @@ export default function ChatsPerson() {
                           </Text>
                         </View>
 
-                        {/* Only render unread badge when it's a positive number */}
                         {typeof chat.unreadCount === "number" &&
-                        chat.unreadCount > 0 ? (
+                          chat.unreadCount > 0 ? (
                           <View
                             style={{
                               width: 24,
@@ -915,21 +1106,19 @@ export default function ChatsPerson() {
                   onPress={() => setSelectedFilter(option)}
                 >
                   <Text
-                    className={`text-lg ${
-                      selectedFilter === option
-                        ? "text-[#FCCD34]"
-                        : "text-white"
-                    }`}
+                    className={`text-lg ${selectedFilter === option
+                      ? "text-[#FCCD34]"
+                      : "text-white"
+                      }`}
                     style={{ fontFamily: FONT.Regular }}
                   >
                     {option}
                   </Text>
                   <View
-                    className={`w-6 h-6 rounded-full ${
-                      selectedFilter === option
-                        ? "bg-[#FCCD34]"
-                        : "border-2 border-gray-500"
-                    } items-center justify-center`}
+                    className={`w-6 h-6 rounded-full ${selectedFilter === option
+                      ? "bg-[#FCCD34]"
+                      : "border-2 border-gray-500"
+                      } items-center justify-center`}
                   >
                     {selectedFilter === option && (
                       <View className="w-3 h-3 rounded-full bg-black" />
