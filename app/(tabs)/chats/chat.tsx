@@ -16,6 +16,7 @@ import {
   Platform,
   FlatList,
   Dimensions,
+  RefreshControl,
 } from "react-native";
 import { Phone, Video, ChevronLeft, Plus } from "lucide-react-native";
 import {
@@ -28,8 +29,8 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { supabase } from "../../../supabaseClient";
-import { 
-  getCurrentUser, 
+import {
+  getCurrentUser,
   verifyAuthentication
 } from "../../../utils/authHelpers";
 
@@ -58,10 +59,11 @@ interface Message {
 
 export default function Chat() {
   const params = useLocalSearchParams();
-  const influencerId = params.influencerId as string;
+  const conversationId = params.conversationId as string;
   const influencerName = params.name as string;
   const influencerImage = params.image as string;
   const isOnline = params.isOnline === "true";
+  const isVerified = params.isVerified === "true";
 
   const [message, setMessage] = useState("");
   const [balance, setBalance] = useState(12);
@@ -88,9 +90,10 @@ export default function Chat() {
   const [audioCallStatus, setAudioCallStatus] = useState<
     "requesting" | "connected" | "ended"
   >("requesting");
-  const [conversationId, setConversationId] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [isRealtimeConnected, setIsRealtimeConnected] = useState(false);
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -104,60 +107,139 @@ export default function Chat() {
     initializeChat();
   }, []);
 
-  // Subscribe to new messages for this conversation
+  // Enhanced real-time subscription
   useEffect(() => {
     if (!conversationId || !currentUserId) return;
 
-    console.log(`Subscribing to messages for conversation: ${conversationId}`);
+    console.log(`Setting up enhanced real-time subscription for conversation: ${conversationId}`);
 
     const subscription = supabase
-      .channel(`messages:${conversationId}`)
+      .channel(`conversation:${conversationId}`)
       .on(
-        "postgres_changes",
+        'postgres_changes',
         {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
+          event: '*',
+          schema: 'public',
+          table: 'messages',
           filter: `conversation_id=eq.${conversationId}`,
         },
         async (payload) => {
-          console.log("New message received via real-time:", payload);
-          const newMessage = payload.new;
+          console.log('Real-time update received:', payload);
           
-          // Format the new message
-          const formattedMessage: Message = {
-            id: newMessage.id,
-            text: newMessage.content,
-            timestamp: formatMessageTime(newMessage.created_at),
-            isSent: newMessage.sender_id === currentUserId,
-            isRead: newMessage.is_read,
-            content_type: newMessage.content_type,
-            media_url: newMessage.media_url,
-            created_at: newMessage.created_at,
-            sender_id: newMessage.sender_id,
-          };
-
-          // Add to messages state
-          setMessages((prev) => [...prev, formattedMessage]);
-
-          // If message is from influencer, mark as read immediately
-          if (newMessage.sender_id !== currentUserId) {
-            await markMessageAsRead(newMessage.id);
+          switch (payload.eventType) {
+            case 'INSERT':
+              await handleNewMessage(payload.new);
+              break;
+            case 'UPDATE':
+              await handleUpdatedMessage(payload.new);
+              break;
+            case 'DELETE':
+              await handleDeletedMessage(payload.old);
+              break;
           }
-
-          // Scroll to bottom
-          setTimeout(() => {
-            scrollViewRef.current?.scrollToEnd({ animated: true });
-          }, 100);
         }
       )
-      .subscribe();
+      .on('system' as any, { event: 'connected' }, () => {
+        console.log('Realtime connected');
+        setIsRealtimeConnected(true);
+      })
+      .on('system' as any, { event: 'disconnected' }, () => {
+        console.log('Realtime disconnected');
+        setIsRealtimeConnected(false);
+      })
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to real-time updates');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('Channel error in real-time subscription');
+        } else if (status === 'TIMED_OUT') {
+          console.error('Real-time subscription timed out');
+        }
+      });
 
+    // Cleanup function
     return () => {
-      console.log(`Unsubscribing from conversation: ${conversationId}`);
+      console.log(`Cleaning up real-time subscription for conversation: ${conversationId}`);
       subscription.unsubscribe();
     };
   }, [conversationId, currentUserId]);
+
+  // Handle new message from real-time
+  const handleNewMessage = async (newMessage: any) => {
+    console.log('Processing new message:', newMessage);
+    
+    // Format the new message
+    const formattedMessage: Message = {
+      id: newMessage.id,
+      text: newMessage.content,
+      timestamp: formatMessageTime(newMessage.created_at),
+      isSent: newMessage.sender_id === currentUserId,
+      isRead: newMessage.is_read,
+      content_type: newMessage.content_type,
+      media_url: newMessage.media_url,
+      created_at: newMessage.created_at,
+      sender_id: newMessage.sender_id,
+    };
+
+    // Add to messages state, avoiding duplicates
+    setMessages((prev) => {
+      // Check if message already exists to avoid duplicates
+      const exists = prev.some(msg => msg.id === formattedMessage.id);
+      if (exists) {
+        console.log('Message already exists, skipping:', formattedMessage.id);
+        return prev;
+      }
+      
+      console.log('Adding new message to state:', formattedMessage.id);
+      return [...prev, formattedMessage];
+    });
+
+    // If message is from other user, mark as read immediately
+    if (newMessage.sender_id !== currentUserId) {
+      console.log('Marking message as read:', newMessage.id);
+      await markMessageAsRead(newMessage.id);
+      
+      // Update the message read status in state
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === newMessage.id ? { ...msg, isRead: true } : msg
+        )
+      );
+    }
+
+    // Scroll to bottom
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+  };
+
+  // Handle updated message from real-time
+  const handleUpdatedMessage = async (updatedMessage: any) => {
+    console.log('Processing updated message:', updatedMessage);
+    
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === updatedMessage.id
+          ? {
+              ...msg,
+              text: updatedMessage.content,
+              isRead: updatedMessage.is_read,
+              isEdited: true,
+            }
+          : msg
+      )
+    );
+  };
+
+  // Handle deleted message from real-time
+  const handleDeletedMessage = async (deletedMessage: any) => {
+    console.log('Processing deleted message:', deletedMessage);
+    
+    setMessages((prev) =>
+      prev.filter((msg) => msg.id !== deletedMessage.id)
+    );
+  };
 
   const initializeChat = async () => {
     try {
@@ -182,103 +264,72 @@ export default function Chat() {
       setCurrentUserId(currentUser.id);
       console.log("Current user ID:", currentUser.id);
 
-      // Step 3: Sanitize influencer ID
-      const rawInfluencerId = params.influencerId;
-      const sanitizedInfluencerId =
-        rawInfluencerId && rawInfluencerId !== "undefined"
-          ? rawInfluencerId
-          : null;
-
-      if (!sanitizedInfluencerId) {
-        console.error("Missing or invalid influencerId param:", rawInfluencerId);
-        Alert.alert("Error", "Unable to open chat: invalid user selected.");
+      // Step 3: Validate conversationId
+      if (!conversationId || conversationId === "undefined") {
+        console.error("Missing or invalid conversationId:", conversationId);
+        Alert.alert("Error", "Unable to open chat: invalid conversation.");
         router.back();
         return;
       }
 
-      console.log("Influencer ID:", sanitizedInfluencerId);
+      console.log("Conversation ID:", conversationId);
 
-      // Step 4: Prevent conversation with self
-      if (currentUser.id === sanitizedInfluencerId) {
-        Alert.alert("Error", "You cannot chat with yourself.");
+      // Step 4: Verify conversation exists and user has access
+      const { data: conversation, error } = await supabase
+        .from("conversations")
+        .select(`
+        id,
+        regular_user_id,
+        influencer_id,
+        is_active,
+        influencer:influencer_id(
+          user_id
+        )
+      `)
+        .eq("id", conversationId)
+        .eq("is_active", true)
+        .single();
+
+      if (error || !conversation) {
+        console.error("Error fetching conversation:", error);
+        Alert.alert("Error", "Conversation not found or no longer active");
         router.back();
         return;
       }
 
-      // Step 5: Find or create conversation
-      const conversation = await findOrCreateConversation(
-        currentUser.id, 
-        sanitizedInfluencerId
-      );
-      
-      if (!conversation) {
-        Alert.alert("Error", "Failed to create conversation");
+      // Step 5: Verify user has access to this conversation
+      // For regular users: check if they are the regular_user_id
+      // For influencers: check if they are the influencer's user_id
+      const isRegularUser = conversation.regular_user_id === currentUser.id;
+
+      // Check if current user is the influencer by comparing with influencer's user_id
+      const isInfluencer = conversation.influencer?.user_id === currentUser.id;
+
+      console.log("Access check:", {
+        currentUserId: currentUser.id,
+        regularUserId: conversation.regular_user_id,
+        influencerUserId: conversation.influencer?.user_id,
+        isRegularUser,
+        isInfluencer
+      });
+
+      if (!isRegularUser && !isInfluencer) {
+        console.error("User does not have access to this conversation");
+        Alert.alert("Error", "You don't have access to this conversation");
+        router.back();
         return;
       }
 
-      setConversationId(conversation.id);
-      console.log("Conversation ID set:", conversation.id);
+      console.log("User has access to conversation");
 
       // Step 6: Load messages for this conversation
-      await loadMessages(conversation.id, currentUser.id);
+      await loadMessages(conversationId, currentUser.id);
 
     } catch (error) {
       console.error("Error initializing chat:", error);
       Alert.alert("Error", "Failed to initialize chat");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const findOrCreateConversation = async (userId: string, influencerId: string) => {
-    try {
-      // Try to find existing conversation
-      const { data: existingConversation, error: findError } = await supabase
-        .from("conversations")
-        .select("*")
-        .eq("regular_user_id", userId)
-        .eq("influencer_id", influencerId)
-        .single();
-
-      // If conversation exists, return it
-      if (existingConversation && !findError) {
-        console.log("Found existing conversation:", existingConversation.id);
-        return existingConversation;
-      }
-
-      // If no conversation exists (PGRST116 = no rows returned), create one
-      if (findError && findError.code === "PGRST116") {
-        console.log("No existing conversation found, creating new one...");
-        
-        const { data: newConversation, error: createError } = await supabase
-          .from("conversations")
-          .insert({
-            regular_user_id: userId,
-            influencer_id: influencerId,
-            is_active: true,
-          })
-          .select()
-          .single();
-
-        if (createError) {
-          console.error("Error creating conversation:", createError);
-          throw createError;
-        }
-
-        console.log("Created new conversation:", newConversation.id);
-        return newConversation;
-      }
-
-      // If there's another error, throw it
-      if (findError) {
-        console.error("Error finding conversation:", findError);
-        throw findError;
-      }
-
-      return null;
-    } catch (error) {
-      console.error("Error in findOrCreateConversation:", error);
-      throw error;
     }
   };
 
@@ -292,7 +343,7 @@ export default function Chat() {
   const loadMessages = async (convId: string, userId: string) => {
     try {
       console.log("Loading messages for conversation:", convId);
-      
+
       const { data: messagesData, error } = await supabase
         .from("messages")
         .select("*")
@@ -302,6 +353,7 @@ export default function Chat() {
 
       if (error) {
         console.error("Error loading messages:", error);
+        Alert.alert("Error", "Failed to load messages");
         return;
       }
 
@@ -322,7 +374,7 @@ export default function Chat() {
 
       setMessages(formattedMessages);
 
-      // Mark unread messages from influencer as read
+      // Mark unread messages from other user as read
       const unreadMessageIds = messagesData
         ?.filter((msg) => msg.sender_id !== userId && !msg.is_read)
         .map((msg) => msg.id);
@@ -330,6 +382,13 @@ export default function Chat() {
       if (unreadMessageIds && unreadMessageIds.length > 0) {
         console.log(`Marking ${unreadMessageIds.length} messages as read`);
         await markMessagesAsRead(unreadMessageIds);
+        
+        // Update local state to reflect read status
+        setMessages((prev) =>
+          prev.map((msg) =>
+            unreadMessageIds.includes(msg.id) ? { ...msg, isRead: true } : msg
+          )
+        );
       }
 
       // Scroll to bottom after loading
@@ -339,18 +398,33 @@ export default function Chat() {
 
     } catch (error) {
       console.error("Error in loadMessages:", error);
+      Alert.alert("Error", "Failed to load messages");
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    if (conversationId && currentUserId) {
+      await loadMessages(conversationId, currentUserId);
+    }
+    setRefreshing(false);
   };
 
   const markMessageAsRead = async (messageId: string) => {
     try {
-      await supabase
+      const { error } = await supabase
         .from("messages")
-        .update({ 
-          is_read: true, 
-          read_at: new Date().toISOString() 
+        .update({
+          is_read: true,
+          read_at: new Date().toISOString()
         })
         .eq("id", messageId);
+
+      if (error) {
+        console.error("Error marking message as read:", error);
+      } else {
+        console.log("Message marked as read:", messageId);
+      }
     } catch (error) {
       console.error("Error marking message as read:", error);
     }
@@ -358,13 +432,19 @@ export default function Chat() {
 
   const markMessagesAsRead = async (messageIds: string[]) => {
     try {
-      await supabase
+      const { error } = await supabase
         .from("messages")
-        .update({ 
-          is_read: true, 
-          read_at: new Date().toISOString() 
+        .update({
+          is_read: true,
+          read_at: new Date().toISOString()
         })
         .in("id", messageIds);
+
+      if (error) {
+        console.error("Error marking messages as read:", error);
+      } else {
+        console.log("Messages marked as read:", messageIds.length);
+      }
     } catch (error) {
       console.error("Error marking messages as read:", error);
     }
@@ -445,27 +525,16 @@ export default function Chat() {
           })
           .eq("id", conversationId);
 
-        // Format and add the new message to state
-        const formattedMessage: Message = {
-          id: newMessage.id,
-          text: message,
-          timestamp: formatMessageTime(newMessage.created_at),
-          isSent: true,
-          isRead: false,
-          content_type: newMessage.content_type,
-          created_at: newMessage.created_at,
-          sender_id: currentUserId,
-          replyTo: replyTo ? { ...replyTo } : undefined,
-        };
-
-        setMessages((prev) => [...prev, formattedMessage]);
+        console.log("Message sent successfully:", newMessage.id);
+        
+        // Update balance
         setBalance((prev) => parseFloat((prev - cost).toFixed(2)));
-        setReplyTo(null);
       }
 
       setMessage("");
       setCharCount(0);
       setInputHeight(48);
+      setReplyTo(null);
 
       // Scroll to bottom
       setTimeout(() => {
@@ -475,6 +544,33 @@ export default function Chat() {
     } catch (error) {
       console.error("Error sending message:", error);
       Alert.alert("Error", "Failed to send message. Please try again.");
+    }
+  };
+
+  // Test real-time function for debugging
+  const testRealtime = async () => {
+    if (!conversationId || !currentUserId) return;
+    
+    console.log('Testing real-time connection...');
+    
+    // Send a test message
+    const { error } = await supabase
+      .from('messages')
+      .insert({
+        conversation_id: conversationId,
+        sender_id: currentUserId,
+        content: 'Test message for real-time - ' + new Date().toLocaleTimeString(),
+        content_type: 'text',
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error sending test message:', error);
+      Alert.alert("Error", "Failed to send test message");
+    } else {
+      console.log('Test message sent successfully');
+      Alert.alert("Success", "Test message sent");
     }
   };
 
@@ -666,10 +762,33 @@ export default function Chat() {
               {isOnline && (
                 <View className="w-2 h-2 rounded-full bg-green-500 ml-2" />
               )}
+              {isVerified && (
+                <View className="ml-1 w-4 h-4 bg-[#FCCD34] rounded-full items-center justify-center">
+                  <Text className="text-black text-xs font-bold">✓</Text>
+                </View>
+              )}
+              {isRealtimeConnected && (
+                <View className="flex-row items-center ml-2">
+                  <View className="w-2 h-2 rounded-full bg-green-500 mr-1" />
+                  <Text
+                    className="text-green-500 text-xs"
+                    style={{ fontFamily: FONT.Regular }}
+                  >
+                    Live
+                  </Text>
+                </View>
+              )}
             </View>
           </View>
         </View>
         <View className="flex-row items-center">
+          {/* Debug button - remove in production */}
+          <TouchableOpacity
+            className="mr-2"
+            onPress={testRealtime}
+          >
+            <Text className="text-yellow-500 text-xs">Test</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             className="mr-4"
             onPress={() => {
@@ -764,6 +883,14 @@ export default function Chat() {
               justifyContent: "center",
               paddingBottom: 40,
             }}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor="#FCCD34"
+                colors={["#FCCD34"]}
+              />
+            }
           >
             <View className="flex-1 justify-center items-center px-6">
               <View className=" items-center justify-center mb-3">
@@ -800,7 +927,7 @@ export default function Chat() {
                   }}
                 >
                   You can send messages, or start a paid video/audio call with{" "}
-                  {influencerName || "this influencer"}.
+                  {influencerName || "this user"}.
                 </Text>
                 <Text
                   className="text-gray-300 text-center mb-4"
@@ -833,6 +960,14 @@ export default function Chat() {
             contentContainerStyle={{ paddingBottom: 20 }}
             onContentSizeChange={() =>
               scrollViewRef.current?.scrollToEnd({ animated: true })
+            }
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor="#FCCD34"
+                colors={["#FCCD34"]}
+              />
             }
           >
             {messages.map((msg) => (
@@ -1158,30 +1293,30 @@ export default function Chat() {
               },
               ...(contextMenu?.isSent
                 ? [
-                    {
-                      key: "edit",
-                      label: "Edit",
-                      icon: require("../../../assets/images/edit-icon.png"),
-                      onPress: handleEdit,
-                      color: "#FFFFFF",
-                    },
-                    {
-                      key: "delete",
-                      label: "Delete",
-                      icon: require("../../../assets/images/delete-icon.png"),
-                      onPress: handleDelete,
-                      color: "#FFFFFF",
-                    },
-                  ]
+                  {
+                    key: "edit",
+                    label: "Edit",
+                    icon: require("../../../assets/images/edit-icon.png"),
+                    onPress: handleEdit,
+                    color: "#FFFFFF",
+                  },
+                  {
+                    key: "delete",
+                    label: "Delete",
+                    icon: require("../../../assets/images/delete-icon.png"),
+                    onPress: handleDelete,
+                    color: "#FFFFFF",
+                  },
+                ]
                 : [
-                    {
-                      key: "report",
-                      label: "Report",
-                      icon: require("../../../assets/images/report-icon.png"),
-                      onPress: handleReport,
-                      color: "#FFFFFF",
-                    },
-                  ]),
+                  {
+                    key: "report",
+                    label: "Report",
+                    icon: require("../../../assets/images/report-icon.png"),
+                    onPress: handleReport,
+                    color: "#FFFFFF",
+                  },
+                ]),
             ].map((item, idx, arr) => (
               <React.Fragment key={item.key}>
                 <TouchableOpacity
@@ -1338,11 +1473,10 @@ export default function Chat() {
                         style={{ width: "100%", aspectRatio: 1 }}
                       />
                       <View
-                        className={`absolute top-2 right-2 w-6 h-6 rounded-full border-2 ${
-                          isSelected
-                            ? "bg-[#FCCD34] border-[#FCCD34]"
-                            : "border-white"
-                        } items-center justify-center`}
+                        className={`absolute top-2 right-2 w-6 h-6 rounded-full border-2 ${isSelected
+                          ? "bg-[#FCCD34] border-[#FCCD34]"
+                          : "border-white"
+                          } items-center justify-center`}
                       >
                         {isSelected && (
                           <Text
@@ -1508,9 +1642,8 @@ export default function Chat() {
                   className="items-center"
                 >
                   <Text
-                    className={`text-base font-semibold ${
-                      selectedTab === "photos" ? "text-white" : "text-white/50"
-                    }`}
+                    className={`text-base font-semibold ${selectedTab === "photos" ? "text-white" : "text-white/50"
+                      }`}
                   >
                     Photos
                   </Text>
@@ -1521,11 +1654,10 @@ export default function Chat() {
                   className="items-center"
                 >
                   <Text
-                    className={`text-base font-semibold ${
-                      selectedTab === "videos"
-                        ? "text-[#FCCD34]"
-                        : "text-white/50"
-                    }`}
+                    className={`text-base font-semibold ${selectedTab === "videos"
+                      ? "text-[#FCCD34]"
+                      : "text-white/50"
+                      }`}
                   >
                     Videos
                   </Text>
@@ -1648,7 +1780,7 @@ export default function Chat() {
               className="text-white text-2xl mb-2"
               style={{ fontFamily: FONT.SemiBold }}
             >
-              Bam Margera
+              {influencerName || "User"}
             </Text>
 
             <Text
@@ -1842,7 +1974,11 @@ export default function Chat() {
               }}
             >
               <Image
-                source={require("../../../assets/images/boy.png")}
+                source={
+                  influencerImage
+                    ? { uri: influencerImage }
+                    : require("../../../assets/images/boy.png")
+                }
                 style={{ width: "100%", height: "100%" }}
                 resizeMode="cover"
               />
@@ -1853,7 +1989,7 @@ export default function Chat() {
               className="text-white text-3xl mb-3"
               style={{ fontFamily: FONT.SemiBold }}
             >
-              Bam Margera
+              {influencerName || "User"}
             </Text>
 
             {/* Status Text */}
