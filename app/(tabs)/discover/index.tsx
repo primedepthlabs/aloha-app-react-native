@@ -20,6 +20,7 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter, Link } from "expo-router";
 import { supabase } from "../../../supabaseClient";
+import { getCurrentUser } from "../../../utils/authHelpers";
 
 interface User {
   id: string; // users.id
@@ -99,11 +100,29 @@ export default function DiscoverScreen() {
   >(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  
   // --- BLOCK USER state & helpers ---
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [blockReason, setBlockReason] = useState("");
   const [blocking, setBlocking] = useState(false);
   const [blockTarget, setBlockTarget] = useState<User | null>(null);
+
+  // Get current user on component mount
+  useEffect(() => {
+    getCurrentUserId();
+  }, []);
+
+  const getCurrentUserId = async () => {
+    try {
+      const currentUser = await getCurrentUser();
+      if (currentUser) {
+        setCurrentUserId(currentUser.id);
+      }
+    } catch (error) {
+      console.error("Error getting current user:", error);
+    }
+  };
 
   // open the block modal for a user (call from Block menu item)
   const openBlockModal = (user) => {
@@ -201,6 +220,12 @@ export default function DiscoverScreen() {
     try {
       setLoading(true);
 
+      // Get current user first to filter out self
+      const currentUser = await getCurrentUser();
+      if (currentUser) {
+        setCurrentUserId(currentUser.id);
+      }
+
       // Query influencer_profiles first (guarantees influencer_profiles.id is present)
       const { data: profiles, error } = await supabase
         .from("influencer_profiles")
@@ -238,27 +263,29 @@ export default function DiscoverScreen() {
         return;
       }
 
-      // Map to User[]
-      const transformedUsers: User[] = (profiles || []).map((p: any) => ({
-        id: p.user_id, // users.id (useful)
-        influencerProfileId: p.id, // IMPORTANT: influencer_profiles.id
-        name: p.display_name || p.users?.full_name || "Unknown",
-        role: "Influencer",
-        image: p.profile_image_url
-          ? { uri: p.profile_image_url }
-          : require("../../../assets/images/discover.png"),
-        isFavorite: false,
-        location: "Unknown",
-        about: p.bio || "",
-        rating: p.average_rating || 4,
-        isOnline: p.is_available || false,
-        gallery: [
-          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
-          "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400",
-        ],
-        avatar_url: p.users?.avatar_url || p.profile_image_url || undefined,
-      }));
+      // Map to User[] and filter out current user
+      const transformedUsers: User[] = (profiles || [])
+        .filter((p: any) => p.user_id !== currentUser?.id) // Filter out current user
+        .map((p: any) => ({
+          id: p.user_id, // users.id (useful)
+          influencerProfileId: p.id, // IMPORTANT: influencer_profiles.id
+          name: p.display_name || p.users?.full_name || "Unknown",
+          role: "Influencer",
+          image: p.profile_image_url
+            ? { uri: p.profile_image_url }
+            : require("../../../assets/images/discover.png"),
+          isFavorite: false,
+          location: "Unknown",
+          about: p.bio || "",
+          rating: p.average_rating || 4,
+          isOnline: p.is_available || false,
+          gallery: [
+            "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
+            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+            "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400",
+          ],
+          avatar_url: p.users?.avatar_url || p.profile_image_url || undefined,
+        }));
 
       // debug: verify mapping contains influencerProfileId
       console.log(
@@ -290,11 +317,22 @@ export default function DiscoverScreen() {
     });
   };
 
+  // Check if user is current user
+  const isCurrentUser = (user: User) => {
+    return user.id === currentUserId;
+  };
+
   // Navigate to chat using influencer_profiles.id (influencerProfileId)
   const navigateToChat = (user: User | null) => {
     if (!user) {
       console.warn("navigateToChat called without user");
       Alert.alert("Error", "Unable to open chat: invalid user selected.");
+      return;
+    }
+
+    // Don't allow chatting with yourself
+    if (isCurrentUser(user)) {
+      Alert.alert("Notice", "You cannot send messages to yourself.");
       return;
     }
 
@@ -335,6 +373,12 @@ export default function DiscoverScreen() {
 
     if (!user || !user.id) {
       Alert.alert("Error", "Unable to report: missing user id.");
+      return;
+    }
+
+    // Don't allow reporting yourself
+    if (isCurrentUser(user)) {
+      Alert.alert("Notice", "You cannot report yourself.");
       return;
     }
 
@@ -538,106 +582,142 @@ export default function DiscoverScreen() {
           contentContainerStyle={{ paddingBottom: 24 }}
         >
           <View className="flex-row flex-wrap justify-between pb-24">
-            {filteredUsers.map((user) => (
-              <TouchableOpacity
-                key={user.id}
-                className="w-[48%] mb-4"
-                onPress={() => setSelectedUser(user)}
-              >
-                <View
-                  className="relative rounded-3xl overflow-hidden"
-                  style={{ height: 260 }}
+            {filteredUsers.map((user) => {
+              const isSelf = isCurrentUser(user);
+              
+              return (
+                <TouchableOpacity
+                  key={user.id}
+                  className="w-[48%] mb-4"
+                  onPress={() => setSelectedUser(user)}
                 >
-                  <Image
-                    source={user.image}
-                    className="w-full h-full"
-                    resizeMode="cover"
-                  />
-
-                  <LinearGradient
-                    colors={["rgba(0,0,0,0.9)", "transparent"]}
-                    start={{ x: 0.5, y: 1 }}
-                    end={{ x: 0.5, y: 0 }}
-                    style={{
-                      position: "absolute",
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: "60%",
-                    }}
-                  />
-
-                  <TouchableOpacity
-                    className="absolute top-4 right-4 z-10"
-                    onPress={() => toggleFavorite(user.id)}
-                  >
-                    <Star
-                      size={26}
-                      color={user.isFavorite ? "#FCCD34" : "#fff"}
-                      fill={user.isFavorite ? "#FCCD34" : "transparent"}
-                      strokeWidth={2}
-                    />
-                  </TouchableOpacity>
-
                   <View
-                    style={{
-                      position: "absolute",
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      alignItems: "center",
-                      paddingBottom: 16,
-                    }}
+                    className="relative rounded-3xl overflow-hidden"
+                    style={{ height: 260 }}
                   >
-                    <Text
-                      style={{
-                        color: "#fff",
-                        fontSize: 20,
-                        fontWeight: "600",
-                        marginBottom: 2,
-                      }}
-                    >
-                      {user.name}
-                    </Text>
+                    <Image
+                      source={user.image}
+                      className="w-full h-full"
+                      resizeMode="cover"
+                    />
 
-                    <Text
+                    {/* Blur overlay with "You" text for current user */}
+                    {isSelf && (
+                      <View
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          backgroundColor: "rgba(0, 0, 0, 0.6)",
+                          backdropFilter: "blur(4px)",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          zIndex: 5,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color: "#FFFFFF",
+                            fontSize: 18,
+                            fontWeight: "bold",
+                            textAlign: "center",
+                          }}
+                        >
+                          You
+                        </Text>
+                      </View>
+                    )}
+
+                    <LinearGradient
+                      colors={["rgba(0,0,0,0.9)", "transparent"]}
+                      start={{ x: 0.5, y: 1 }}
+                      end={{ x: 0.5, y: 0 }}
                       style={{
-                        color: "#E5E5E5",
-                        fontSize: 14,
-                        marginBottom: 8,
+                        position: "absolute",
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: "60%",
                       }}
-                    >
-                      {user.role}
-                    </Text>
+                    />
 
                     <TouchableOpacity
-                      activeOpacity={0.8}
-                      onPress={() => navigateToChat(user)}
+                      className="absolute top-4 right-4 z-10"
+                      onPress={() => toggleFavorite(user.id)}
+                    >
+                      <Star
+                        size={26}
+                        color={user.isFavorite ? "#FCCD34" : "#fff"}
+                        fill={user.isFavorite ? "#FCCD34" : "transparent"}
+                        strokeWidth={2}
+                      />
+                    </TouchableOpacity>
+
+                    <View
                       style={{
-                        backgroundColor: "#FCCD34",
-                        borderRadius: 5,
-                        paddingVertical: 4,
-                        paddingHorizontal: 8,
-                        flexDirection: "row",
+                        position: "absolute",
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
                         alignItems: "center",
-                        justifyContent: "center",
-                        minWidth: 60,
+                        paddingBottom: 16,
                       }}
                     >
                       <Text
                         style={{
-                          color: "black",
-                          fontWeight: "500",
-                          fontSize: 11,
+                          color: "#fff",
+                          fontSize: 20,
+                          fontWeight: "600",
+                          marginBottom: 2,
                         }}
                       >
-                        Message
+                        {user.name}
                       </Text>
-                    </TouchableOpacity>
+
+                      <Text
+                        style={{
+                          color: "#E5E5E5",
+                          fontSize: 14,
+                          marginBottom: 8,
+                        }}
+                      >
+                        {user.role}
+                      </Text>
+
+                      {/* Hide message button for current user */}
+                      {!isSelf && (
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          onPress={() => navigateToChat(user)}
+                          style={{
+                            backgroundColor: "#FCCD34",
+                            borderRadius: 5,
+                            paddingVertical: 4,
+                            paddingHorizontal: 8,
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            minWidth: 60,
+                          }}
+                        >
+                          <Text
+                            style={{
+                              color: "black",
+                              fontWeight: "500",
+                              fontSize: 11,
+                            }}
+                          >
+                            Message
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
                   </View>
-                </View>
-              </TouchableOpacity>
-            ))}
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </ScrollView>
       )}
@@ -1002,42 +1082,49 @@ export default function DiscoverScreen() {
                   </View>
 
                   <View className="mb-0">
-                    <TouchableOpacity
-                      className="bg-[#FCCD34] rounded-xl py-4 items-center justify-center mb-3"
-                      onPress={() => {
-                        setSelectedUser(null);
-                        navigateToChat(selectedUser);
-                      }}
-                    >
-                      <View className="flex-row items-center">
-                        <Image
-                          source={require("../../../assets/images/message.png")}
-                          style={{ width: 20, height: 20 }}
-                          resizeMode="contain"
-                        />
-                        <Text className="text-black text-base font-bold ml-2">
-                          Message
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      className="bg-transparent border-2 border-[#FCCD34] rounded-xl py-4 items-center justify-center"
-                      onPress={() => {
-                        setSelectedUser(null);
-                        router.push("/(tabs)/discover/donation");
-                      }}
-                    >
-                      <View className="flex-row items-center">
-                        <Image
-                          source={require("../../../assets/images/yellow-heart.png")}
-                          style={{ width: 20, height: 20, marginRight: 8 }}
-                          resizeMode="contain"
-                        />
-                        <Text className="text-[#FCCD34] text-base font-bold">
-                          Donation
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
+                    {/* Hide message button for current user in profile modal */}
+                    {!isCurrentUser(selectedUser) && (
+                      <TouchableOpacity
+                        className="bg-[#FCCD34] rounded-xl py-4 items-center justify-center mb-3"
+                        onPress={() => {
+                          setSelectedUser(null);
+                          navigateToChat(selectedUser);
+                        }}
+                      >
+                        <View className="flex-row items-center">
+                          <Image
+                            source={require("../../../assets/images/message.png")}
+                            style={{ width: 20, height: 20 }}
+                            resizeMode="contain"
+                          />
+                          <Text className="text-black text-base font-bold ml-2">
+                            Message
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    )}
+                    
+                    {/* Hide donation button for current user in profile modal */}
+                    {!isCurrentUser(selectedUser) && (
+                      <TouchableOpacity
+                        className="bg-transparent border-2 border-[#FCCD34] rounded-xl py-4 items-center justify-center"
+                        onPress={() => {
+                          setSelectedUser(null);
+                          router.push("/(tabs)/discover/donation");
+                        }}
+                      >
+                        <View className="flex-row items-center">
+                          <Image
+                            source={require("../../../assets/images/yellow-heart.png")}
+                            style={{ width: 20, height: 20, marginRight: 8 }}
+                            resizeMode="contain"
+                          />
+                          <Text className="text-[#FCCD34] text-base font-bold">
+                            Donation
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    )}
                   </View>
                 </View>
               </View>
