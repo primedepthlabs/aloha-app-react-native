@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   Image,
   FlatList,
   Dimensions,
+  Alert,
 } from "react-native";
 import {
   ChevronLeft,
@@ -27,6 +28,7 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
+import { supabase } from "../../../supabaseClient";
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -36,6 +38,8 @@ const FONT = {
 };
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
+
+const PLACEHOLDER = require("../../../assets/images/profile-placeholder.png");
 
 const AccountSettingsScreen = () => {
   const [fontsLoaded] = useFonts({
@@ -58,24 +62,14 @@ const AccountSettingsScreen = () => {
   const [selectedUser, setSelectedUser] = useState<any>(null);
 
   const [isSaving, setIsSaving] = useState(false);
+  const [loadingBlocked, setLoadingBlocked] = useState(false);
+  const [blockedUsers, setBlockedUsers] = useState<any[]>([]);
 
-  const blockedUsers = [
-    {
-      id: 1,
-      name: "Sophia Bennett",
-      image: require("../../../assets/images/profile-placeholder.png"),
-    },
-    {
-      id: 2,
-      name: "Ethan Carter",
-      image: require("../../../assets/images/profile-placeholder.png"),
-    },
-    {
-      id: 3,
-      name: "Olivia Davis",
-      image: require("../../../assets/images/profile-placeholder.png"),
-    },
-  ];
+  useEffect(() => {
+    if (blockedPeopleVisible) {
+      loadBlockedUsers();
+    }
+  }, [blockedPeopleVisible]);
 
   if (!fontsLoaded) {
     return (
@@ -105,9 +99,7 @@ const AccountSettingsScreen = () => {
         marginBottom: 10,
       }}
     >
-      <View
-        style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
-      >
+      <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
         <View
           style={{
             width: 32,
@@ -142,6 +134,73 @@ const AccountSettingsScreen = () => {
     </TouchableOpacity>
   );
 
+  async function loadBlockedUsers() {
+    setLoadingBlocked(true);
+    try {
+      const { data: userData, error: userErr } = await supabase.auth.getUser();
+      const user = userData?.user;
+      if (userErr || !user) {
+        console.warn("Supabase getUser error:", userErr);
+        setBlockedUsers([]);
+        setLoadingBlocked(false);
+        return;
+      }
+
+      // 1) fetch rows from blocked_users for current user
+      const { data: blockedRows, error: blockedErr } = await supabase
+        .from("blocked_users")
+        .select("id, blocked_id, created_at")
+        .eq("blocker_id", user.id);
+
+      if (blockedErr) {
+        console.error("Error fetching blocked_users:", blockedErr);
+        setBlockedUsers([]);
+        setLoadingBlocked(false);
+        return;
+      }
+
+      if (!blockedRows || blockedRows.length === 0) {
+        setBlockedUsers([]);
+        setLoadingBlocked(false);
+        return;
+      }
+
+      const blockedIds = blockedRows.map((r: any) => r.blocked_id);
+
+      // 2) fetch user profiles for those blocked ids
+      const { data: usersData, error: usersErr } = await supabase
+        .from("users")
+        .select("id, full_name, avatar_url")
+        .in("id", blockedIds as any);
+
+      if (usersErr) {
+        console.error("Error fetching users for blocked ids:", usersErr);
+        setBlockedUsers([]);
+        setLoadingBlocked(false);
+        return;
+      }
+
+      // merge blocked_rows with users data so we can keep blocked_users.id for deletion
+      const merged = blockedRows.map((row: any) => {
+        const u = usersData?.find((x: any) => x.id === row.blocked_id) || {};
+        return {
+          id: row.id, // blocked_users table primary key
+          blocked_id: row.blocked_id,
+          name: u.full_name || "Unknown",
+          avatar_url: u.avatar_url || null,
+          created_at: row.created_at,
+        };
+      });
+
+      setBlockedUsers(merged);
+    } catch (err) {
+      console.error("Unhandled error loading blocked users:", err);
+      setBlockedUsers([]);
+    } finally {
+      setLoadingBlocked(false);
+    }
+  }
+
   const renderBlockedUser = ({ item }: any) => {
     return (
       <View
@@ -155,20 +214,11 @@ const AccountSettingsScreen = () => {
       >
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Image
-            source={item.image}
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 24,
-              marginRight: 12,
-            }}
+            source={item.avatar_url ? { uri: item.avatar_url } : PLACEHOLDER}
+            style={{ width: 48, height: 48, borderRadius: 24, marginRight: 12 }}
           />
           <Text
-            style={{
-              fontSize: 16,
-              fontFamily: FONT.Medium,
-              color: "#FFFFFF",
-            }}
+            style={{ fontSize: 16, fontFamily: FONT.Medium, color: "#FFFFFF" }}
           >
             {item.name}
           </Text>
@@ -191,11 +241,7 @@ const AccountSettingsScreen = () => {
           }}
         >
           <Text
-            style={{
-              fontSize: 14,
-              fontFamily: FONT.Regular,
-              color: "#000000",
-            }}
+            style={{ fontSize: 14, fontFamily: FONT.Regular, color: "#000000" }}
           >
             Unblock
           </Text>
@@ -214,6 +260,39 @@ const AccountSettingsScreen = () => {
       console.warn("save failed", e);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleUnblock = async () => {
+    if (!selectedUser) return;
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user;
+      if (!user) {
+        Alert.alert("Not signed in", "Please sign in to manage blocked users.");
+        return;
+      }
+
+      // delete the blocked_users row by its pk (id)
+      const { error: delErr } = await supabase
+        .from("blocked_users")
+        .delete()
+        .eq("id", selectedUser.id)
+        .eq("blocker_id", user.id);
+
+      if (delErr) {
+        console.error("Error unblocking:", delErr);
+        Alert.alert("Error", "Failed to unblock user. Try again.");
+        return;
+      }
+
+      // remove from local state
+      setBlockedUsers((prev) => prev.filter((b) => b.id !== selectedUser.id));
+      setUnblockModalVisible(false);
+      setSelectedUser(null);
+    } catch (err) {
+      console.error("Unhandled unblock error:", err);
+      Alert.alert("Error", "Something went wrong.");
     }
   };
 
@@ -247,10 +326,7 @@ const AccountSettingsScreen = () => {
         </TouchableOpacity>
         <Text
           className="text-white"
-          style={{
-            fontSize: 18,
-            fontFamily: FONT.SemiBold,
-          }}
+          style={{ fontSize: 18, fontFamily: FONT.SemiBold }}
         >
           Account Settings
         </Text>
@@ -290,7 +366,7 @@ const AccountSettingsScreen = () => {
         />
       </ScrollView>
 
-      {/* Edit Profile Modal */}
+      {/* Edit Profile Modal (unchanged) */}
       <Modal
         animationType="slide"
         transparent={false}
@@ -326,10 +402,7 @@ const AccountSettingsScreen = () => {
             </TouchableOpacity>
             <Text
               className="text-white"
-              style={{
-                fontSize: 18,
-                fontFamily: FONT.SemiBold,
-              }}
+              style={{ fontSize: 18, fontFamily: FONT.SemiBold }}
             >
               Edit Profile
             </Text>
@@ -556,6 +629,7 @@ const AccountSettingsScreen = () => {
                 </Text>
               )}
             </TouchableOpacity>
+
             {/* Bottom-fixed Contact Support */}
             <View
               style={{
@@ -567,12 +641,7 @@ const AccountSettingsScreen = () => {
                 paddingHorizontal: 24,
               }}
             >
-              <View
-                style={{
-                  alignItems: "center",
-                  marginBottom: 0,
-                }}
-              >
+              <View style={{ alignItems: "center", marginBottom: 0 }}>
                 <Text
                   style={{
                     fontSize: 14,
@@ -581,9 +650,7 @@ const AccountSettingsScreen = () => {
                   }}
                 >
                   Need Help?{" "}
-                  <Text style={{ color: "#FCCD34" }}>
-                    Contact Support
-                  </Text>
+                  <Text style={{ color: "#FCCD34" }}>Contact Support</Text>
                 </Text>
               </View>
             </View>
@@ -655,17 +722,11 @@ const AccountSettingsScreen = () => {
                   onPress={() => {
                     if (!isSaving) setSaveModalVisible(false);
                   }}
-                  style={{
-                    paddingVertical: 12,
-                    alignItems: "center",
-                  }}
+                  style={{ paddingVertical: 12, alignItems: "center" }}
                 >
                   <Text
                     className="text-white text-center"
-                    style={{
-                      fontSize: 16,
-                      fontFamily: FONT.Regular,
-                    }}
+                    style={{ fontSize: 16, fontFamily: FONT.Regular }}
                   >
                     Cancel
                   </Text>
@@ -711,35 +772,36 @@ const AccountSettingsScreen = () => {
             </TouchableOpacity>
             <Text
               className="text-white"
-              style={{
-                fontSize: 18,
-                fontFamily: FONT.SemiBold,
-              }}
+              style={{ fontSize: 18, fontFamily: FONT.SemiBold }}
             >
               Blocked People
             </Text>
           </View>
 
-          <View
-            style={{
-              paddingHorizontal: 24,
-              paddingTop: 8,
-              flex: 1,
-            }}
-          >
-            <FlatList
-              data={blockedUsers}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={renderBlockedUser}
-              ItemSeparatorComponent={() => (
-                <View
-                  style={{
-                    height: 1,
-                    backgroundColor: "transparent",
-                  }}
-                />
-              )}
-            />
+          <View style={{ paddingHorizontal: 24, paddingTop: 8, flex: 1 }}>
+            {loadingBlocked ? (
+              <View style={{ paddingTop: 24, alignItems: "center" }}>
+                <ActivityIndicator color="#FCCD34" />
+              </View>
+            ) : (
+              <FlatList
+                data={blockedUsers}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={renderBlockedUser}
+                ItemSeparatorComponent={() => (
+                  <View style={{ height: 1, backgroundColor: "transparent" }} />
+                )}
+                ListEmptyComponent={() => (
+                  <View style={{ padding: 24, alignItems: "center" }}>
+                    <Text
+                      style={{ color: "#8E8E93", fontFamily: FONT.Regular }}
+                    >
+                      You haven't blocked anyone.
+                    </Text>
+                  </View>
+                )}
+              />
+            )}
           </View>
 
           {/* Unblock Confirmation Modal */}
@@ -777,16 +839,12 @@ const AccountSettingsScreen = () => {
                   }}
                 >
                   Are you sure you want to{"\n"}Unblock{" "}
-                  <Text style={{ color: "#FCCD34" }}>
-                    {selectedUser?.name}
-                  </Text>
+                  <Text style={{ color: "#FCCD34" }}>{selectedUser?.name}</Text>
                   ?
                 </Text>
 
                 <TouchableOpacity
-                  onPress={() => {
-                    setUnblockModalVisible(false);
-                  }}
+                  onPress={handleUnblock}
                   style={{
                     paddingVertical: 12,
                     borderBottomWidth: 1,
@@ -808,17 +866,11 @@ const AccountSettingsScreen = () => {
 
                 <TouchableOpacity
                   onPress={() => setUnblockModalVisible(false)}
-                  style={{
-                    paddingVertical: 12,
-                    alignItems: "center",
-                  }}
+                  style={{ paddingVertical: 12, alignItems: "center" }}
                 >
                   <Text
                     className="text-white text-center"
-                    style={{
-                      fontSize: 16,
-                      fontFamily: FONT.Regular,
-                    }}
+                    style={{ fontSize: 16, fontFamily: FONT.Regular }}
                   >
                     Cancel
                   </Text>
