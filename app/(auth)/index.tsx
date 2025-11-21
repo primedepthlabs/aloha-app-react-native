@@ -1,10 +1,11 @@
-// app/index.tsx - Onboarding Screen
-import React from "react";
-import "react-native-url-polyfill/auto";
-import { View, Text, TouchableOpacity, Image } from "react-native";
+// app/index.tsx - Onboarding Screen (with auth-check)
+import 'react-native-url-polyfill/auto';
+import React, { useEffect, useRef, useState } from "react";
+import { View, Text, TouchableOpacity, Image, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
 import { useFonts } from "expo-font";
 import Svg, { Path } from "react-native-svg";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function OnboardingScreen() {
   const [fontsLoaded] = useFonts({
@@ -12,8 +13,63 @@ export default function OnboardingScreen() {
     "Inter-Regular": require("../../assets/fonts/Inter-Regular.ttf"),
   });
 
-  if (!fontsLoaded) {
-    return null;
+  const [checkingAuth, setCheckingAuth] = useState(true);
+  const didNavigateRef = useRef(false);
+
+  useEffect(() => {
+    // Only run after fonts are loaded to avoid visual flicker
+    if (!fontsLoaded) return;
+    if (didNavigateRef.current) return;
+
+    let mounted = true;
+
+    const checkAuth = async () => {
+      try {
+        const raw = await AsyncStorage.getItem('@app:user_session');
+        if (!mounted) return;
+
+        let parsed: any = null;
+        try {
+          parsed = raw ? JSON.parse(raw) : null;
+        } catch (e) {
+          console.warn('Failed to parse stored session; clearing it.', e);
+          await AsyncStorage.removeItem('@app:user_session');
+          parsed = null;
+        }
+
+        const hasUser = !!parsed?.user;
+        const hasToken = !!parsed?.access_token || !!parsed?.refresh_token;
+
+        if (hasUser || hasToken) {
+          // mark we've navigated to prevent loops
+          didNavigateRef.current = true;
+          // tiny delay to let navigation system settle and avoid race conditions
+          // await new Promise((r) => setTimeout(r, 30));
+          router.replace('/(tabs)/discover');
+          return;
+        }
+      } catch (err) {
+        console.error('Onboarding auth check error:', err);
+        // On error, we intentionally fall through to show onboarding
+      } finally {
+        if (mounted) setCheckingAuth(false);
+      }
+    };
+
+    checkAuth();
+
+    return () => {
+      mounted = false;
+    };
+  }, [fontsLoaded]);
+
+  // While fonts or auth-check are pending show nothing or a loader to avoid flicker
+  if (!fontsLoaded || checkingAuth) {
+    return (
+      <View className="flex-1 bg-black px-6 justify-center items-center">
+        <ActivityIndicator size="large" />
+      </View>
+    );
   }
 
   return (

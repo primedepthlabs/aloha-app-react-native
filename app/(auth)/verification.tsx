@@ -11,6 +11,7 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
 import { supabase } from "../../supabaseClient";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function VerificationScreen() {
   const params = useLocalSearchParams();
@@ -18,10 +19,7 @@ export default function VerificationScreen() {
   const countryCodeParam = (params.countryCode as string) || ""; // digits only
 
   // Reconstruct E.164 (always add +)
-  const fullPhoneNumber = `+${countryCodeParam.replace(
-    /\D/g,
-    ""
-  )}${phoneNumberParam.replace(/\D/g, "")}`;
+  const fullPhoneNumber = `+${countryCodeParam.replace(/\D/g, "")}${phoneNumberParam.replace(/\D/g, "")}`;
 
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [isError, setIsError] = useState(false);
@@ -59,9 +57,7 @@ export default function VerificationScreen() {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
   const handleCodeChange = (text: string, index: number) => {
@@ -110,6 +106,24 @@ export default function VerificationScreen() {
       Alert.alert("Error", "Failed to resend code. Please try again.");
     } finally {
       setResending(false);
+    }
+  };
+
+  // Save user/session details to AsyncStorage
+  const saveCredentials = async (user: any, session: any) => {
+    try {
+      const payload = {
+        user,
+        access_token: session?.access_token || null,
+        refresh_token: session?.refresh_token || null,
+        phone: fullPhoneNumber,
+        savedAt: new Date().toISOString(),
+      };
+      await AsyncStorage.setItem('@app:user_session', JSON.stringify(payload));
+      console.log('Saved credentials to AsyncStorage');
+    } catch (err) {
+      console.error('Failed to save credentials to AsyncStorage', err);
+      // Note: for sensitive tokens consider using a secure store (e.g. expo-secure-store)
     }
   };
 
@@ -210,6 +224,10 @@ export default function VerificationScreen() {
 
       const userId = data.user.id;
 
+      // Save credentials locally (AsyncStorage)
+      // data may contain session info depending on Supabase response version
+      await saveCredentials(data.user, data.session || {});
+
       // Check if user exists in public.users table
       const { data: existingUser, error: fetchError } = await supabase
         .from("users")
@@ -268,8 +286,7 @@ export default function VerificationScreen() {
           Verification Code
         </Text>
         <Text className="text-gray-400 text-base mb-8 text-center">
-          We've sent an SMS with an activation{"\n"}code to{" "}
-          {formatPhoneNumber(phoneNumberParam, countryCodeParam)}
+          We've sent an SMS with an activation{"\n"}code to {formatPhoneNumber(phoneNumberParam, countryCodeParam)}
         </Text>
 
         <View className="flex-row justify-between mb-4">
@@ -293,9 +310,7 @@ export default function VerificationScreen() {
         </View>
 
         {isError && errorMessage && (
-          <Text className="text-red-500 text-sm mb-4 text-center">
-            {errorMessage}
-          </Text>
+          <Text className="text-red-500 text-sm mb-4 text-center">{errorMessage}</Text>
         )}
 
         <TouchableOpacity
@@ -308,17 +323,13 @@ export default function VerificationScreen() {
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text className="text-white text-center text-lg font-semibold">
-              Continue
-            </Text>
+            <Text className="text-white text-center text-lg font-semibold">Continue</Text>
           )}
         </TouchableOpacity>
 
         <View className="flex-row justify-between items-center">
           <Text className="text-gray-400">
-            {canResend
-              ? "Ready to resend"
-              : `Send code again ${formatTime(timer)}`}
+            {canResend ? "Ready to resend" : `Send code again ${formatTime(timer)}`}
           </Text>
           <TouchableOpacity
             onPress={handleResend}
@@ -327,9 +338,7 @@ export default function VerificationScreen() {
             {resending ? (
               <ActivityIndicator size="small" color="#FCCD34" />
             ) : (
-              <Text className={canResend ? "text-yellow-500" : "text-gray-600"}>
-                Resend
-              </Text>
+              <Text className={canResend ? "text-yellow-500" : "text-gray-600"}>Resend</Text>
             )}
           </TouchableOpacity>
         </View>
