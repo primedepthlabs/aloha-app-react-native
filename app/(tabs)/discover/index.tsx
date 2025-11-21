@@ -106,15 +106,19 @@ export default function DiscoverScreen() {
   const [blockTarget, setBlockTarget] = useState<User | null>(null);
 
   // open the block modal for a user (call from Block menu item)
-  const openBlockModal = (user: User | null) => {
-    setShowProfileMenu(false); // close the small menu first
-    if (!user || !user.id) {
-      Alert.alert("Error", "Unable to block: missing user id.");
-      return;
-    }
+  const openBlockModal = (user) => {
+    setShowProfileMenu(false);
+
+    // store target BEFORE closing modal
     setBlockTarget(user);
-    setBlockReason("");
-    setShowBlockModal(true);
+
+    // close profile modal
+    setSelectedUser(null);
+
+    // wait for modal to close
+    setTimeout(() => {
+      setShowBlockModal(true);
+    }, 180);
   };
 
   const handleConfirmBlock = async () => {
