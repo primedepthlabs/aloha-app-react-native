@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,8 @@ import {
   Animated,
   PanResponder,
   Dimensions,
+  AppState,
+  AppStateStatus,
 } from "react-native";
 import { ChevronLeft, Search } from "lucide-react-native";
 import {
@@ -70,6 +72,8 @@ export default function ChatsPerson() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [appState, setAppState] = useState(AppState.currentState);
+  const [realTimeSubscription, setRealTimeSubscription] = useState<any>(null);
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -136,6 +140,36 @@ export default function ChatsPerson() {
     },
   ];
 
+  // App state handler for real-time updates
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  const handleAppStateChange = useCallback((nextAppState: AppStateStatus) => {
+    if (appState.match(/inactive|background/) && nextAppState === 'active') {
+      // App came to foreground, refresh conversations
+      fetchConversations();
+    }
+    setAppState(nextAppState);
+  }, [appState]);
+
+  // Setup real-time subscriptions
+  useEffect(() => {
+    if (currentUserId) {
+      setupRealTimeSubscriptions();
+    }
+
+    return () => {
+      // Cleanup subscriptions
+      if (realTimeSubscription) {
+        supabase.removeSubscription(realTimeSubscription);
+      }
+    };
+  }, [currentUserId]);
+
   // Fetch conversations from Supabase
   useEffect(() => {
     fetchConversations();
@@ -146,6 +180,157 @@ export default function ChatsPerson() {
       fetchConversations();
     }, [])
   );
+
+  const setupRealTimeSubscriptions = async () => {
+    try {
+      // Subscribe to messages table for new messages
+      const subscription = supabase
+        .channel('messages-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'messages',
+          },
+          async (payload) => {
+            console.log('New message received:', payload);
+            await handleNewMessage(payload.new);
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'messages',
+          },
+          async (payload) => {
+            console.log('Message updated:', payload);
+            await handleMessageUpdate(payload.new);
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'conversations',
+          },
+          async (payload) => {
+            console.log('Conversation updated:', payload);
+            await handleConversationUpdate(payload.new);
+          }
+        )
+        .subscribe();
+
+      setRealTimeSubscription(subscription);
+    } catch (error) {
+      console.error('Error setting up real-time subscriptions:', error);
+    }
+  };
+
+  const handleNewMessage = async (newMessage: any) => {
+    try {
+      // Get current user to check if message is from someone else
+      const currentUser = await getCurrentUser();
+      if (!currentUser) return;
+
+      const isMessageFromMe = newMessage.sender_id === currentUser.id;
+      
+      if (!isMessageFromMe) {
+        // Update the specific conversation with new message and increment unread count
+        setChats(prevChats => 
+          prevChats.map(chat => {
+            if (chat.conversationId === newMessage.conversation_id) {
+              return {
+                ...chat,
+                message: newMessage.message_text || newMessage.message_content || 'New message',
+                time: formatTime(newMessage.created_at),
+                unreadCount: (chat.unreadCount || 0) + 1,
+                isDoubleTick: false // Reset to single tick for new unread messages
+              };
+            }
+            return chat;
+          })
+        );
+      } else {
+        // If message is from me, just update the last message preview
+        setChats(prevChats => 
+          prevChats.map(chat => {
+            if (chat.conversationId === newMessage.conversation_id) {
+              return {
+                ...chat,
+                message: newMessage.message_text || newMessage.message_content || 'New message',
+                time: formatTime(newMessage.created_at),
+                isDoubleTick: true // Double tick for my sent messages
+              };
+            }
+            return chat;
+          })
+        );
+      }
+    } catch (error) {
+      console.error('Error handling new message:', error);
+    }
+  };
+
+  const handleMessageUpdate = async (updatedMessage: any) => {
+    try {
+      // Handle message updates (like read receipts)
+      if (updatedMessage.is_read) {
+        // If message is marked as read, update the unread count
+        const currentUser = await getCurrentUser();
+        if (!currentUser) return;
+
+        // Only update if the message is not from current user
+        if (updatedMessage.sender_id !== currentUser.id) {
+          setChats(prevChats => 
+            prevChats.map(chat => {
+              if (chat.conversationId === updatedMessage.conversation_id) {
+                // Recalculate unread count for this conversation
+                setTimeout(async () => {
+                  const newUnreadCount = await getUnreadCount(updatedMessage.conversation_id, currentUser.id);
+                  setChats(prev => 
+                    prev.map(c => 
+                      c.conversationId === updatedMessage.conversation_id 
+                        ? { ...c, unreadCount: newUnreadCount }
+                        : c
+                    )
+                  );
+                }, 100);
+                
+                return chat;
+              }
+              return chat;
+            })
+          );
+        }
+      }
+    } catch (error) {
+      console.error('Error handling message update:', error);
+    }
+  };
+
+  const handleConversationUpdate = async (updatedConversation: any) => {
+    try {
+      // Handle conversation updates (like last_message_preview changes)
+      setChats(prevChats => 
+        prevChats.map(chat => {
+          if (chat.conversationId === updatedConversation.id) {
+            return {
+              ...chat,
+              message: updatedConversation.last_message_preview || chat.message,
+              time: formatTime(updatedConversation.last_message_at),
+            };
+          }
+          return chat;
+        })
+      );
+    } catch (error) {
+      console.error('Error handling conversation update:', error);
+    }
+  };
 
   const fetchConversations = async () => {
     try {
@@ -328,7 +513,7 @@ export default function ChatsPerson() {
           isVerified: isVerified,
           isOnline: isOnline,
           unreadCount: unreadCount,
-          isDoubleTick: true,
+          isDoubleTick: unreadCount === 0, // Only show double tick if no unread messages
           isSupport: false,
           isPinned: false,
         });
@@ -406,7 +591,7 @@ export default function ChatsPerson() {
   };
 
   // Handle chat press - navigate to chat screen with proper parameters
-  const handleChatPress = (chat: Chat) => {
+  const handleChatPress = async (chat: Chat) => {
     if (swipedChatId === chat.id) {
       const anim = getSwipeAnim(chat.id);
       Animated.spring(anim, {
@@ -414,6 +599,11 @@ export default function ChatsPerson() {
         useNativeDriver: true,
       }).start(() => setSwipedChatId(null));
     } else {
+      // Mark messages as read when opening chat
+      if (chat.conversationId && currentUserId && chat.unreadCount && chat.unreadCount > 0) {
+        await markMessagesAsRead(chat.conversationId, currentUserId);
+      }
+
       if (chat.isSupport) {
         router.push("/(tabs)/dashboard/support");
       } else if (chat.conversationId) {
@@ -430,6 +620,37 @@ export default function ChatsPerson() {
       } else {
         console.error("No conversation ID found for chat:", chat.id);
       }
+    }
+  };
+
+  // Mark all messages in conversation as read
+  const markMessagesAsRead = async (conversationId: string, userId: string) => {
+    try {
+      const { error } = await supabase
+        .from("messages")
+        .update({
+          is_read: true,
+          read_at: new Date().toISOString()
+        })
+        .eq("conversation_id", conversationId)
+        .neq("sender_id", userId)
+        .eq("is_read", false);
+
+      if (!error) {
+        // Update local state immediately
+        setChats(prev =>
+          prev.map(chat =>
+            chat.conversationId === conversationId
+              ? { ...chat, unreadCount: 0, isDoubleTick: true }
+              : chat
+          )
+        );
+        console.log("Messages marked as read");
+      } else {
+        console.error("Error marking messages as read:", error);
+      }
+    } catch (err) {
+      console.error("Error in markMessagesAsRead:", err);
     }
   };
 
@@ -459,32 +680,7 @@ export default function ChatsPerson() {
   // Handle mark as read
   const handleMarkAsRead = async () => {
     if (longPressedChat?.conversationId && currentUserId) {
-      try {
-        const { error } = await supabase
-          .from("messages")
-          .update({
-            is_read: true,
-            read_at: new Date().toISOString()
-          })
-          .eq("conversation_id", longPressedChat.conversationId)
-          .neq("sender_id", currentUserId)
-          .eq("is_read", false);
-
-        if (!error) {
-          setChats(prev =>
-            prev.map(chat =>
-              chat.id === longPressedChat.id
-                ? { ...chat, unreadCount: 0 }
-                : chat
-            )
-          );
-          console.log("Messages marked as read");
-        } else {
-          console.error("Error marking messages as read:", error);
-        }
-      } catch (err) {
-        console.error("Error in handleMarkAsRead:", err);
-      }
+      await markMessagesAsRead(longPressedChat.conversationId, currentUserId);
     }
     setShowUnreadModal(false);
     setLongPressedChat(null);

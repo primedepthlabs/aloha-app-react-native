@@ -125,7 +125,7 @@ export default function Chat() {
         },
         async (payload) => {
           console.log('Real-time update received:', payload);
-          
+
           switch (payload.eventType) {
             case 'INSERT':
               await handleNewMessage(payload.new);
@@ -168,7 +168,7 @@ export default function Chat() {
   // Handle new message from real-time
   const handleNewMessage = async (newMessage: any) => {
     console.log('Processing new message:', newMessage);
-    
+
     // Format the new message
     const formattedMessage: Message = {
       id: newMessage.id,
@@ -190,7 +190,7 @@ export default function Chat() {
         console.log('Message already exists, skipping:', formattedMessage.id);
         return prev;
       }
-      
+
       console.log('Adding new message to state:', formattedMessage.id);
       return [...prev, formattedMessage];
     });
@@ -199,7 +199,7 @@ export default function Chat() {
     if (newMessage.sender_id !== currentUserId) {
       console.log('Marking message as read:', newMessage.id);
       await markMessageAsRead(newMessage.id);
-      
+
       // Update the message read status in state
       setMessages((prev) =>
         prev.map((msg) =>
@@ -217,16 +217,16 @@ export default function Chat() {
   // Handle updated message from real-time
   const handleUpdatedMessage = async (updatedMessage: any) => {
     console.log('Processing updated message:', updatedMessage);
-    
+
     setMessages((prev) =>
       prev.map((msg) =>
         msg.id === updatedMessage.id
           ? {
-              ...msg,
-              text: updatedMessage.content,
-              isRead: updatedMessage.is_read,
-              isEdited: true,
-            }
+            ...msg,
+            text: updatedMessage.content,
+            isRead: updatedMessage.is_read,
+            isEdited: false,
+          }
           : msg
       )
     );
@@ -235,7 +235,7 @@ export default function Chat() {
   // Handle deleted message from real-time
   const handleDeletedMessage = async (deletedMessage: any) => {
     console.log('Processing deleted message:', deletedMessage);
-    
+
     setMessages((prev) =>
       prev.filter((msg) => msg.id !== deletedMessage.id)
     );
@@ -382,7 +382,7 @@ export default function Chat() {
       if (unreadMessageIds && unreadMessageIds.length > 0) {
         console.log(`Marking ${unreadMessageIds.length} messages as read`);
         await markMessagesAsRead(unreadMessageIds);
-        
+
         // Update local state to reflect read status
         setMessages((prev) =>
           prev.map((msg) =>
@@ -497,7 +497,7 @@ export default function Chat() {
         setEditingMessage(null);
         setReplyTo(null);
       } else {
-        // Create new message
+        // Create new message - set is_read to false by default
         const { data: newMessage, error } = await supabase
           .from("messages")
           .insert({
@@ -509,6 +509,8 @@ export default function Chat() {
             amount_charged: cost,
             is_delivered: true,
             delivered_at: new Date().toISOString(),
+            is_read: false, // Explicitly set to false for sent messages
+            read_at: null, // Set to null since it's not read yet
           })
           .select()
           .single();
@@ -526,9 +528,24 @@ export default function Chat() {
           .eq("id", conversationId);
 
         console.log("Message sent successfully:", newMessage.id);
-        
+
         // Update balance
         setBalance((prev) => parseFloat((prev - cost).toFixed(2)));
+
+        // Add the new message to local state with correct read status
+        const formattedMessage: Message = {
+          id: newMessage.id,
+          text: newMessage.content,
+          timestamp: formatMessageTime(newMessage.created_at),
+          isSent: true, // This message is sent by current user
+          isRead: false, // Messages you send should show as unread until the other person reads them
+          content_type: newMessage.content_type,
+          media_url: newMessage.media_url,
+          created_at: newMessage.created_at,
+          sender_id: newMessage.sender_id,
+        };
+
+        setMessages((prev) => [...prev, formattedMessage]);
       }
 
       setMessage("");
@@ -544,33 +561,6 @@ export default function Chat() {
     } catch (error) {
       console.error("Error sending message:", error);
       Alert.alert("Error", "Failed to send message. Please try again.");
-    }
-  };
-
-  // Test real-time function for debugging
-  const testRealtime = async () => {
-    if (!conversationId || !currentUserId) return;
-    
-    console.log('Testing real-time connection...');
-    
-    // Send a test message
-    const { error } = await supabase
-      .from('messages')
-      .insert({
-        conversation_id: conversationId,
-        sender_id: currentUserId,
-        content: 'Test message for real-time - ' + new Date().toLocaleTimeString(),
-        content_type: 'text',
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error sending test message:', error);
-      Alert.alert("Error", "Failed to send test message");
-    } else {
-      console.log('Test message sent successfully');
-      Alert.alert("Success", "Test message sent");
     }
   };
 
@@ -782,13 +772,6 @@ export default function Chat() {
           </View>
         </View>
         <View className="flex-row items-center">
-          {/* Debug button - remove in production */}
-          <TouchableOpacity
-            className="mr-2"
-            onPress={testRealtime}
-          >
-            <Text className="text-yellow-500 text-xs">Test</Text>
-          </TouchableOpacity>
           <TouchableOpacity
             className="mr-4"
             onPress={() => {
@@ -970,83 +953,97 @@ export default function Chat() {
               />
             }
           >
-            {messages.map((msg) => (
-              <TouchableOpacity
-                key={msg.id}
-                onLongPress={() => handleLongPress(msg)}
-                activeOpacity={0.7}
-                style={{
-                  alignSelf: msg.isSent ? "flex-end" : "flex-start",
-                  maxWidth: "80%",
-                  marginBottom: 12,
-                }}
-              >
-                <View
+            {messages
+              .filter((msg, index, self) =>
+                index === self.findIndex(m => m.id === msg.id)
+              )
+              .map((msg) => (
+                <TouchableOpacity
+                  key={msg.id}
+                  onLongPress={() => handleLongPress(msg)}
+                  activeOpacity={0.7}
                   style={{
-                    backgroundColor: msg.isSent ? "#B99F4A" : "#2D2D2F",
-                    borderRadius: 16,
-                    padding: 12,
-                    paddingHorizontal: 16,
+                    alignSelf: msg.isSent ? "flex-end" : "flex-start",
+                    maxWidth: "80%",
+                    marginBottom: 12,
                   }}
                 >
-                  {msg.replyTo && (
-                    <View
-                      style={{
-                        backgroundColor: msg.isSent
-                          ? "rgba(0,0,0,0.25)"
-                          : "rgba(0,0,0,0.3)",
-                        paddingVertical: 6,
-                        paddingHorizontal: 10,
-                        borderRadius: 8,
-                        marginBottom: 8,
-                        alignSelf: "stretch",
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color: "#FFFFFF",
-                          fontFamily: FONT.SemiBold,
-                          fontSize: 12,
-                          marginBottom: 2,
-                        }}
-                      >
-                        {msg.replyTo.isSent ? "You" : influencerName}
-                      </Text>
-                      <Text
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
-                        style={{
-                          color: "rgba(255,255,255,0.8)",
-                          fontFamily: FONT.Regular,
-                          fontSize: 12,
-                        }}
-                      >
-                        {msg.replyTo.text}
-                      </Text>
-                    </View>
-                  )}
-
-                  <Text
-                    style={{
-                      color: "white",
-                      fontSize: 15,
-                      fontFamily: FONT.Regular,
-                      lineHeight: 20,
-                    }}
-                  >
-                    {msg.text}
-                  </Text>
-
                   <View
                     style={{
-                      flexDirection: "row",
-                      justifyContent: "flex-end",
-                      alignItems: "center",
-                      marginTop: 4,
-                      gap: 4,
+                      backgroundColor: msg.isSent ? "#B99F4A" : "#2D2D2F",
+                      borderRadius: 16,
+                      padding: 12,
+                      paddingHorizontal: 16,
                     }}
                   >
-                    {msg.isEdited && (
+                    {msg.replyTo && (
+                      <View
+                        style={{
+                          backgroundColor: msg.isSent
+                            ? "rgba(0,0,0,0.25)"
+                            : "rgba(0,0,0,0.3)",
+                          paddingVertical: 6,
+                          paddingHorizontal: 10,
+                          borderRadius: 8,
+                          marginBottom: 8,
+                          alignSelf: "stretch",
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color: "#FFFFFF",
+                            fontFamily: FONT.SemiBold,
+                            fontSize: 12,
+                            marginBottom: 2,
+                          }}
+                        >
+                          {msg.replyTo.isSent ? "You" : influencerName}
+                        </Text>
+                        <Text
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                          style={{
+                            color: "rgba(255,255,255,0.8)",
+                            fontFamily: FONT.Regular,
+                            fontSize: 12,
+                          }}
+                        >
+                          {msg.replyTo.text}
+                        </Text>
+                      </View>
+                    )}
+
+                    <Text
+                      style={{
+                        color: "white",
+                        fontSize: 15,
+                        fontFamily: FONT.Regular,
+                        lineHeight: 20,
+                      }}
+                    >
+                      {msg.text}
+                    </Text>
+
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "flex-end",
+                        alignItems: "center",
+                        marginTop: 4,
+                        gap: 4,
+                      }}
+                    >
+                      {msg.isEdited && (
+                        <Text
+                          style={{
+                            color: "rgba(255,255,255,0.5)",
+                            fontSize: 11,
+                            fontFamily: FONT.Regular,
+                          }}
+                        >
+                          Edited
+                        </Text>
+                      )}
                       <Text
                         style={{
                           color: "rgba(255,255,255,0.5)",
@@ -1054,40 +1051,30 @@ export default function Chat() {
                           fontFamily: FONT.Regular,
                         }}
                       >
-                        Edited
+                        {msg.timestamp}
                       </Text>
-                    )}
-                    <Text
-                      style={{
-                        color: "rgba(255,255,255,0.5)",
-                        fontSize: 11,
-                        fontFamily: FONT.Regular,
-                      }}
-                    >
-                      {msg.timestamp}
-                    </Text>
-                    {msg.isSent && (
-                      <Image
-                        source={require("../../../assets/images/double-tick.png")}
-                        style={{
-                          width: 16,
-                          height: 12,
-                          marginLeft: 2,
-                          tintColor: msg.isRead ? "#FCCD34" : "#666",
-                        }}
-                        resizeMode="contain"
-                      />
-                    )}
+                      {msg.isSent && (
+                        <Image
+                          source={require("../../../assets/images/double-tick.png")}
+                          style={{
+                            width: 16,
+                            height: 12,
+                            marginLeft: 2,
+                            tintColor: msg.isRead ? "#FCCD34" : "#666",
+                          }}
+                          resizeMode="contain"
+                        />
+                      )}
+                    </View>
                   </View>
-                </View>
-              </TouchableOpacity>
-            ))}
+                </TouchableOpacity>
+              ))}
           </ScrollView>
         )}
       </ImageBackground>
 
       {/* Input Area */}
-      <View className="bg-black px-4 pb-20 pt-3">
+      <View className="bg-black px-4 pb-5 pt-3">
         <View className="flex-row items-end">
           <TouchableOpacity
             className="mr-3 mb-2"

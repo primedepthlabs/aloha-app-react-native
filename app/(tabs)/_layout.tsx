@@ -122,6 +122,9 @@ export default function TabLayout() {
         name="chats/chat"
         options={{
           href: null,
+          headerShown: false,
+          tabBarStyle: { display: "none" },
+          tabBarShowLabel: false,
         }}
       />
       <Tabs.Screen
