@@ -1697,7 +1697,6 @@ const FONT = {
   SemiBold: "Poppins_600SemiBold",
   Bold: "Poppins_700Bold",
 };
-
 interface Message {
   id: string;
   text: string;

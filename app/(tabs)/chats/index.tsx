@@ -810,10 +810,11 @@ export default function ChatsPerson() {
                         </Text>
                       </View>
 
-                      {/* Time and Status */}
-                      <View className="items-end ml-3">
+                      {/* Time and Status (fixed) */}
+                      <View className="items-end ml-3" accessible={false}>
                         <View className="flex-row items-center mb-1">
-                          {chat.isDoubleTick && (
+                          {/* Render double tick only as a component or nothing */}
+                          {chat.isDoubleTick ? (
                             <Image
                               source={require("../../../assets/images/double-tick.png")}
                               style={{
@@ -826,26 +827,47 @@ export default function ChatsPerson() {
                               }}
                               resizeMode="contain"
                             />
-                          )}
+                          ) : null}
+
+                          {/* Ensure chat.time is always rendered inside Text */}
                           <Text
                             className={`text-sm ${
                               chat.unreadCount ? "text-white" : "text-gray-500"
                             }`}
                             style={{ fontFamily: FONT.Regular }}
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
                           >
-                            {chat.time}
+                            {chat.time ? String(chat.time) : ""}
                           </Text>
                         </View>
-                        {chat.unreadCount && chat.unreadCount > 0 && (
-                          <View className="w-6 h-6 bg-[#FCCD34] rounded-full items-center justify-center">
+
+                        {/* Only render unread badge when it's a positive number */}
+                        {typeof chat.unreadCount === "number" &&
+                        chat.unreadCount > 0 ? (
+                          <View
+                            style={{
+                              width: 24,
+                              height: 24,
+                              borderRadius: 12,
+                              backgroundColor: "#FCCD34",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                            accessibilityLabel={`${chat.unreadCount} unread messages`}
+                          >
                             <Text
-                              className="text-black text-xs"
-                              style={{ fontFamily: FONT.Bold }}
+                              style={{
+                                color: "#000",
+                                fontSize: 12,
+                                fontFamily: FONT.Bold,
+                              }}
+                              numberOfLines={1}
                             >
-                              {chat.unreadCount}
+                              {String(chat.unreadCount)}
                             </Text>
                           </View>
-                        )}
+                        ) : null}
                       </View>
                     </TouchableOpacity>
                   </Animated.View>

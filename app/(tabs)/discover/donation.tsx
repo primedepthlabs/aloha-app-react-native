@@ -110,6 +110,7 @@ const Donation = () => {
           >
             <TouchableOpacity
               className="absolute left-4"
+              onPress={() => router.back()}
               style={{ zIndex: 10 }}
             >
               <ChevronLeft size={24} color="#fff" strokeWidth={2.5} />
@@ -174,9 +175,7 @@ const Donation = () => {
           </View>
 
           {/* Select Amount Section */}
-          <View
-            style={{ paddingLeft: 21, paddingRight: 21, marginTop: 24 }}
-          >
+          <View style={{ paddingLeft: 21, paddingRight: 21, marginTop: 24 }}>
             <Text
               className="text-white font-bold"
               style={{
@@ -309,10 +308,7 @@ const Donation = () => {
                 borderRadius: 15,
               }}
             >
-              <Text
-                className="text-black font-bold"
-                style={{ fontSize: 17 }}
-              >
+              <Text className="text-black font-bold" style={{ fontSize: 17 }}>
                 Next
               </Text>
             </TouchableOpacity>
@@ -342,7 +338,7 @@ const Donation = () => {
           <Text
             className="text-white text-center flex-1 font-semibold"
             style={{ fontSize: 18 }}
-            >
+          >
             Donation
           </Text>
         </View>
@@ -568,9 +564,7 @@ const Donation = () => {
                 }}
               >
                 <View className="w-10 h-7 rounded-[6px] bg-blue-600 mr-3 items-center justify-center">
-                  <Text className="text-white font-bold text-[12px]">
-                    VISA
-                  </Text>
+                  <Text className="text-white font-bold text-[12px]">VISA</Text>
                 </View>
                 <Text
                   className="text-white"
@@ -711,10 +705,7 @@ const Donation = () => {
                 borderRadius: 12,
               }}
             >
-              <Text
-                className="text-black font-bold"
-                style={{ fontSize: 17 }}
-              >
+              <Text className="text-black font-bold" style={{ fontSize: 17 }}>
                 Done
               </Text>
             </TouchableOpacity>
@@ -835,9 +826,7 @@ const Donation = () => {
 
             <Text className="text-white" style={{ fontSize: 15 }}>
               Need Help?{" "}
-              <Text className="text-[#FCCD34] ">
-                Contact Support
-              </Text>
+              <Text className="text-[#FCCD34] ">Contact Support</Text>
             </Text>
           </View>
         </View>

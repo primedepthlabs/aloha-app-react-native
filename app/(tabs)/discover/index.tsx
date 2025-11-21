@@ -99,6 +99,87 @@ export default function DiscoverScreen() {
   >(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [loading, setLoading] = useState(true);
+  // --- BLOCK USER state & helpers ---
+  const [showBlockModal, setShowBlockModal] = useState(false);
+  const [blockReason, setBlockReason] = useState("");
+  const [blocking, setBlocking] = useState(false);
+  const [blockTarget, setBlockTarget] = useState<User | null>(null);
+
+  // open the block modal for a user (call from Block menu item)
+  const openBlockModal = (user: User | null) => {
+    setShowProfileMenu(false); // close the small menu first
+    if (!user || !user.id) {
+      Alert.alert("Error", "Unable to block: missing user id.");
+      return;
+    }
+    setBlockTarget(user);
+    setBlockReason("");
+    setShowBlockModal(true);
+  };
+
+  const handleConfirmBlock = async () => {
+    if (!blockTarget) {
+      Alert.alert("Error", "No user selected to block.");
+      return;
+    }
+
+    setBlocking(true);
+
+    try {
+      // get current user (blocker)
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        console.error("Supabase getUser error:", userError);
+        Alert.alert("Authentication error", "Please sign in to block a user.");
+        setBlocking(false);
+        return;
+      }
+
+      const payload: any = {
+        blocker_id: user.id,
+        blocked_id: blockTarget.id,
+        reason: blockReason?.trim().length > 0 ? blockReason.trim() : null,
+      };
+
+      const { data: inserted, error: insertError } = await supabase
+        .from("blocked_users")
+        .insert(payload)
+        .select()
+        .single();
+
+      // handle unique constraint violation (already blocked)
+      if (insertError) {
+        console.error("Error inserting blocked_users:", insertError);
+        if ((insertError as any).code === "23505") {
+          // unique constraint violated (blocker_id + blocked_id)
+          Alert.alert(
+            "Already blocked",
+            `${blockTarget.name} is already blocked.`
+          );
+        } else {
+          Alert.alert("Error", "Failed to block user. Please try again.");
+        }
+        setBlocking(false);
+        return;
+      }
+
+      // success
+      Alert.alert("Blocked", `${blockTarget.name} has been blocked.`);
+      // close modals / selected user
+      setShowBlockModal(false);
+      setBlockTarget(null);
+      setSelectedUser(null);
+    } catch (err) {
+      console.error("Unhandled error blocking user:", err);
+      Alert.alert("Error", "An unexpected error occurred. Try again.");
+    } finally {
+      setBlocking(false);
+    }
+  };
 
   // simple UUID validator (v1-v5)
   const isValidUUID = (s?: string) =>
@@ -241,11 +322,33 @@ export default function DiscoverScreen() {
     });
   };
 
-  const navigateToReport = () => {
-    console.log("Report pressed, closing menu and navigating to /report");
+  // Navigate to Report screen with proper params (reportedUserId must be users.id)
+  const navigateToReport = (user: User | null) => {
+    console.log("Report pressed, closing menu and navigating to /report", {
+      userId: user?.id,
+    });
     setShowProfileMenu(false);
-    setSelectedUser(null);
-    router.push("/(tabs)/discover/report");
+
+    if (!user || !user.id) {
+      Alert.alert("Error", "Unable to report: missing user id.");
+      return;
+    }
+
+    // pass users.id as reportedUserId (abuse_reports.reported_user_id expects users.id)
+    router.push({
+      pathname: "/(tabs)/discover/report",
+      params: {
+        reportedUserId: user.id,
+        name: user.name ?? "",
+        image:
+          user.avatar_url ??
+          (user.image && typeof user.image === "string" ? user.image : ""),
+        influencerProfileId: user.influencerProfileId ?? "",
+      },
+    } as any);
+
+    // keep the selected user open (optional)
+    // setSelectedUser(null); // uncomment if you want to auto-close the profile modal
   };
 
   const applyFilter = () => {
@@ -817,7 +920,7 @@ export default function DiscoverScreen() {
                       style={{
                         height: 44,
                       }}
-                      onPress={navigateToReport}
+                      onPress={() => navigateToReport(selectedUser)}
                       activeOpacity={0.8}
                     >
                       <Image
@@ -841,21 +944,7 @@ export default function DiscoverScreen() {
                       style={{
                         height: 44,
                       }}
-                      onPress={() => {
-                        setShowProfileMenu(false);
-                        Alert.alert(
-                          "Block user",
-                          "Are you sure you want to block this user?",
-                          [
-                            { text: "Cancel", style: "cancel" },
-                            {
-                              text: "Block",
-                              style: "destructive",
-                              onPress: () => console.log("User blocked"),
-                            },
-                          ]
-                        );
-                      }}
+                      onPress={() => openBlockModal(selectedUser)}
                       activeOpacity={0.8}
                     >
                       <Image
@@ -992,6 +1081,123 @@ export default function DiscoverScreen() {
             </ScrollView>
           </View>
         )}
+      </Modal>
+      {/* Block Confirmation Modal */}
+      <Modal
+        visible={showBlockModal}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => {
+          setShowBlockModal(false);
+          setBlockTarget(null);
+        }}
+      >
+        <View className="flex-1 items-center justify-center bg-black/60 px-6">
+          <View
+            style={{
+              width: "100%",
+              backgroundColor: "#0B0B0B",
+              borderRadius: 16,
+              paddingVertical: 20,
+              paddingHorizontal: 18,
+            }}
+          >
+            {/* Title */}
+            <Text
+              style={{
+                color: "#fff",
+                fontSize: 18,
+                fontWeight: "600",
+                textAlign: "center",
+                marginBottom: 12,
+              }}
+            >
+              {`Are you sure you want to\nBlock ${blockTarget?.name || ""}?`}
+            </Text>
+
+            {/* Reason label */}
+            <Text
+              style={{
+                color: "#E5E5E5",
+                fontSize: 14,
+                marginBottom: 8,
+              }}
+            >
+              Reason (optional)
+            </Text>
+
+            {/* Reason input */}
+            <View
+              style={{
+                backgroundColor: "#19191B",
+                borderColor: "#3C3C3E",
+                borderWidth: 1,
+                borderRadius: 12,
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                marginBottom: 16,
+              }}
+            >
+              <TextInput
+                placeholder="Tell us why (helps moderation)"
+                placeholderTextColor="#6E6E73"
+                value={blockReason}
+                onChangeText={setBlockReason}
+                multiline
+                style={{
+                  color: "#fff",
+                  fontSize: 15,
+                  minHeight: 40,
+                }}
+              />
+            </View>
+
+            {/* Buttons */}
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowBlockModal(false);
+                  setBlockTarget(null);
+                }}
+                style={{
+                  flex: 1,
+                  backgroundColor: "transparent",
+                  borderRadius: 12,
+                  paddingVertical: 12,
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.06)",
+                  alignItems: "center",
+                }}
+                activeOpacity={0.8}
+              >
+                <Text style={{ color: "#fff", fontSize: 16 }}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleConfirmBlock}
+                disabled={blocking}
+                style={{
+                  flex: 1,
+                  backgroundColor: "#FF3B30", // destructive color
+                  borderRadius: 12,
+                  paddingVertical: 12,
+                  alignItems: "center",
+                }}
+                activeOpacity={0.8}
+              >
+                {blocking ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text
+                    style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}
+                  >
+                    Block
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
       </Modal>
     </View>
   );

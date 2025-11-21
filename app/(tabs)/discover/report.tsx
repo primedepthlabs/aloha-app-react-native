@@ -1,15 +1,19 @@
-import React, { useState } from "react";
+// app/(tabs)/discover/report.tsx
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Modal,
   Image,
+  Modal,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import { ChevronLeft } from "lucide-react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { supabase } from "../../../supabaseClient";
 
 interface ReportReason {
   id: number;
@@ -23,17 +27,188 @@ const REPORT_REASONS: ReportReason[] = [
   { id: 4, label: "Nudy or Sexual Content" },
 ];
 
+// Map UI reason IDs to DB enum values — update these if your DB enum differs
+const REASON_TO_REPORT_TYPE: Record<number, string> = {
+  1: "harassment",
+  2: "scam",
+  3: "impersonation",
+  4: "sexual",
+};
+
 export default function ReportScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
+
+  // Try to support multiple incoming param names; we prefer reportedUserId
+  const resolvedReportedUserId =
+    (params.reportedUserId as string) ??
+    (params.influencerId as string) ??
+    (params.userId as string) ??
+    (params.id as string) ??
+    null;
+
+  const reportedUserName = (params.name as string) || "";
+  const reportedUserImage = (params.image as string) || "";
+
   const [selectedReason, setSelectedReason] = useState<number | null>(null);
   const [additionalDetails, setAdditionalDetails] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [checkingParams, setCheckingParams] = useState(true);
 
-  const handleSubmitReport = () => {
+  useEffect(() => {
+    // Basic runtime param check and logging for debugging
+    console.log("ReportScreen - params:", params);
+    console.log(
+      "ReportScreen - resolvedReportedUserId:",
+      resolvedReportedUserId
+    );
+
+    if (!resolvedReportedUserId) {
+      // Show a gentle alert and navigate back after user confirms
+      Alert.alert(
+        "Missing user",
+        "Reported user id is missing. Please open the profile or chat and try reporting from there.",
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              // go back to discover
+              router.push("/(tabs)/discover");
+            },
+          },
+        ]
+      );
+    }
+
+    setCheckingParams(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleSubmitReport = async () => {
     if (selectedReason === null) {
+      Alert.alert(
+        "Select a reason",
+        "Please choose a reason before submitting."
+      );
       return;
     }
-    setShowSuccessModal(true);
+
+    // verify we have a reported user id
+    if (!resolvedReportedUserId) {
+      Alert.alert(
+        "Missing data",
+        "No reported user was found. Please open the profile or chat and try again."
+      );
+      return;
+    }
+
+    // basic sanity check for uuid-like string
+    if (
+      typeof resolvedReportedUserId !== "string" ||
+      resolvedReportedUserId.length < 8
+    ) {
+      Alert.alert("Invalid user id", "Reported user id looks invalid.");
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      // get current user (reporter)
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        console.error("Supabase getUser error:", userError);
+        Alert.alert(
+          "Authentication error",
+          "Please sign in to submit a report."
+        );
+        setSubmitting(false);
+        return;
+      }
+
+      const reporterId = user.id;
+      const reportedUserIdFinal = String(resolvedReportedUserId);
+
+      const reportType = REASON_TO_REPORT_TYPE[selectedReason];
+      if (!reportType) {
+        Alert.alert("Error", "Invalid report type. Contact support.");
+        setSubmitting(false);
+        return;
+      }
+
+      const descriptionText =
+        additionalDetails?.trim().length > 0
+          ? additionalDetails.trim()
+          : REPORT_REASONS.find((r) => r.id === selectedReason)?.label || "";
+
+      const payload: any = {
+        reporter_id: reporterId,
+        reported_user_id: reportedUserIdFinal,
+        report_type: reportType,
+        description: descriptionText,
+        related_entity_type: "profile",
+        related_entity_id: reportedUserIdFinal,
+        evidence_urls: null, // keep null by default; add URLs if you implement uploads
+        // status will default to 'open' in DB
+      };
+
+      console.log("ReportScreen - inserting payload:", payload);
+
+      const { data: createdReport, error: insertError } = await supabase
+        .from("abuse_reports")
+        .insert(payload)
+        .select()
+        .single();
+
+      console.log("ReportScreen - insert response:", {
+        createdReport,
+        insertError,
+      });
+
+      if (insertError) {
+        console.error("Error inserting abuse report:", insertError);
+        Alert.alert("Error", "Failed to submit report. Please try again.");
+        setSubmitting(false);
+        return;
+      }
+
+      // OPTIONAL: add a suspicious_activities record (non-fatal)
+      try {
+        await supabase.from("suspicious_activities").insert({
+          user_id: reportedUserIdFinal,
+          activity_type: reportType,
+          severity:
+            selectedReason === 4
+              ? "high"
+              : selectedReason === 2
+              ? "medium"
+              : "low",
+          description: `Report ${createdReport.id}: ${descriptionText}`,
+          metadata: {
+            report_id: createdReport.id,
+            reporter: reporterId,
+          },
+        });
+      } catch (saErr) {
+        // non-blocking; log and continue
+        console.warn(
+          "Failed to create suspicious_activities entry (non-fatal):",
+          saErr
+        );
+      }
+
+      setShowSuccessModal(true);
+    } catch (err) {
+      console.error("Unhandled error submitting report:", err);
+      Alert.alert("Error", "An unexpected error occurred. Try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleDone = () => {
@@ -41,6 +216,7 @@ export default function ReportScreen() {
     router.push("/(tabs)/discover");
   };
 
+  // Keep UI identical to your original file
   return (
     <View className="flex-1 bg-black">
       {/* Header */}
@@ -125,16 +301,20 @@ export default function ReportScreen() {
             className={`rounded-[15px] py-[16px] items-center justify-center ${
               selectedReason === null ? "bg-[#3C3C3E]" : "bg-[#FCCD34]"
             }`}
-            disabled={selectedReason === null}
+            disabled={selectedReason === null || submitting}
             activeOpacity={0.8}
           >
-            <Text
-              className={`text-[17px] font-semibold ${
-                selectedReason === null ? "text-[#6E6E73]" : "text-black"
-              }`}
-            >
-              Submit Report
-            </Text>
+            {submitting ? (
+              <ActivityIndicator />
+            ) : (
+              <Text
+                className={`text-[17px] font-semibold ${
+                  selectedReason === null ? "text-[#6E6E73]" : "text-black"
+                }`}
+              >
+                Submit Report
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
       </ScrollView>
