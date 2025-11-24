@@ -36,7 +36,14 @@ const Dashboard = () => {
 
   if (!fontsLoaded) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "black" }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "black",
+        }}
+      >
         <ActivityIndicator color="#FCCD34" />
       </View>
     );
@@ -56,7 +63,9 @@ const Dashboard = () => {
           paddingHorizontal: 20,
         }}
       >
-        <Text style={{ fontSize: 18, color: "#FFF", fontFamily: FONT.SemiBold }}>
+        <Text
+          style={{ fontSize: 18, color: "#FFF", fontFamily: FONT.SemiBold }}
+        >
           Dashboard
         </Text>
       </View>
@@ -66,60 +75,77 @@ const Dashboard = () => {
         contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 7 }}
       >
         {/* BALANCE CARD */}
-        <View
-          style={{
-            backgroundColor: "#19191B",
-            borderRadius: 16,
-            padding: 20,
-            marginBottom: 16,
-          }}
+        <TouchableOpacity
+          onPress={() => router.push("/(tabs)/dashboard/Earnings")}
+          activeOpacity={0.8}
         >
           <View
-            style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}
+            style={{
+              backgroundColor: "#19191B",
+              borderRadius: 16,
+              padding: 20,
+              marginBottom: 16,
+            }}
           >
-            <View style={{ flex: 1 }}>
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontFamily: FONT.Regular,
-                  color: "#FFFFFF",
-                  marginBottom: 8,
-                }}
-              >
-                Total balance
-              </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+              }}
+            >
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontFamily: FONT.Regular,
+                    color: "#FFFFFF",
+                    marginBottom: 8,
+                  }}
+                >
+                  Total balance
+                </Text>
 
-              <Text
-                style={{
-                  fontSize: 32,
-                  fontFamily: FONT.SemiBold,
-                  color: "#FFFFFF",
-                  letterSpacing: -1,
-                }}
-              >
-                1250{" "}
-                <Text style={{ fontSize: 24, fontFamily: FONT.Bold }}>GEL</Text>
-              </Text>
-            </View>
+                <Text
+                  style={{
+                    fontSize: 32,
+                    fontFamily: FONT.SemiBold,
+                    color: "#FFFFFF",
+                    letterSpacing: -1,
+                  }}
+                >
+                  1250{" "}
+                  <Text style={{ fontSize: 24, fontFamily: FONT.Bold }}>
+                    GEL
+                  </Text>
+                </Text>
+              </View>
 
-            <View style={{ alignItems: "flex-end" }}>
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontFamily: FONT.Regular,
-                  color: "#FFFFFF",
-                  marginBottom: 8,
-                }}
-              >
-                Last 7 days
-              </Text>
+              <View style={{ alignItems: "flex-end" }}>
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontFamily: FONT.Regular,
+                    color: "#FFFFFF",
+                    marginBottom: 8,
+                  }}
+                >
+                  Last 7 days
+                </Text>
 
-              <Text style={{ fontSize: 15, fontFamily: FONT.Regular, color: "#75FA94" }}>
-                +35.20 GEL
-              </Text>
+                <Text
+                  style={{
+                    fontSize: 15,
+                    fontFamily: FONT.Regular,
+                    color: "#75FA94",
+                  }}
+                >
+                  +35.20 GEL
+                </Text>
+              </View>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
 
         {/* FOLLOWERS + WITHDRAW */}
 
@@ -152,7 +178,13 @@ const Dashboard = () => {
               Followers
             </Text>
 
-            <Text style={{ fontSize: 14, fontFamily: FONT.SemiBold, color: "#FCCD34" }}>
+            <Text
+              style={{
+                fontSize: 14,
+                fontFamily: FONT.SemiBold,
+                color: "#FCCD34",
+              }}
+            >
               2 245
             </Text>
           </TouchableOpacity>
@@ -179,7 +211,11 @@ const Dashboard = () => {
             />
 
             <Text
-              style={{ fontSize: 15, fontFamily: FONT.SemiBold, color: "#000000" }}
+              style={{
+                fontSize: 15,
+                fontFamily: FONT.SemiBold,
+                color: "#000000",
+              }}
             >
               Withdrawal
             </Text>
@@ -229,7 +265,14 @@ const Dashboard = () => {
               resizeMode="contain"
             />
 
-            <Text style={{ flex: 1, fontSize: 16, fontFamily: FONT.Regular, color: "#FFFFFF" }}>
+            <Text
+              style={{
+                flex: 1,
+                fontSize: 16,
+                fontFamily: FONT.Regular,
+                color: "#FFFFFF",
+              }}
+            >
               Profile
             </Text>
 
@@ -258,11 +301,23 @@ const Dashboard = () => {
               resizeMode="contain"
             />
 
-            <Text style={{ flex: 1, color: "#FFFFFF", fontSize: 16, fontFamily: FONT.Regular }}>
+            <Text
+              style={{
+                flex: 1,
+                color: "#FFFFFF",
+                fontSize: 16,
+                fontFamily: FONT.Regular,
+              }}
+            >
               Paid messaging
             </Text>
 
-            <ChevronLeft size={20} color="#FFFFFFCC" strokeWidth={2} style={{ transform: [{ rotate: "180deg" }] }} />
+            <ChevronLeft
+              size={20}
+              color="#FFFFFFCC"
+              strokeWidth={2}
+              style={{ transform: [{ rotate: "180deg" }] }}
+            />
           </TouchableOpacity>
 
           {/* Donation settings */}
@@ -282,11 +337,22 @@ const Dashboard = () => {
               resizeMode="contain"
             />
 
-            <Text style={{ flex: 1, fontSize: 16, color: "#FFFFFF", fontFamily: FONT.Regular }}>
+            <Text
+              style={{
+                flex: 1,
+                fontSize: 16,
+                color: "#FFFFFF",
+                fontFamily: FONT.Regular,
+              }}
+            >
               Donation settings
             </Text>
 
-            <ChevronLeft size={20} color="#FFFFFFCC" style={{ transform: [{ rotate: "180deg" }] }} />
+            <ChevronLeft
+              size={20}
+              color="#FFFFFFCC"
+              style={{ transform: [{ rotate: "180deg" }] }}
+            />
           </TouchableOpacity>
 
           {/* Video/Audio settings */}
@@ -308,21 +374,47 @@ const Dashboard = () => {
               resizeMode="contain"
             />
 
-            <Text style={{ flex: 1, color: "#FFFFFF", fontSize: 16, fontFamily: FONT.Regular }}>
+            <Text
+              style={{
+                flex: 1,
+                color: "#FFFFFF",
+                fontSize: 16,
+                fontFamily: FONT.Regular,
+              }}
+            >
               Video/Audio settings
             </Text>
 
-            <ChevronLeft size={20} color="#FFFFFFCC" strokeWidth={2} style={{ transform: [{ rotate: "180deg" }] }} />
+            <ChevronLeft
+              size={20}
+              color="#FFFFFFCC"
+              strokeWidth={2}
+              style={{ transform: [{ rotate: "180deg" }] }}
+            />
           </TouchableOpacity>
         </View>
 
         {/* FINANCIAL MANAGEMENT */}
         <View style={{ marginBottom: 24 }}>
-          <Text style={{ fontSize: 18, color: "#FFF", fontFamily: FONT.Bold, marginBottom: 4 }}>
+          <Text
+            style={{
+              fontSize: 18,
+              color: "#FFF",
+              fontFamily: FONT.Bold,
+              marginBottom: 4,
+            }}
+          >
             Financial management
           </Text>
 
-          <Text style={{ fontSize: 14, fontFamily: FONT.Regular, color: "#8E8E93", marginBottom: 16 }}>
+          <Text
+            style={{
+              fontSize: 14,
+              fontFamily: FONT.Regular,
+              color: "#8E8E93",
+              marginBottom: 16,
+            }}
+          >
             Control your earnings and payout methods
           </Text>
 
@@ -343,21 +435,47 @@ const Dashboard = () => {
               resizeMode="contain"
             />
 
-            <Text style={{ flex: 1, color: "#FFF", fontSize: 16, fontFamily: FONT.Regular }}>
+            <Text
+              style={{
+                flex: 1,
+                color: "#FFF",
+                fontSize: 16,
+                fontFamily: FONT.Regular,
+              }}
+            >
               Payout method rules
             </Text>
 
-            <ChevronLeft size={20} color="#FFF" strokeWidth={2} style={{ transform: [{ rotate: "180deg" }] }} />
+            <ChevronLeft
+              size={20}
+              color="#FFF"
+              strokeWidth={2}
+              style={{ transform: [{ rotate: "180deg" }] }}
+            />
           </TouchableOpacity>
         </View>
 
         {/* PROFILE & ADMIN */}
         <View style={{ marginBottom: 40 }}>
-          <Text style={{ fontSize: 18, fontFamily: FONT.Bold, color: "#FFF", marginBottom: 4 }}>
+          <Text
+            style={{
+              fontSize: 18,
+              fontFamily: FONT.Bold,
+              color: "#FFF",
+              marginBottom: 4,
+            }}
+          >
             Profile & Admin
           </Text>
 
-          <Text style={{ color: "#8E8E93", fontSize: 14, fontFamily: FONT.Regular, marginBottom: 16 }}>
+          <Text
+            style={{
+              color: "#8E8E93",
+              fontSize: 14,
+              fontFamily: FONT.Regular,
+              marginBottom: 16,
+            }}
+          >
             Update your public information and manage user interactions
           </Text>
 
@@ -380,11 +498,23 @@ const Dashboard = () => {
               resizeMode="contain"
             />
 
-            <Text style={{ flex: 1, fontSize: 16, color: "#FFF", fontFamily: FONT.Regular }}>
+            <Text
+              style={{
+                flex: 1,
+                fontSize: 16,
+                color: "#FFF",
+                fontFamily: FONT.Regular,
+              }}
+            >
               Profile visibility
             </Text>
 
-            <ChevronLeft size={20} color="#FFF" strokeWidth={2} style={{ transform: [{ rotate: "180deg" }] }} />
+            <ChevronLeft
+              size={20}
+              color="#FFF"
+              strokeWidth={2}
+              style={{ transform: [{ rotate: "180deg" }] }}
+            />
           </TouchableOpacity>
 
           {/* Block list */}
@@ -404,11 +534,23 @@ const Dashboard = () => {
               resizeMode="contain"
             />
 
-            <Text style={{ flex: 1, color: "#FFF", fontSize: 16, fontFamily: FONT.Regular }}>
+            <Text
+              style={{
+                flex: 1,
+                color: "#FFF",
+                fontSize: 16,
+                fontFamily: FONT.Regular,
+              }}
+            >
               Block list
             </Text>
 
-            <ChevronLeft size={20} color="#FFF" strokeWidth={2} style={{ transform: [{ rotate: "180deg" }] }} />
+            <ChevronLeft
+              size={20}
+              color="#FFF"
+              strokeWidth={2}
+              style={{ transform: [{ rotate: "180deg" }] }}
+            />
           </TouchableOpacity>
 
           {/* Support */}
@@ -430,11 +572,23 @@ const Dashboard = () => {
               resizeMode="contain"
             />
 
-            <Text style={{ flex: 1, color: "#FFF", fontSize: 16, fontFamily: FONT.Regular }}>
+            <Text
+              style={{
+                flex: 1,
+                color: "#FFF",
+                fontSize: 16,
+                fontFamily: FONT.Regular,
+              }}
+            >
               Support
             </Text>
 
-            <ChevronLeft size={20} color="#FFF" strokeWidth={2} style={{ transform: [{ rotate: "180deg" }] }} />
+            <ChevronLeft
+              size={20}
+              color="#FFF"
+              strokeWidth={2}
+              style={{ transform: [{ rotate: "180deg" }] }}
+            />
           </TouchableOpacity>
         </View>
       </ScrollView>

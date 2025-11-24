@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,7 +11,6 @@ import {
   Modal,
   Linking,
 } from "react-native";
-import { Svg, Path, Circle } from "react-native-svg";
 import {} from "nativewind";
 import {
   Settings,
@@ -32,6 +31,13 @@ import {
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
 
+// <-- UPDATE THIS IMPORT PATH if your auth helper lives elsewhere -->
+import {
+  getCurrentUserFromServer,
+  getCurrentUser,
+  getUserProfile,
+} from "@/utils/authHelpers";
+
 const FONT = {
   Regular: "Poppins_400Regular",
   Medium: "Poppins_500Medium",
@@ -40,10 +46,13 @@ const FONT = {
 };
 
 const ProfileScreen = () => {
-  const balance = 12;
-  const userName = "Ellen smith";
+  // local state driven from logged-in user
+  const [userName, setUserName] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [balance, setBalance] = useState<number | null>(null);
   const [selectedLanguage, setSelectedLanguage] = useState("English");
   const [isLanguageModalVisible, setIsLanguageModalVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -51,6 +60,74 @@ const ProfileScreen = () => {
     Poppins_600SemiBold,
     Poppins_700Bold,
   });
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadUser = async () => {
+      try {
+        // Try to get fresh user from server first
+        const serverUser = await getCurrentUserFromServer().catch(() =>
+          getCurrentUser()
+        ); // fallback to cached
+
+        // serverUser may be null
+        if (!serverUser) {
+          if (mounted) {
+            setUserName("Guest");
+            setAvatarUrl(null);
+            setBalance(null);
+            setLoading(false);
+          }
+          return;
+        }
+
+        // name from user_metadata.full_name or user_metadata.username or fallback to phone/id
+        const name =
+          serverUser.user_metadata?.full_name ||
+          serverUser.user_metadata?.username ||
+          serverUser.email ||
+          serverUser.phone ||
+          "User";
+
+        // set preliminary
+        if (mounted) {
+          setUserName(name);
+        }
+
+        // Try to fetch extended profile (your DB users table)
+        try {
+          const profile = await getUserProfile();
+          if (mounted && profile) {
+            // adapt to your schema: avatar_url, full_name, balance etc.
+            setAvatarUrl(profile.avatar_url ?? profile.image_url ?? null);
+            // If you store balance in profile as `balance` or `wallet_balance` adjust below:
+            const parsedBalance =
+              typeof profile.balance === "number"
+                ? profile.balance
+                : profile.wallet_balance &&
+                  !isNaN(Number(profile.wallet_balance))
+                ? Number(profile.wallet_balance)
+                : null;
+            if (parsedBalance !== null) setBalance(parsedBalance);
+            if (profile.full_name && mounted) setUserName(profile.full_name);
+          }
+        } catch (err) {
+          // no profile table or failed — keep minimal info from auth user
+          // console.warn("profile fetch failed", err);
+        }
+      } catch (err) {
+        console.error("Error loading user data:", err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    loadUser();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   if (!fontsLoaded) {
     return (
@@ -81,29 +158,26 @@ const ProfileScreen = () => {
         marginBottom: 10,
       }}
     >
-      <View className="flex-row items-center flex-1">
+      <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
         <View
-          className="items-center justify-center"
           style={{
             width: 32,
             height: 32,
             marginRight: 12,
             backgroundColor: "#19191B",
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: 8,
           }}
         >
-          <Icon
-            size={20}
-            color="#FFFFFF"
-            backgroundColor="#19191B"
-            strokeWidth={2}
-          />
+          <Icon size={20} color="#FFFFFF" strokeWidth={2} />
         </View>
-        <View className="flex-1">
+        <View style={{ flex: 1 }}>
           <Text
-            className="text-white"
             style={{
               fontSize: 16,
               fontFamily: FONT.Regular,
+              color: "#fff",
             }}
           >
             {title}
@@ -111,11 +185,11 @@ const ProfileScreen = () => {
         </View>
         {rightText && (
           <Text
-            className="text-gray-400"
             style={{
               fontSize: 15,
               fontFamily: FONT.Regular,
               marginRight: 8,
+              color: "#9A9A9A",
             }}
           >
             {rightText}
@@ -181,6 +255,18 @@ const ProfileScreen = () => {
     setIsLanguageModalVisible(false);
   };
 
+  // When loading show spinner in center
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 bg-black">
+        <StatusBar barStyle="light-content" />
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator color="#FCCD34" />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
@@ -206,11 +292,19 @@ const ProfileScreen = () => {
               backgroundColor: "#2C2C2E",
             }}
           >
-            <Image
-              source={require("../../../assets/images/profile-placeholder.png")}
-              style={{ width: 70, height: 70 }}
-              resizeMode="cover"
-            />
+            {avatarUrl ? (
+              <Image
+                source={{ uri: avatarUrl }}
+                style={{ width: 70, height: 70 }}
+                resizeMode="cover"
+              />
+            ) : (
+              <Image
+                source={require("../../../assets/images/profile-placeholder.png")}
+                style={{ width: 70, height: 70 }}
+                resizeMode="cover"
+              />
+            )}
           </View>
           <Text
             className="text-white"
@@ -219,7 +313,7 @@ const ProfileScreen = () => {
               fontFamily: FONT.SemiBold,
             }}
           >
-            {userName}
+            {userName ?? "User"}
           </Text>
         </View>
 
@@ -246,6 +340,7 @@ const ProfileScreen = () => {
                 fontSize: 12,
                 lineHeight: 12,
                 marginBottom: 4,
+                color: "#C7C7CC",
               }}
             >
               Balance:
@@ -254,7 +349,7 @@ const ProfileScreen = () => {
               className="text-white font-bold"
               style={{ fontSize: 18, fontFamily: FONT.SemiBold }}
             >
-              {balance} GEL
+              {balance !== null ? `${balance} GEL` : "0"}
             </Text>
           </View>
           <TouchableOpacity
@@ -308,6 +403,9 @@ const ProfileScreen = () => {
             className="items-center justify-center flex-1"
             style={{
               paddingHorizontal: 7.75,
+            }}
+            onPress={() => {
+              /* keep for gallery navigation if needed */
             }}
           >
             <Text

@@ -103,8 +103,8 @@ const EarningsDashboard = () => {
   );
 
   const CircularChart = () => {
-    const size = 200;
-    const strokeWidth = 25;
+    const size = 230;
+    const strokeWidth = 28;
     const center = size / 2;
     const radius = (size - strokeWidth) / 2;
     const circumference = 2 * Math.PI * radius;
@@ -114,7 +114,7 @@ const EarningsDashboard = () => {
     const donationsPercent = 12;
 
     return (
-      <View style={{ alignItems: "center" }}>
+      <View style={{ alignItems: "center", marginVertical: 20 }}>
         <Svg
           width={size}
           height={size}
@@ -166,12 +166,23 @@ const EarningsDashboard = () => {
         </Svg>
 
         {/* Center content */}
-        <View style={{ position: "absolute", alignItems: "center" }}>
+        <View
+          style={{
+            position: "absolute",
+            alignItems: "center",
+            justifyContent: "center",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          }}
+        >
           <Text
             style={{
               fontSize: 11,
               fontFamily: FONT.Regular,
               color: "#8E8E93",
+              marginBottom: 2,
             }}
           >
             Total balance
@@ -182,6 +193,7 @@ const EarningsDashboard = () => {
               fontSize: 10,
               fontFamily: FONT.Regular,
               color: "#FCCD34",
+              marginBottom: 4,
             }}
           >
             100%
@@ -189,10 +201,10 @@ const EarningsDashboard = () => {
 
           <Text
             style={{
-              fontSize: 24,
-              fontFamily: FONT.SemiBold,
+              fontSize: 28,
+              fontFamily: FONT.Bold,
               color: "#FFF",
-              marginTop: 2,
+              marginBottom: 4,
             }}
           >
             1250 GEL
@@ -214,9 +226,7 @@ const EarningsDashboard = () => {
 
   const EarningItem = ({ title, amount, percentage, color }: any) => (
     <View style={{ marginBottom: 20 }}>
-      <View
-        style={{ flexDirection: "row", justifyContent: "space-between" }}
-      >
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
         <Text
           style={{
             fontSize: 15,
@@ -451,22 +461,19 @@ const EarningsDashboard = () => {
             flexDirection: "row",
             justifyContent: "center",
             gap: 6,
-            marginBottom: 30,
+            marginBottom: 20,
           }}
         >
           <PeriodButton title="Day" isSelected={selectedPeriod === "Day"} />
           <PeriodButton title="Week" isSelected={selectedPeriod === "Week"} />
-          <PeriodButton
-            title="Month"
-            isSelected={selectedPeriod === "Month"}
-          />
+          <PeriodButton title="Month" isSelected={selectedPeriod === "Month"} />
         </View>
 
         {/* CHART */}
         <CircularChart />
 
         {/* EARNING ITEMS */}
-        <View style={{ marginTop: 40 }}>
+        <View style={{ marginTop: 20 }}>
           <EarningItem
             title="Messages"
             amount="+400 GEL"
@@ -488,7 +495,7 @@ const EarningsDashboard = () => {
         </View>
 
         {/* HISTORY */}
-        <View style={{ marginTop: 40 }}>
+        <View style={{ marginTop: 20 }}>
           <View
             style={{
               flexDirection: "row",
@@ -646,7 +653,9 @@ const EarningsDashboard = () => {
                     alignItems: "center",
                   }}
                 >
-                  <Text style={{ fontSize: 13, color: "#FFF" }}>{fromDate}</Text>
+                  <Text style={{ fontSize: 13, color: "#FFF" }}>
+                    {fromDate}
+                  </Text>
                   <Calendar size={20} color="#555" />
                 </View>
               </View>
@@ -680,9 +689,7 @@ const EarningsDashboard = () => {
             </View>
 
             {/* PERIOD QUICK BUTTONS */}
-            <View
-              style={{ flexDirection: "row", gap: 12, marginTop: 20 }}
-            >
+            <View style={{ flexDirection: "row", gap: 12, marginTop: 20 }}>
               {["Today", "This Week", "This Month"].map((period) => (
                 <TouchableOpacity
                   key={period}
@@ -699,8 +706,7 @@ const EarningsDashboard = () => {
                 >
                   <Text
                     style={{
-                      color:
-                        selectedDatePeriod === period ? "#FFF" : "#555E67",
+                      color: selectedDatePeriod === period ? "#FFF" : "#555E67",
                       fontSize: 12,
                     }}
                   >
@@ -912,9 +918,7 @@ const EarningsDashboard = () => {
                     paddingVertical: 6,
                   }}
                 >
-                  <Text style={{ color: "#6F6F70" }}>
-                    Gross amount charged
-                  </Text>
+                  <Text style={{ color: "#6F6F70" }}>Gross amount charged</Text>
                   <Text style={{ color: "#FFF" }}>
                     {selectedTransaction?.gross}
                   </Text>
@@ -927,9 +931,7 @@ const EarningsDashboard = () => {
                     paddingVertical: 6,
                   }}
                 >
-                  <Text style={{ color: "#6F6F70" }}>
-                    Platform fee (10%)
-                  </Text>
+                  <Text style={{ color: "#6F6F70" }}>Platform fee (10%)</Text>
                   <Text style={{ color: "#FFF" }}>
                     {selectedTransaction?.fee}
                   </Text>
