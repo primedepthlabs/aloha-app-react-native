@@ -27,7 +27,7 @@ import { router, useFocusEffect } from "expo-router";
 import { supabase } from "../../../supabaseClient";
 import {
   getCurrentUser,
-  verifyAuthentication
+  verifyAuthentication,
 } from "../../../utils/authHelpers";
 
 const FONT = {
@@ -142,19 +142,25 @@ export default function ChatsPerson() {
 
   // App state handler for real-time updates
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    const subscription = AppState.addEventListener(
+      "change",
+      handleAppStateChange
+    );
     return () => {
       subscription.remove();
     };
   }, []);
 
-  const handleAppStateChange = useCallback((nextAppState: AppStateStatus) => {
-    if (appState.match(/inactive|background/) && nextAppState === 'active') {
-      // App came to foreground, refresh conversations
-      fetchConversations();
-    }
-    setAppState(nextAppState);
-  }, [appState]);
+  const handleAppStateChange = useCallback(
+    (nextAppState: AppStateStatus) => {
+      if (appState.match(/inactive|background/) && nextAppState === "active") {
+        // App came to foreground, refresh conversations
+        fetchConversations();
+      }
+      setAppState(nextAppState);
+    },
+    [appState]
+  );
 
   // Setup real-time subscriptions
   useEffect(() => {
@@ -185,40 +191,40 @@ export default function ChatsPerson() {
     try {
       // Subscribe to messages table for new messages
       const subscription = supabase
-        .channel('messages-changes')
+        .channel("messages-changes")
         .on(
-          'postgres_changes',
+          "postgres_changes",
           {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'messages',
+            event: "INSERT",
+            schema: "public",
+            table: "messages",
           },
           async (payload) => {
-            console.log('New message received:', payload);
+            console.log("New message received:", payload);
             await handleNewMessage(payload.new);
           }
         )
         .on(
-          'postgres_changes',
+          "postgres_changes",
           {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'messages',
+            event: "UPDATE",
+            schema: "public",
+            table: "messages",
           },
           async (payload) => {
-            console.log('Message updated:', payload);
+            console.log("Message updated:", payload);
             await handleMessageUpdate(payload.new);
           }
         )
         .on(
-          'postgres_changes',
+          "postgres_changes",
           {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'conversations',
+            event: "UPDATE",
+            schema: "public",
+            table: "conversations",
           },
           async (payload) => {
-            console.log('Conversation updated:', payload);
+            console.log("Conversation updated:", payload);
             await handleConversationUpdate(payload.new);
           }
         )
@@ -226,7 +232,7 @@ export default function ChatsPerson() {
 
       setRealTimeSubscription(subscription);
     } catch (error) {
-      console.error('Error setting up real-time subscriptions:', error);
+      console.error("Error setting up real-time subscriptions:", error);
     }
   };
 
@@ -237,18 +243,21 @@ export default function ChatsPerson() {
       if (!currentUser) return;
 
       const isMessageFromMe = newMessage.sender_id === currentUser.id;
-      
+
       if (!isMessageFromMe) {
         // Update the specific conversation with new message and increment unread count
-        setChats(prevChats => 
-          prevChats.map(chat => {
+        setChats((prevChats) =>
+          prevChats.map((chat) => {
             if (chat.conversationId === newMessage.conversation_id) {
               return {
                 ...chat,
-                message: newMessage.message_text || newMessage.message_content || 'New message',
+                message:
+                  newMessage.message_text ||
+                  newMessage.message_content ||
+                  "New message",
                 time: formatTime(newMessage.created_at),
                 unreadCount: (chat.unreadCount || 0) + 1,
-                isDoubleTick: false // Reset to single tick for new unread messages
+                isDoubleTick: false, // Reset to single tick for new unread messages
               };
             }
             return chat;
@@ -256,14 +265,17 @@ export default function ChatsPerson() {
         );
       } else {
         // If message is from me, just update the last message preview
-        setChats(prevChats => 
-          prevChats.map(chat => {
+        setChats((prevChats) =>
+          prevChats.map((chat) => {
             if (chat.conversationId === newMessage.conversation_id) {
               return {
                 ...chat,
-                message: newMessage.message_text || newMessage.message_content || 'New message',
+                message:
+                  newMessage.message_text ||
+                  newMessage.message_content ||
+                  "New message",
                 time: formatTime(newMessage.created_at),
-                isDoubleTick: true // Double tick for my sent messages
+                isDoubleTick: true, // Double tick for my sent messages
               };
             }
             return chat;
@@ -271,7 +283,7 @@ export default function ChatsPerson() {
         );
       }
     } catch (error) {
-      console.error('Error handling new message:', error);
+      console.error("Error handling new message:", error);
     }
   };
 
@@ -285,21 +297,24 @@ export default function ChatsPerson() {
 
         // Only update if the message is not from current user
         if (updatedMessage.sender_id !== currentUser.id) {
-          setChats(prevChats => 
-            prevChats.map(chat => {
+          setChats((prevChats) =>
+            prevChats.map((chat) => {
               if (chat.conversationId === updatedMessage.conversation_id) {
                 // Recalculate unread count for this conversation
                 setTimeout(async () => {
-                  const newUnreadCount = await getUnreadCount(updatedMessage.conversation_id, currentUser.id);
-                  setChats(prev => 
-                    prev.map(c => 
-                      c.conversationId === updatedMessage.conversation_id 
+                  const newUnreadCount = await getUnreadCount(
+                    updatedMessage.conversation_id,
+                    currentUser.id
+                  );
+                  setChats((prev) =>
+                    prev.map((c) =>
+                      c.conversationId === updatedMessage.conversation_id
                         ? { ...c, unreadCount: newUnreadCount }
                         : c
                     )
                   );
                 }, 100);
-                
+
                 return chat;
               }
               return chat;
@@ -308,15 +323,15 @@ export default function ChatsPerson() {
         }
       }
     } catch (error) {
-      console.error('Error handling message update:', error);
+      console.error("Error handling message update:", error);
     }
   };
 
   const handleConversationUpdate = async (updatedConversation: any) => {
     try {
       // Handle conversation updates (like last_message_preview changes)
-      setChats(prevChats => 
-        prevChats.map(chat => {
+      setChats((prevChats) =>
+        prevChats.map((chat) => {
           if (chat.conversationId === updatedConversation.id) {
             return {
               ...chat,
@@ -328,7 +343,7 @@ export default function ChatsPerson() {
         })
       );
     } catch (error) {
-      console.error('Error handling conversation update:', error);
+      console.error("Error handling conversation update:", error);
     }
   };
 
@@ -375,11 +390,12 @@ export default function ChatsPerson() {
 
       if (userProfile.user_type === "Influencer") {
         // For influencers, get their influencer profile ID first
-        const { data: influencerProfile, error: influencerError } = await supabase
-          .from("influencer_profiles")
-          .select("id")
-          .eq("user_id", currentUser.id)
-          .single();
+        const { data: influencerProfile, error: influencerError } =
+          await supabase
+            .from("influencer_profiles")
+            .select("id")
+            .eq("user_id", currentUser.id)
+            .single();
 
         if (influencerError) {
           console.error("Error fetching influencer profile:", influencerError);
@@ -392,7 +408,8 @@ export default function ChatsPerson() {
         // Query for conversations where current user is the influencer
         query = supabase
           .from("conversations")
-          .select(`
+          .select(
+            `
           id,
           regular_user_id,
           influencer_id,
@@ -407,16 +424,17 @@ export default function ChatsPerson() {
             avatar_url,
             is_verified
           )
-        `)
+        `
+          )
           .eq("influencer_id", influencerProfile.id)
           .eq("is_active", true)
           .order("last_message_at", { ascending: false });
-
       } else {
         // For regular users, query for conversations where they are the regular user
         query = supabase
           .from("conversations")
-          .select(`
+          .select(
+            `
           id,
           regular_user_id,
           influencer_id,
@@ -432,7 +450,8 @@ export default function ChatsPerson() {
             is_available,
             user_id
           )
-        `)
+        `
+          )
           .eq("regular_user_id", currentUser.id)
           .eq("is_active", true)
           .order("last_message_at", { ascending: false });
@@ -523,7 +542,7 @@ export default function ChatsPerson() {
       const supportChat: Chat = {
         id: "support",
         name: "Support",
-        message: "How to add my IBAN?",
+        message: "How can we help?",
         time: "2:00",
         image: require("../../../assets/images/dashboard/support-avatar.png"),
         isVerified: true,
@@ -542,7 +561,10 @@ export default function ChatsPerson() {
   };
 
   // Get unread message count for a conversation
-  const getUnreadCount = async (conversationId: string, userId: string): Promise<number> => {
+  const getUnreadCount = async (
+    conversationId: string,
+    userId: string
+  ): Promise<number> => {
     try {
       const { data: unreadMessages, error } = await supabase
         .from("messages")
@@ -600,22 +622,28 @@ export default function ChatsPerson() {
       }).start(() => setSwipedChatId(null));
     } else {
       // Mark messages as read when opening chat
-      if (chat.conversationId && currentUserId && chat.unreadCount && chat.unreadCount > 0) {
+      if (
+        chat.conversationId &&
+        currentUserId &&
+        chat.unreadCount &&
+        chat.unreadCount > 0
+      ) {
         await markMessagesAsRead(chat.conversationId, currentUserId);
       }
 
       if (chat.isSupport) {
-        router.push("/(tabs)/dashboard/support");
+        router.push("/(tabs)/dashboard/support?chat=true");
+        return;
       } else if (chat.conversationId) {
         router.push({
           pathname: "/(tabs)/chats/chat",
           params: {
             conversationId: chat.conversationId,
             name: chat.name,
-            image: typeof chat.image === 'string' ? chat.image : '',
+            image: typeof chat.image === "string" ? chat.image : "",
             isOnline: chat.isOnline ? "true" : "false",
-            isVerified: chat.isVerified ? "true" : "false"
-          }
+            isVerified: chat.isVerified ? "true" : "false",
+          },
         });
       } else {
         console.error("No conversation ID found for chat:", chat.id);
@@ -630,7 +658,7 @@ export default function ChatsPerson() {
         .from("messages")
         .update({
           is_read: true,
-          read_at: new Date().toISOString()
+          read_at: new Date().toISOString(),
         })
         .eq("conversation_id", conversationId)
         .neq("sender_id", userId)
@@ -638,8 +666,8 @@ export default function ChatsPerson() {
 
       if (!error) {
         // Update local state immediately
-        setChats(prev =>
-          prev.map(chat =>
+        setChats((prev) =>
+          prev.map((chat) =>
             chat.conversationId === conversationId
               ? { ...chat, unreadCount: 0, isDoubleTick: true }
               : chat
@@ -800,7 +828,7 @@ export default function ChatsPerson() {
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <View className="pt-12 pb-4 px-5">
+      <View className="pt-14 pb-4 px-5">
         <View className="flex-row items-center justify-between mb-5">
           <TouchableOpacity onPress={() => router.back()}>
             <ChevronLeft size={28} color="white" />
@@ -1220,8 +1248,9 @@ export default function ChatsPerson() {
                           ) : null}
 
                           <Text
-                            className={`text-sm ${chat.unreadCount ? "text-white" : "text-gray-500"
-                              }`}
+                            className={`text-sm ${
+                              chat.unreadCount ? "text-white" : "text-gray-500"
+                            }`}
                             style={{ fontFamily: FONT.Regular }}
                             numberOfLines={1}
                             ellipsizeMode="tail"
@@ -1231,7 +1260,7 @@ export default function ChatsPerson() {
                         </View>
 
                         {typeof chat.unreadCount === "number" &&
-                          chat.unreadCount > 0 ? (
+                        chat.unreadCount > 0 ? (
                           <View
                             style={{
                               width: 24,
@@ -1302,19 +1331,21 @@ export default function ChatsPerson() {
                   onPress={() => setSelectedFilter(option)}
                 >
                   <Text
-                    className={`text-lg ${selectedFilter === option
-                      ? "text-[#FCCD34]"
-                      : "text-white"
-                      }`}
+                    className={`text-lg ${
+                      selectedFilter === option
+                        ? "text-[#FCCD34]"
+                        : "text-white"
+                    }`}
                     style={{ fontFamily: FONT.Regular }}
                   >
                     {option}
                   </Text>
                   <View
-                    className={`w-6 h-6 rounded-full ${selectedFilter === option
-                      ? "bg-[#FCCD34]"
-                      : "border-2 border-gray-500"
-                      } items-center justify-center`}
+                    className={`w-6 h-6 rounded-full ${
+                      selectedFilter === option
+                        ? "bg-[#FCCD34]"
+                        : "border-2 border-gray-500"
+                    } items-center justify-center`}
                   >
                     {selectedFilter === option && (
                       <View className="w-3 h-3 rounded-full bg-black" />

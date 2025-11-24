@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -24,7 +24,7 @@ import {
   Poppins_600SemiBold,
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -52,6 +52,7 @@ const Support = () => {
     Poppins_600SemiBold,
     Poppins_700Bold,
   });
+  const params = useLocalSearchParams();
 
   const [showChat, setShowChat] = useState(false);
   const [expandedQuestion, setExpandedQuestion] = useState<string | null>("q1");
@@ -67,10 +68,21 @@ const Support = () => {
   ]);
 
   const scrollViewRef = useRef<ScrollView>(null);
-
+  useEffect(() => {
+    if (params.chat === "true") {
+      setShowChat(true); // instantly open chat UI
+    }
+  }, [params]);
   if (!fontsLoaded) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "black" }}>
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "black",
+        }}
+      >
         <ActivityIndicator color="#FCCD34" />
       </View>
     );
@@ -140,7 +152,7 @@ const Support = () => {
           }}
         >
           <TouchableOpacity
-            onPress={() => setShowChat(false)}
+            onPress={() => router.push("/(tabs)/chats")}
             style={{
               width: 40,
               height: 40,
@@ -151,18 +163,43 @@ const Support = () => {
             <ChevronLeft size={26} color="#FFFFFF" strokeWidth={2} />
           </TouchableOpacity>
 
-          <View style={{ flex: 1, flexDirection: "row", alignItems: "center", marginLeft: 8 }}>
+          <View
+            style={{
+              flex: 1,
+              flexDirection: "row",
+              alignItems: "center",
+              marginLeft: 8,
+            }}
+          >
             <Image
               source={require("../../../assets/images/dashboard/support-avatar.png")}
-              style={{ width: 40, height: 40, borderRadius: 20, marginRight: 12 }}
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+                marginRight: 12,
+              }}
               resizeMode="cover"
             />
-            <Text style={{ fontSize: 15, fontFamily: FONT.SemiBold, color: "#FFFFFF" }}>
+            <Text
+              style={{
+                fontSize: 15,
+                fontFamily: FONT.SemiBold,
+                color: "#FFFFFF",
+              }}
+            >
               Support
             </Text>
           </View>
 
-          <TouchableOpacity style={{ width: 40, height: 40, alignItems: "center", justifyContent: "center" }}>
+          <TouchableOpacity
+            style={{
+              width: 40,
+              height: 40,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             <Search size={24} color="#FFFFFF" strokeWidth={2} />
           </TouchableOpacity>
         </View>
@@ -177,7 +214,9 @@ const Support = () => {
             ref={scrollViewRef}
             style={{ flex: 1, paddingHorizontal: 16, paddingTop: 16 }}
             contentContainerStyle={{ paddingBottom: 20 }}
-            onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+            onContentSizeChange={() =>
+              scrollViewRef.current?.scrollToEnd({ animated: true })
+            }
           >
             {messages.map((msg) => (
               <View
@@ -261,7 +300,14 @@ const Support = () => {
             backgroundColor: "#000000",
           }}
         >
-          <TouchableOpacity style={{ width: 40, height: 40, alignItems: "center", justifyContent: "center" }}>
+          <TouchableOpacity
+            style={{
+              width: 40,
+              height: 40,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             <Text style={{ fontSize: 28, color: "#FFFFFF" }}>+</Text>
           </TouchableOpacity>
 
@@ -329,7 +375,7 @@ const Support = () => {
         }}
       >
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() => router.push("/(tabs)/chats")}
           style={{
             position: "absolute",
             left: 20,

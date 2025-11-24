@@ -101,7 +101,7 @@ export default function DiscoverScreen() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  
+
   // --- BLOCK USER state & helpers ---
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [blockReason, setBlockReason] = useState("");
@@ -480,12 +480,17 @@ export default function DiscoverScreen() {
   return (
     <View className="flex-1 bg-black">
       {/* Header */}
-      <View className="pt-12 pb-4 px-6">
+      <View className="pt-14 pb-4 px-6">
         <View className="flex-row items-center justify-between mb-6">
-          <TouchableOpacity>
-            <ChevronLeft size={28} color="#fff" />
-          </TouchableOpacity>
-          <Text className="text-white font-bold text-[18px]">Discover</Text>
+          {/* Left side (empty to keep center alignment) */}
+          <View style={{ width: 28 }} />
+
+          {/* Center Title */}
+          <Text className="text-white font-bold text-[18px] text-center flex-1">
+            Discover
+          </Text>
+
+          {/* Right side - notification icon */}
           <TouchableOpacity onPress={() => setShowNotificationModal(true)}>
             <Image
               source={require("../../../assets/images/bell-notification.png")}
@@ -584,7 +589,7 @@ export default function DiscoverScreen() {
           <View className="flex-row flex-wrap justify-between pb-24">
             {filteredUsers.map((user) => {
               const isSelf = isCurrentUser(user);
-              
+
               return (
                 <TouchableOpacity
                   key={user.id}
@@ -1103,7 +1108,7 @@ export default function DiscoverScreen() {
                         </View>
                       </TouchableOpacity>
                     )}
-                    
+
                     {/* Hide donation button for current user in profile modal */}
                     {!isCurrentUser(selectedUser) && (
                       <TouchableOpacity

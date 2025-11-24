@@ -31,7 +31,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { supabase } from "../../../supabaseClient";
 import {
   getCurrentUser,
-  verifyAuthentication
+  verifyAuthentication,
 } from "../../../utils/authHelpers";
 
 const { width } = Dimensions.get("window");
@@ -111,63 +111,67 @@ export default function Chat() {
   useEffect(() => {
     if (!conversationId || !currentUserId) return;
 
-    console.log(`Setting up enhanced real-time subscription for conversation: ${conversationId}`);
+    console.log(
+      `Setting up enhanced real-time subscription for conversation: ${conversationId}`
+    );
 
     const subscription = supabase
       .channel(`conversation:${conversationId}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'messages',
+          event: "*",
+          schema: "public",
+          table: "messages",
           filter: `conversation_id=eq.${conversationId}`,
         },
         async (payload) => {
-          console.log('Real-time update received:', payload);
+          console.log("Real-time update received:", payload);
 
           switch (payload.eventType) {
-            case 'INSERT':
+            case "INSERT":
               await handleNewMessage(payload.new);
               break;
-            case 'UPDATE':
+            case "UPDATE":
               await handleUpdatedMessage(payload.new);
               break;
-            case 'DELETE':
+            case "DELETE":
               await handleDeletedMessage(payload.old);
               break;
           }
         }
       )
-      .on('system' as any, { event: 'connected' }, () => {
-        console.log('Realtime connected');
+      .on("system" as any, { event: "connected" }, () => {
+        console.log("Realtime connected");
         setIsRealtimeConnected(true);
       })
-      .on('system' as any, { event: 'disconnected' }, () => {
-        console.log('Realtime disconnected');
+      .on("system" as any, { event: "disconnected" }, () => {
+        console.log("Realtime disconnected");
         setIsRealtimeConnected(false);
       })
       .subscribe((status) => {
-        console.log('Subscription status:', status);
-        if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to real-time updates');
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('Channel error in real-time subscription');
-        } else if (status === 'TIMED_OUT') {
-          console.error('Real-time subscription timed out');
+        console.log("Subscription status:", status);
+        if (status === "SUBSCRIBED") {
+          console.log("Successfully subscribed to real-time updates");
+        } else if (status === "CHANNEL_ERROR") {
+          console.error("Channel error in real-time subscription");
+        } else if (status === "TIMED_OUT") {
+          console.error("Real-time subscription timed out");
         }
       });
 
     // Cleanup function
     return () => {
-      console.log(`Cleaning up real-time subscription for conversation: ${conversationId}`);
+      console.log(
+        `Cleaning up real-time subscription for conversation: ${conversationId}`
+      );
       subscription.unsubscribe();
     };
   }, [conversationId, currentUserId]);
 
   // Handle new message from real-time
   const handleNewMessage = async (newMessage: any) => {
-    console.log('Processing new message:', newMessage);
+    console.log("Processing new message:", newMessage);
 
     // Format the new message
     const formattedMessage: Message = {
@@ -185,19 +189,19 @@ export default function Chat() {
     // Add to messages state, avoiding duplicates
     setMessages((prev) => {
       // Check if message already exists to avoid duplicates
-      const exists = prev.some(msg => msg.id === formattedMessage.id);
+      const exists = prev.some((msg) => msg.id === formattedMessage.id);
       if (exists) {
-        console.log('Message already exists, skipping:', formattedMessage.id);
+        console.log("Message already exists, skipping:", formattedMessage.id);
         return prev;
       }
 
-      console.log('Adding new message to state:', formattedMessage.id);
+      console.log("Adding new message to state:", formattedMessage.id);
       return [...prev, formattedMessage];
     });
 
     // If message is from other user, mark as read immediately
     if (newMessage.sender_id !== currentUserId) {
-      console.log('Marking message as read:', newMessage.id);
+      console.log("Marking message as read:", newMessage.id);
       await markMessageAsRead(newMessage.id);
 
       // Update the message read status in state
@@ -216,17 +220,17 @@ export default function Chat() {
 
   // Handle updated message from real-time
   const handleUpdatedMessage = async (updatedMessage: any) => {
-    console.log('Processing updated message:', updatedMessage);
+    console.log("Processing updated message:", updatedMessage);
 
     setMessages((prev) =>
       prev.map((msg) =>
         msg.id === updatedMessage.id
           ? {
-            ...msg,
-            text: updatedMessage.content,
-            isRead: updatedMessage.is_read,
-            isEdited: false,
-          }
+              ...msg,
+              text: updatedMessage.content,
+              isRead: updatedMessage.is_read,
+              isEdited: false,
+            }
           : msg
       )
     );
@@ -234,11 +238,9 @@ export default function Chat() {
 
   // Handle deleted message from real-time
   const handleDeletedMessage = async (deletedMessage: any) => {
-    console.log('Processing deleted message:', deletedMessage);
+    console.log("Processing deleted message:", deletedMessage);
 
-    setMessages((prev) =>
-      prev.filter((msg) => msg.id !== deletedMessage.id)
-    );
+    setMessages((prev) => prev.filter((msg) => msg.id !== deletedMessage.id));
   };
 
   const initializeChat = async () => {
@@ -277,7 +279,8 @@ export default function Chat() {
       // Step 4: Verify conversation exists and user has access
       const { data: conversation, error } = await supabase
         .from("conversations")
-        .select(`
+        .select(
+          `
         id,
         regular_user_id,
         influencer_id,
@@ -285,7 +288,8 @@ export default function Chat() {
         influencer:influencer_id(
           user_id
         )
-      `)
+      `
+        )
         .eq("id", conversationId)
         .eq("is_active", true)
         .single();
@@ -310,7 +314,7 @@ export default function Chat() {
         regularUserId: conversation.regular_user_id,
         influencerUserId: conversation.influencer?.user_id,
         isRegularUser,
-        isInfluencer
+        isInfluencer,
       });
 
       if (!isRegularUser && !isInfluencer) {
@@ -324,7 +328,6 @@ export default function Chat() {
 
       // Step 6: Load messages for this conversation
       await loadMessages(conversationId, currentUser.id);
-
     } catch (error) {
       console.error("Error initializing chat:", error);
       Alert.alert("Error", "Failed to initialize chat");
@@ -395,7 +398,6 @@ export default function Chat() {
       setTimeout(() => {
         scrollViewRef.current?.scrollToEnd({ animated: false });
       }, 100);
-
     } catch (error) {
       console.error("Error in loadMessages:", error);
       Alert.alert("Error", "Failed to load messages");
@@ -416,7 +418,7 @@ export default function Chat() {
         .from("messages")
         .update({
           is_read: true,
-          read_at: new Date().toISOString()
+          read_at: new Date().toISOString(),
         })
         .eq("id", messageId);
 
@@ -436,7 +438,7 @@ export default function Chat() {
         .from("messages")
         .update({
           is_read: true,
-          read_at: new Date().toISOString()
+          read_at: new Date().toISOString(),
         })
         .in("id", messageIds);
 
@@ -557,7 +559,6 @@ export default function Chat() {
       setTimeout(() => {
         scrollViewRef.current?.scrollToEnd({ animated: true });
       }, 100);
-
     } catch (error) {
       console.error("Error sending message:", error);
       Alert.alert("Error", "Failed to send message. Please try again.");
@@ -714,9 +715,12 @@ export default function Chat() {
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <View className="bg-black pt-12 pb-3 px-4 flex-row items-center justify-between">
+      <View className="bg-black pt-14 pb-3 px-4 flex-row items-center justify-between">
         <View className="flex-row items-center flex-1">
-          <TouchableOpacity className="mr-4" onPress={() => router.back()}>
+          <TouchableOpacity
+            className="mr-4"
+            onPress={() => router.push("/(tabs)/chats")}
+          >
             <ChevronLeft size={28} color="white" />
           </TouchableOpacity>
           <View className="w-12 h-12 rounded-full bg-gray-700 mr-3 overflow-hidden">
@@ -954,8 +958,9 @@ export default function Chat() {
             }
           >
             {messages
-              .filter((msg, index, self) =>
-                index === self.findIndex(m => m.id === msg.id)
+              .filter(
+                (msg, index, self) =>
+                  index === self.findIndex((m) => m.id === msg.id)
               )
               .map((msg) => (
                 <TouchableOpacity
@@ -1280,30 +1285,30 @@ export default function Chat() {
               },
               ...(contextMenu?.isSent
                 ? [
-                  {
-                    key: "edit",
-                    label: "Edit",
-                    icon: require("../../../assets/images/edit-icon.png"),
-                    onPress: handleEdit,
-                    color: "#FFFFFF",
-                  },
-                  {
-                    key: "delete",
-                    label: "Delete",
-                    icon: require("../../../assets/images/delete-icon.png"),
-                    onPress: handleDelete,
-                    color: "#FFFFFF",
-                  },
-                ]
+                    {
+                      key: "edit",
+                      label: "Edit",
+                      icon: require("../../../assets/images/edit-icon.png"),
+                      onPress: handleEdit,
+                      color: "#FFFFFF",
+                    },
+                    {
+                      key: "delete",
+                      label: "Delete",
+                      icon: require("../../../assets/images/delete-icon.png"),
+                      onPress: handleDelete,
+                      color: "#FFFFFF",
+                    },
+                  ]
                 : [
-                  {
-                    key: "report",
-                    label: "Report",
-                    icon: require("../../../assets/images/report-icon.png"),
-                    onPress: handleReport,
-                    color: "#FFFFFF",
-                  },
-                ]),
+                    {
+                      key: "report",
+                      label: "Report",
+                      icon: require("../../../assets/images/report-icon.png"),
+                      onPress: handleReport,
+                      color: "#FFFFFF",
+                    },
+                  ]),
             ].map((item, idx, arr) => (
               <React.Fragment key={item.key}>
                 <TouchableOpacity
@@ -1460,10 +1465,11 @@ export default function Chat() {
                         style={{ width: "100%", aspectRatio: 1 }}
                       />
                       <View
-                        className={`absolute top-2 right-2 w-6 h-6 rounded-full border-2 ${isSelected
-                          ? "bg-[#FCCD34] border-[#FCCD34]"
-                          : "border-white"
-                          } items-center justify-center`}
+                        className={`absolute top-2 right-2 w-6 h-6 rounded-full border-2 ${
+                          isSelected
+                            ? "bg-[#FCCD34] border-[#FCCD34]"
+                            : "border-white"
+                        } items-center justify-center`}
                       >
                         {isSelected && (
                           <Text
@@ -1629,8 +1635,9 @@ export default function Chat() {
                   className="items-center"
                 >
                   <Text
-                    className={`text-base font-semibold ${selectedTab === "photos" ? "text-white" : "text-white/50"
-                      }`}
+                    className={`text-base font-semibold ${
+                      selectedTab === "photos" ? "text-white" : "text-white/50"
+                    }`}
                   >
                     Photos
                   </Text>
@@ -1641,10 +1648,11 @@ export default function Chat() {
                   className="items-center"
                 >
                   <Text
-                    className={`text-base font-semibold ${selectedTab === "videos"
-                      ? "text-[#FCCD34]"
-                      : "text-white/50"
-                      }`}
+                    className={`text-base font-semibold ${
+                      selectedTab === "videos"
+                        ? "text-[#FCCD34]"
+                        : "text-white/50"
+                    }`}
                   >
                     Videos
                   </Text>
