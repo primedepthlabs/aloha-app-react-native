@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Image,
   Dimensions,
+  Alert,
 } from "react-native";
 import { ChevronLeft } from "lucide-react-native";
 import {
@@ -288,9 +289,7 @@ const AddFunds = () => {
                 }}
               >
                 <View className="w-10 h-7 rounded-[6px] bg-blue-600 mr-3 items-center justify-center">
-                  <Text className="text-white font-bold text-[12px]">
-                    VISA
-                  </Text>
+                  <Text className="text-white font-bold text-[12px]">VISA</Text>
                 </View>
                 <Text
                   style={{
@@ -333,7 +332,8 @@ const AddFunds = () => {
 
           {/* Continue Button */}
           <TouchableOpacity
-            onPress={handleContinue}
+            // onPress={handleContinue}
+            onPress={() => Alert.alert("Funds added successfully!")}
             style={{
               width: SCREEN_WIDTH - 48,
               height: 48,

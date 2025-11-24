@@ -29,6 +29,7 @@ import {
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
 import { supabase } from "../../../supabaseClient";
+import { clearUserSession } from "@/utils/authHelpers";
 
 const FONT = {
   Regular: "Poppins_400Regular",
@@ -295,6 +296,34 @@ const AccountSettingsScreen = () => {
       Alert.alert("Error", "Something went wrong.");
     }
   };
+  const handleLogout = async () => {
+    try {
+      Alert.alert("Log Out", "Are you sure you want to log out?", [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Log Out",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              // 1) Supabase logout
+              await supabase.auth.signOut();
+
+              // 2) Clear local session from helper
+              await clearUserSession();
+
+              // 3) Redirect to login screen
+              router.replace("/(auth)");
+            } catch (err) {
+              console.error("Logout error:", err);
+              Alert.alert("Error", "Failed to log out. Try again.");
+            }
+          },
+        },
+      ]);
+    } catch (error) {
+      console.error("Alert error:", error);
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-black">
@@ -362,7 +391,7 @@ const AccountSettingsScreen = () => {
         <MenuItem
           iconSource={require("../../../assets/images/profile/logout.png")}
           title="Log Out"
-          onPress={() => {}}
+          onPress={handleLogout}
         />
       </ScrollView>
 

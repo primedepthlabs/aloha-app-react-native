@@ -1,5 +1,5 @@
-import { supabase } from '../supabaseClient';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from "../supabaseClient";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Types for our user data
 export interface UserSession {
@@ -37,17 +37,17 @@ export const getCurrentUser = async (): Promise<AppUser | null> => {
       return currentUserCache;
     }
 
-    const userSession = await AsyncStorage.getItem('@app:user_session');
-    
+    const userSession = await AsyncStorage.getItem("@app:user_session");
+
     if (!userSession) {
-      console.log('No user session found in local storage');
+      console.log("No user session found in local storage");
       return null;
     }
 
     const parsedSession: UserSession = JSON.parse(userSession);
-    
+
     if (!parsedSession.user) {
-      console.log('No user data in session');
+      console.log("No user data in session");
       return null;
     }
 
@@ -63,7 +63,7 @@ export const getCurrentUser = async (): Promise<AppUser | null> => {
     currentUserCache = user;
     return user;
   } catch (error) {
-    console.error('Error retrieving current user:', error);
+    console.error("Error retrieving current user:", error);
     return null;
   }
 };
@@ -77,15 +77,18 @@ export const getCurrentUserFromServer = async (): Promise<AppUser | null> => {
     // Clear cache to force fresh data
     currentUserCache = null;
 
-    const { data: { user }, error } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+
     if (error) {
-      console.error('Error retrieving user from server:', error);
+      console.error("Error retrieving user from server:", error);
       return await getCurrentUser(); // Fallback to local storage
     }
 
     if (!user) {
-      console.log('No authenticated user found');
+      console.log("No authenticated user found");
       return null;
     }
 
@@ -104,7 +107,7 @@ export const getCurrentUserFromServer = async (): Promise<AppUser | null> => {
     currentUserCache = appUser;
     return appUser;
   } catch (error) {
-    console.error('Error in getCurrentUserFromServer:', error);
+    console.error("Error in getCurrentUserFromServer:", error);
     return await getCurrentUser(); // Fallback to local storage
   }
 };
@@ -114,19 +117,22 @@ export const getCurrentUserFromServer = async (): Promise<AppUser | null> => {
  */
 export const updateStoredUserData = async (user: any): Promise<void> => {
   try {
-    const existingSession = await AsyncStorage.getItem('@app:user_session');
-    
+    const existingSession = await AsyncStorage.getItem("@app:user_session");
+
     if (existingSession) {
       const parsedSession: UserSession = JSON.parse(existingSession);
-      
+
       const updatedSession: UserSession = {
         ...parsedSession,
         user: user,
         savedAt: new Date().toISOString(),
       };
-      
-      await AsyncStorage.setItem('@app:user_session', JSON.stringify(updatedSession));
-      
+
+      await AsyncStorage.setItem(
+        "@app:user_session",
+        JSON.stringify(updatedSession)
+      );
+
       // Update cache
       currentUserCache = {
         id: user.id,
@@ -138,7 +144,7 @@ export const updateStoredUserData = async (user: any): Promise<void> => {
       };
     }
   } catch (error) {
-    console.error('Error updating user data:', error);
+    console.error("Error updating user data:", error);
   }
 };
 
@@ -150,7 +156,7 @@ export const verifyAuthentication = async (): Promise<boolean> => {
     const user = await getCurrentUser();
     return !!user;
   } catch (error) {
-    console.error('Error verifying authentication:', error);
+    console.error("Error verifying authentication:", error);
     return false;
   }
 };
@@ -160,8 +166,8 @@ export const verifyAuthentication = async (): Promise<boolean> => {
  */
 export const getAccessToken = async (): Promise<string | null> => {
   try {
-    const userSession = await AsyncStorage.getItem('@app:user_session');
-    
+    const userSession = await AsyncStorage.getItem("@app:user_session");
+
     if (!userSession) {
       return null;
     }
@@ -169,7 +175,7 @@ export const getAccessToken = async (): Promise<string | null> => {
     const parsedSession: UserSession = JSON.parse(userSession);
     return parsedSession.access_token;
   } catch (error) {
-    console.error('Error retrieving access token:', error);
+    console.error("Error retrieving access token:", error);
     return null;
   }
 };
@@ -179,12 +185,21 @@ export const getAccessToken = async (): Promise<string | null> => {
  */
 export const clearUserSession = async (): Promise<void> => {
   try {
-    await AsyncStorage.removeItem('@app:user_session');
+    await AsyncStorage.removeItem("@app:user_session");
     currentUserCache = null;
-    console.log('User session cleared successfully');
+    console.log("User session cleared successfully");
   } catch (error) {
-    console.error('Error clearing user session:', error);
+    console.error("Error clearing user session:", error);
     throw error;
+  }
+};
+export const logoutUser = async () => {
+  try {
+    await supabase.auth.signOut(); // Supabase logout
+    await clearUserSession(); // Clear local session
+    console.log("Logged out successfully.");
+  } catch (error) {
+    console.error("Logout error:", error);
   }
 };
 
@@ -194,25 +209,25 @@ export const clearUserSession = async (): Promise<void> => {
 export const getUserProfile = async (): Promise<any> => {
   try {
     const currentUser = await getCurrentUser();
-    
+
     if (!currentUser) {
-      throw new Error('No authenticated user found');
+      throw new Error("No authenticated user found");
     }
 
     const { data: profile, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', currentUser.id)
+      .from("users")
+      .select("*")
+      .eq("id", currentUser.id)
       .single();
 
     if (error) {
-      console.error('Error fetching user profile:', error);
+      console.error("Error fetching user profile:", error);
       throw error;
     }
 
     return profile;
   } catch (error) {
-    console.error('Error in getUserProfile:', error);
+    console.error("Error in getUserProfile:", error);
     throw error;
   }
 };
@@ -222,23 +237,28 @@ export const getUserProfile = async (): Promise<any> => {
  */
 export const validateUserSession = async (): Promise<boolean> => {
   try {
-    const { data: { session }, error } = await supabase.auth.getSession();
-    
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
+
     if (error || !session) {
-      console.log('Session validation failed:', error);
+      console.log("Session validation failed:", error);
       await clearUserSession();
       return false;
     }
 
     // Update stored session with current data
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (user) {
       await updateStoredUserData(user);
     }
 
     return true;
   } catch (error) {
-    console.error('Error validating user session:', error);
+    console.error("Error validating user session:", error);
     return false;
   }
 };

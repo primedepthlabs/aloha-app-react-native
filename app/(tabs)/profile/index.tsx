@@ -9,9 +9,10 @@ import {
   Image,
   ActivityIndicator,
   Modal,
+  Linking,
 } from "react-native";
 import { Svg, Path, Circle } from "react-native-svg";
-import { } from "nativewind";
+import {} from "nativewind";
 import {
   Settings,
   Bell,
@@ -139,9 +140,7 @@ const ProfileScreen = () => {
       }}
     >
       <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <Text style={{ fontSize: 32, marginRight: 16 }}>
-          {flag}
-        </Text>
+        <Text style={{ fontSize: 32, marginRight: 16 }}>{flag}</Text>
         <Text
           style={{
             fontSize: 17,
@@ -267,10 +266,7 @@ const ProfileScreen = () => {
               borderRadius: 10,
             }}
           >
-            <Text
-              className="text-black font-semibold"
-              style={{ fontSize: 13 }}
-            >
+            <Text className="text-black font-semibold" style={{ fontSize: 13 }}>
               + Add funds
             </Text>
           </TouchableOpacity>
@@ -341,14 +337,21 @@ const ProfileScreen = () => {
             onPress={() => router.push("/(tabs)/profile/account-settings")}
           />
           <MenuItem
+            icon={ShieldCheck}
+            title="Security settings"
+            onPress={() => router.push("/(tabs)/profile/security-settings")}
+          />
+          <MenuItem
             icon={Bell}
             title="Notification settings"
             onPress={() => router.push("/(tabs)/profile/notificationSettings")}
           />
           <MenuItem
             icon={Star}
-            title="Join as talent"
-            onPress={() => router.push("/(tabs)/profile/security-settings")}
+            title="Join as Star"
+            onPress={() =>
+              Linking.openURL("https://alohastars.io/join-as-start")
+            }
           />
           <MenuItem
             icon={CreditCard}
