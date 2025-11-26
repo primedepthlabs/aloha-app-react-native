@@ -1937,6 +1937,7 @@ export default function Chat() {
       </Modal>
 
       {/* Audio Call Modal */}
+      {/* Audio Call Modal */}
       <Modal
         visible={showAudioCall}
         animationType="fade"
@@ -1945,201 +1946,281 @@ export default function Chat() {
           setCallDuration(0);
           setAudioCallStatus("requesting");
         }}
+        statusBarTranslucent
       >
         <StatusBar barStyle="light-content" />
 
-        <LinearGradient
-          colors={["#0F0F10", "#4A3B0A"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          className="flex-1"
-        >
-          {/* Back Button - Top Left */}
-          <View className="absolute top-12 left-5 z-20">
-            <TouchableOpacity
-              onPress={() => {
-                setShowAudioCall(false);
-                setCallDuration(0);
-                setAudioCallStatus("requesting");
-              }}
-            >
-              <ChevronLeft size={32} color="white" />
-            </TouchableOpacity>
-          </View>
-
-          {/* Center Content */}
-          <View className="flex-1 items-center justify-center px-5">
-            {/* Profile Picture */}
+        <View style={{ flex: 1, backgroundColor: "#0F0F10" }}>
+          <LinearGradient
+            colors={["#0F0F10", "#4A3B0A"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={{ flex: 1 }}
+          >
+            {/* Back Button - Top Left */}
             <View
-              className="w-32 h-32 rounded-full overflow-hidden mb-8"
+              style={{ position: "absolute", top: 50, left: 20, zIndex: 20 }}
+            >
+              <TouchableOpacity
+                onPress={() => {
+                  setShowAudioCall(false);
+                  setCallDuration(0);
+                  setAudioCallStatus("requesting");
+                }}
+              >
+                <ChevronLeft size={32} color="white" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Center Content */}
+            <View
               style={{
-                borderWidth: audioCallStatus === "requesting" ? 4 : 0,
-                borderColor: "#FCCD34",
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+                paddingHorizontal: 20,
               }}
             >
-              <Image
-                source={
-                  influencerImage
-                    ? { uri: influencerImage }
-                    : require("../../../assets/images/boy.png")
-                }
-                style={{ width: "100%", height: "100%" }}
-                resizeMode="cover"
-              />
-            </View>
-
-            {/* Name */}
-            <Text
-              className="text-white text-3xl mb-3"
-              style={{ fontFamily: FONT.SemiBold }}
-            >
-              {influencerName || "User"}
-            </Text>
-
-            {/* Status Text */}
-            <Text
-              className="text-gray-400 text-lg"
-              style={{ fontFamily: FONT.Regular }}
-            >
-              {audioCallStatus === "requesting" && "Requesting..."}
-              {audioCallStatus === "connected" &&
-                formatCallDuration(callDuration)}
-              {audioCallStatus === "ended" && "Call ended"}
-            </Text>
-          </View>
-
-          {/* Bottom Controls */}
-          <View className="pb-12 px-5">
-            {/* Bottom indicator line */}
-            <View className="items-center mb-8">
+              {/* Profile Picture */}
               <View
-                className="bg-gray-500 rounded-full"
                 style={{
-                  width: 134,
-                  height: 5,
+                  width: 160,
+                  height: 160,
+                  borderRadius: 80,
+                  overflow: "hidden",
+                  marginBottom: 32,
+                  borderWidth: audioCallStatus === "requesting" ? 4 : 0,
+                  borderColor: "#FCCD34",
                 }}
-              />
+              >
+                <Image
+                  source={
+                    influencerImage
+                      ? { uri: influencerImage }
+                      : require("../../../assets/images/boy.png")
+                  }
+                  style={{ width: "100%", height: "100%" }}
+                  resizeMode="cover"
+                />
+              </View>
+
+              {/* Name */}
+              <Text
+                style={{
+                  color: "white",
+                  fontSize: 28,
+                  fontFamily: FONT.SemiBold,
+                  marginBottom: 12,
+                }}
+              >
+                {influencerName || "User"}
+              </Text>
+
+              {/* Status Text */}
+              <Text
+                style={{
+                  color: "#9CA3AF",
+                  fontSize: 18,
+                  fontFamily: FONT.Regular,
+                }}
+              >
+                {audioCallStatus === "requesting" && "Requesting..."}
+                {audioCallStatus === "connected" &&
+                  formatCallDuration(callDuration)}
+                {audioCallStatus === "ended" && "Call ended"}
+              </Text>
             </View>
 
-            <View className="flex-row justify-center items-center gap-8">
-              {/* Audio Toggle */}
-              <View className="items-center">
-                <TouchableOpacity
-                  className="w-16 h-16 rounded-full items-center justify-center"
+            {/* Bottom Controls - Fixed positioning */}
+            <View
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                paddingBottom: 50,
+                paddingHorizontal: 20,
+                backgroundColor: "rgba(15, 15, 16, 0.5)",
+              }}
+            >
+              {/* Bottom indicator line */}
+              <View style={{ alignItems: "center", marginBottom: 32 }}>
+                <View
                   style={{
-                    backgroundColor:
-                      audioCallStatus === "ended"
-                        ? "rgba(255, 255, 255, 0.1)"
-                        : "#FCCD34",
+                    width: 134,
+                    height: 5,
+                    backgroundColor: "rgba(255, 255, 255, 0.3)",
+                    borderRadius: 2.5,
                   }}
-                  disabled={audioCallStatus === "ended"}
-                >
-                  <Phone
-                    size={28}
-                    color={audioCallStatus === "ended" ? "white" : "white"}
-                    fill="white"
-                  />
-                </TouchableOpacity>
-                <Text
-                  className="text-white text-base mt-2"
-                  style={{ fontFamily: FONT.Medium }}
-                >
-                  Audio
-                </Text>
+                />
               </View>
 
-              {/* Video Toggle */}
-              <View className="items-center">
-                <TouchableOpacity
-                  className="w-16 h-16 rounded-full items-center justify-center"
-                  style={{
-                    backgroundColor:
-                      audioCallStatus === "ended"
-                        ? "rgba(255, 255, 255, 0.1)"
-                        : "rgba(255, 255, 255, 0.2)",
-                  }}
-                  disabled={audioCallStatus === "ended"}
-                >
-                  <Image
-                    source={require("../../../assets/images/camera.png")}
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-around",
+                  alignItems: "center",
+                  paddingHorizontal: 10,
+                }}
+              >
+                {/* Audio Toggle */}
+                <View style={{ alignItems: "center" }}>
+                  <TouchableOpacity
                     style={{
-                      width: 28,
-                      height: 28,
-                      tintColor: "white",
+                      width: 70,
+                      height: 70,
+                      borderRadius: 35,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor:
+                        audioCallStatus === "ended"
+                          ? "rgba(255, 255, 255, 0.1)"
+                          : "#FCCD34",
                     }}
-                    resizeMode="contain"
-                  />
-                </TouchableOpacity>
-                <Text
-                  className="text-white text-base mt-2"
-                  style={{ fontFamily: FONT.Medium }}
-                >
-                  Video
-                </Text>
-              </View>
-
-              {/* Mute Toggle */}
-              <View className="items-center">
-                <TouchableOpacity
-                  className="w-16 h-16 rounded-full items-center justify-center"
-                  style={{
-                    backgroundColor:
-                      audioCallStatus === "ended"
-                        ? "rgba(255, 255, 255, 0.1)"
-                        : "rgba(255, 255, 255, 0.2)",
-                  }}
-                  onPress={() => setIsMuted(!isMuted)}
-                  disabled={audioCallStatus === "ended"}
-                >
-                  <Image
-                    source={require("../../../assets/images/Mic-off.png")}
+                    disabled={audioCallStatus === "ended"}
+                  >
+                    <Phone size={32} color="white" fill="white" />
+                  </TouchableOpacity>
+                  <Text
                     style={{
-                      width: 28,
-                      height: 28,
-                      tintColor: "white",
+                      color: "white",
+                      fontSize: 14,
+                      fontFamily: FONT.Medium,
+                      marginTop: 8,
                     }}
-                    resizeMode="contain"
-                  />
-                </TouchableOpacity>
-                <Text
-                  className="text-white text-base mt-2"
-                  style={{ fontFamily: FONT.Medium }}
-                >
-                  Mute
-                </Text>
-              </View>
+                  >
+                    Audio
+                  </Text>
+                </View>
 
-              {/* End Call */}
-              <View className="items-center">
-                <TouchableOpacity
-                  className="w-16 h-16 rounded-full bg-red-500 items-center justify-center"
-                  onPress={() => {
-                    if (audioCallStatus === "ended") {
-                      setShowAudioCall(false);
-                      setCallDuration(0);
-                      setAudioCallStatus("requesting");
-                    } else {
-                      setAudioCallStatus("ended");
-                      setTimeout(() => {
+                {/* Video Toggle */}
+                <View style={{ alignItems: "center" }}>
+                  <TouchableOpacity
+                    style={{
+                      width: 70,
+                      height: 70,
+                      borderRadius: 35,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor:
+                        audioCallStatus === "ended"
+                          ? "rgba(255, 255, 255, 0.1)"
+                          : "rgba(255, 255, 255, 0.2)",
+                    }}
+                    disabled={audioCallStatus === "ended"}
+                  >
+                    <Image
+                      source={require("../../../assets/images/camera.png")}
+                      style={{
+                        width: 32,
+                        height: 32,
+                        tintColor: "white",
+                      }}
+                      resizeMode="contain"
+                    />
+                  </TouchableOpacity>
+                  <Text
+                    style={{
+                      color: "white",
+                      fontSize: 14,
+                      fontFamily: FONT.Medium,
+                      marginTop: 8,
+                    }}
+                  >
+                    Video
+                  </Text>
+                </View>
+
+                {/* Mute Toggle */}
+                <View style={{ alignItems: "center" }}>
+                  <TouchableOpacity
+                    style={{
+                      width: 70,
+                      height: 70,
+                      borderRadius: 35,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor:
+                        audioCallStatus === "ended"
+                          ? "rgba(255, 255, 255, 0.1)"
+                          : "rgba(255, 255, 255, 0.2)",
+                    }}
+                    onPress={() => setIsMuted(!isMuted)}
+                    disabled={audioCallStatus === "ended"}
+                  >
+                    <Image
+                      source={require("../../../assets/images/Mic-off.png")}
+                      style={{
+                        width: 32,
+                        height: 32,
+                        tintColor: "white",
+                      }}
+                      resizeMode="contain"
+                    />
+                  </TouchableOpacity>
+                  <Text
+                    style={{
+                      color: "white",
+                      fontSize: 14,
+                      fontFamily: FONT.Medium,
+                      marginTop: 8,
+                    }}
+                  >
+                    Mute
+                  </Text>
+                </View>
+
+                {/* End Call */}
+                <View style={{ alignItems: "center" }}>
+                  <TouchableOpacity
+                    style={{
+                      width: 70,
+                      height: 70,
+                      borderRadius: 35,
+                      backgroundColor: "#EF4444",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    onPress={() => {
+                      if (audioCallStatus === "ended") {
                         setShowAudioCall(false);
                         setCallDuration(0);
                         setAudioCallStatus("requesting");
-                      }, 2000);
-                    }
-                  }}
-                >
-                  <Text className="text-white text-3xl font-bold">✕</Text>
-                </TouchableOpacity>
-                <Text
-                  className="text-white text-base mt-2"
-                  style={{ fontFamily: FONT.Medium }}
-                >
-                  End
-                </Text>
+                      } else {
+                        setAudioCallStatus("ended");
+                        setTimeout(() => {
+                          setShowAudioCall(false);
+                          setCallDuration(0);
+                          setAudioCallStatus("requesting");
+                        }, 2000);
+                      }
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "white",
+                        fontSize: 28,
+                        fontWeight: "bold",
+                      }}
+                    >
+                      ✕
+                    </Text>
+                  </TouchableOpacity>
+                  <Text
+                    style={{
+                      color: "white",
+                      fontSize: 14,
+                      fontFamily: FONT.Medium,
+                      marginTop: 8,
+                    }}
+                  >
+                    End
+                  </Text>
+                </View>
               </View>
             </View>
-          </View>
-        </LinearGradient>
+          </LinearGradient>
+        </View>
       </Modal>
     </KeyboardAvoidingView>
   );
