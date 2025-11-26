@@ -10,21 +10,15 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import {
-  Search,
-  Star,
-  MessageCircle,
-  MoreVertical,
-  ChevronLeft,
-} from "lucide-react-native";
+import { Search, Star, MoreVertical, ChevronLeft } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter, Link } from "expo-router";
+import { useRouter } from "expo-router";
 import { supabase } from "../../../supabaseClient";
 import { getCurrentUser } from "../../../utils/authHelpers";
 
 interface User {
   id: string; // users.id
-  influencerProfileId?: string; // influencer_profiles.id <- important
+  influencerProfileId?: string; // influencer_profiles.id
   name: string;
   role: string;
   image: any;
@@ -35,6 +29,7 @@ interface User {
   isOnline: boolean;
   gallery: string[];
   avatar_url?: string;
+  isVerified?: boolean;
 }
 
 interface Notification {
@@ -125,7 +120,7 @@ export default function DiscoverScreen() {
   };
 
   // open the block modal for a user (call from Block menu item)
-  const openBlockModal = (user) => {
+  const openBlockModal = (user: User) => {
     setShowProfileMenu(false);
 
     // store target BEFORE closing modal
@@ -226,7 +221,7 @@ export default function DiscoverScreen() {
         setCurrentUserId(currentUser.id);
       }
 
-      // Query influencer_profiles first (guarantees influencer_profiles.id is present)
+      // Query influencer_profiles first
       const { data: profiles, error } = await supabase
         .from("influencer_profiles")
         .select(
@@ -248,7 +243,6 @@ export default function DiscoverScreen() {
         )
       `
         )
-        // optionally filter out inactive users; remove while debugging if needed
         .is("users.is_active", true);
 
       console.log("fetchInfluencers - supabase error:", error);
@@ -265,10 +259,10 @@ export default function DiscoverScreen() {
 
       // Map to User[] and filter out current user
       const transformedUsers: User[] = (profiles || [])
-        .filter((p: any) => p.user_id !== currentUser?.id) // Filter out current user
+        .filter((p: any) => p.user_id !== currentUser?.id)
         .map((p: any) => ({
-          id: p.user_id, // users.id (useful)
-          influencerProfileId: p.id, // IMPORTANT: influencer_profiles.id
+          id: p.user_id, // users.id
+          influencerProfileId: p.id, // influencer_profiles.id
           name: p.display_name || p.users?.full_name || "Unknown",
           role: "Influencer",
           image: p.profile_image_url
@@ -285,9 +279,9 @@ export default function DiscoverScreen() {
             "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400",
           ],
           avatar_url: p.users?.avatar_url || p.profile_image_url || undefined,
+          isVerified: p.users?.is_verified ?? false,
         }));
 
-      // debug: verify mapping contains influencerProfileId
       console.log(
         "fetchInfluencers - mapped users:",
         JSON.stringify(transformedUsers, null, 2)
@@ -322,46 +316,108 @@ export default function DiscoverScreen() {
     return user.id === currentUserId;
   };
 
-  // Navigate to chat using influencer_profiles.id (influencerProfileId)
-  const navigateToChat = (user: User | null) => {
-    if (!user) {
-      console.warn("navigateToChat called without user");
-      Alert.alert("Error", "Unable to open chat: invalid user selected.");
-      return;
+  // ✅ Navigate to chat: find/create conversation and pass conversationId
+  const navigateToChat = async (user: User | null) => {
+    try {
+      if (!user) {
+        console.warn("navigateToChat called without user");
+        Alert.alert("Error", "Unable to open chat: invalid user selected.");
+        return;
+      }
+
+      // Don't allow chatting with yourself
+      if (isCurrentUser(user)) {
+        Alert.alert("Notice", "You cannot send messages to yourself.");
+        return;
+      }
+
+      const influencerProfileId = user.influencerProfileId;
+      if (!influencerProfileId || !isValidUUID(influencerProfileId)) {
+        console.warn("Missing influencerProfileId for user:", user);
+        Alert.alert(
+          "Error",
+          "Unable to open chat: influencer profile information is missing."
+        );
+        return;
+      }
+
+      // Get current user (regular user)
+      const currentUser = await getCurrentUser();
+      if (!currentUser) {
+        Alert.alert("Error", "Please log in to continue");
+        return;
+      }
+
+      console.log("Current user ID:", currentUser.id);
+      console.log("Influencer profile ID:", influencerProfileId);
+
+      // 1. Try to find existing active conversation
+      const { data: existingConv, error: convError } = await supabase
+        .from("conversations")
+        .select(
+          `
+          id,
+          regular_user_id,
+          influencer_id,
+          is_active
+        `
+        )
+        .eq("regular_user_id", currentUser.id)
+        .eq("influencer_id", influencerProfileId)
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if (convError && (convError as any).code !== "PGRST116") {
+        console.error("Error checking conversation:", convError);
+        Alert.alert("Error", "Could not open chat. Please try again.");
+        return;
+      }
+
+      let conversationId: string;
+
+      if (existingConv) {
+        conversationId = existingConv.id;
+        console.log("Using existing conversation:", conversationId);
+      } else {
+        // 2. Create new conversation
+        const { data: newConv, error: createError } = await supabase
+          .from("conversations")
+          .insert({
+            regular_user_id: currentUser.id,
+            influencer_id: influencerProfileId,
+            is_active: true,
+          })
+          .select("id")
+          .single();
+
+        if (createError || !newConv) {
+          console.error("Error creating conversation:", createError);
+          Alert.alert("Error", "Failed to start conversation");
+          return;
+        }
+
+        conversationId = newConv.id;
+        console.log("Created new conversation:", conversationId);
+      }
+
+      // 3. Navigate to Chat WITH valid conversationId
+      router.push({
+        pathname: "/(tabs)/chats/chat",
+        params: {
+          conversationId,
+          name: user.name,
+          image:
+            user.avatar_url && typeof user.avatar_url === "string"
+              ? user.avatar_url
+              : "",
+          isOnline: user.isOnline ? "true" : "false",
+          isVerified: user.isVerified ? "true" : "false",
+        },
+      });
+    } catch (err) {
+      console.error("Error opening chat:", err);
+      Alert.alert("Error", "Something went wrong. Please try again.");
     }
-
-    // Don't allow chatting with yourself
-    if (isCurrentUser(user)) {
-      Alert.alert("Notice", "You cannot send messages to yourself.");
-      return;
-    }
-
-    const influencerProfileId = user.influencerProfileId;
-    if (!influencerProfileId || !isValidUUID(influencerProfileId)) {
-      console.warn("Missing influencerProfileId for user:", user);
-      Alert.alert(
-        "Error",
-        "Unable to open chat: influencer profile information is missing."
-      );
-      return;
-    }
-
-    // debug log if needed:
-    // console.log("Navigating to chat with influencerId:", influencerProfileId);
-
-    router.push({
-      pathname: "/(tabs)/chats/chat",
-      params: {
-        influencerId: influencerProfileId, // must be influencer_profiles.id
-        name: user.name,
-        image:
-          user.avatar_url ||
-          (user.image && typeof user.image === "string"
-            ? user.image
-            : "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100"),
-        isOnline: user.isOnline ? "true" : "false",
-      },
-    });
   };
 
   // Navigate to Report screen with proper params (reportedUserId must be users.id)
@@ -382,7 +438,6 @@ export default function DiscoverScreen() {
       return;
     }
 
-    // pass users.id as reportedUserId (abuse_reports.reported_user_id expects users.id)
     router.push({
       pathname: "/(tabs)/discover/report",
       params: {
@@ -394,9 +449,6 @@ export default function DiscoverScreen() {
         influencerProfileId: user.influencerProfileId ?? "",
       },
     } as any);
-
-    // keep the selected user open (optional)
-    // setSelectedUser(null); // uncomment if you want to auto-close the profile modal
   };
 
   const applyFilter = () => {
@@ -482,15 +534,12 @@ export default function DiscoverScreen() {
       {/* Header */}
       <View className="pt-14 pb-4 px-6">
         <View className="flex-row items-center justify-between mb-6">
-          {/* Left side (empty to keep center alignment) */}
           <View style={{ width: 28 }} />
 
-          {/* Center Title */}
           <Text className="text-white font-bold text-[18px] text-center flex-1">
             Discover
           </Text>
 
-          {/* Right side - notification icon */}
           <TouchableOpacity onPress={() => setShowNotificationModal(true)}>
             <Image
               source={require("../../../assets/images/bell-notification.png")}
@@ -616,7 +665,7 @@ export default function DiscoverScreen() {
                           right: 0,
                           bottom: 0,
                           backgroundColor: "rgba(0, 0, 0, 0.6)",
-                          backdropFilter: "blur(4px)",
+                          backdropFilter: "blur(4px)" as any,
                           justifyContent: "center",
                           alignItems: "center",
                           zIndex: 5,
@@ -1178,6 +1227,7 @@ export default function DiscoverScreen() {
           </View>
         )}
       </Modal>
+
       {/* Block Confirmation Modal */}
       <Modal
         visible={showBlockModal}
@@ -1274,7 +1324,7 @@ export default function DiscoverScreen() {
                 disabled={blocking}
                 style={{
                   flex: 1,
-                  backgroundColor: "#FF3B30", // destructive color
+                  backgroundColor: "#FF3B30",
                   borderRadius: 12,
                   paddingVertical: 12,
                   alignItems: "center",

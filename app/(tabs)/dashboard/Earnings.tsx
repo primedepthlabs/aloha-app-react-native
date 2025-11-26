@@ -425,9 +425,7 @@ const EarningsDashboard = () => {
             justifyContent: "center",
             alignItems: "center",
           }}
-        >
-          <ChevronLeft size={26} color="#FFF" strokeWidth={2} />
-        </TouchableOpacity>
+        ></TouchableOpacity>
 
         <Text
           style={{

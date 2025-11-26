@@ -10,6 +10,9 @@ import {
   ActivityIndicator,
   Modal,
   Linking,
+  Alert,
+  Pressable,
+  TouchableWithoutFeedback,
 } from "react-native";
 import {} from "nativewind";
 import {
@@ -21,6 +24,9 @@ import {
   ShieldCheck,
   Globe,
   ChevronRight,
+  Plus,
+  X,
+  ChevronLeft,
 } from "lucide-react-native";
 import {
   useFonts,
@@ -30,6 +36,7 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
+import * as ImagePicker from "expo-image-picker";
 
 // <-- UPDATE THIS IMPORT PATH if your auth helper lives elsewhere -->
 import {
@@ -45,6 +52,12 @@ const FONT = {
   Bold: "Poppins_700Bold",
 };
 
+interface PhotoSlot {
+  id: number;
+  uri: string | null;
+  size: "large" | "medium" | "small";
+}
+
 const ProfileScreen = () => {
   // local state driven from logged-in user
   const [userName, setUserName] = useState<string | null>(null);
@@ -53,6 +66,19 @@ const ProfileScreen = () => {
   const [selectedLanguage, setSelectedLanguage] = useState("English");
   const [isLanguageModalVisible, setIsLanguageModalVisible] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // Gallery states
+  const [galleryVisible, setGalleryVisible] = useState(false);
+  const [photos, setPhotos] = useState<PhotoSlot[]>([
+    { id: 1, uri: null, size: "large" },
+    { id: 2, uri: null, size: "medium" },
+    { id: 3, uri: null, size: "medium" },
+    { id: 4, uri: null, size: "small" },
+    { id: 5, uri: null, size: "small" },
+    { id: 6, uri: null, size: "small" },
+  ]);
+  const [selectedPhoto, setSelectedPhoto] = useState<PhotoSlot | null>(null);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -128,6 +154,83 @@ const ProfileScreen = () => {
       mounted = false;
     };
   }, []);
+
+  // Photo functions
+  const pickImage = async (id: number) => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    // Some SDKs return { granted }, others return { status: 'granted' }
+    const granted =
+      (permission as any).granted === true ||
+      (permission as any).status === "granted";
+
+    if (!granted) {
+      Alert.alert(
+        "Permission Required",
+        "Please grant access to your photo library"
+      );
+      return;
+    }
+
+    // compatibility: prefer MediaType, fallback to MediaTypeOptions, otherwise omit key
+    const mediaTypes =
+      (ImagePicker as any).MediaType?.Images ??
+      (ImagePicker as any).MediaTypeOptions?.Images ??
+      (ImagePicker as any).MediaTypeOptions?.All ??
+      (ImagePicker as any).MediaType?.All ??
+      undefined;
+
+    const launchOptions: any = {
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    };
+    if (mediaTypes) launchOptions.mediaTypes = mediaTypes;
+
+    const result = await ImagePicker.launchImageLibraryAsync(launchOptions);
+
+    // handle both shapes: new `{ canceled, assets }` and older `{ cancelled, uri }`
+    if (!result.canceled && (result as any).assets?.length) {
+      const uri = (result as any).assets[0].uri;
+      setPhotos((p) =>
+        p.map((photo) => (photo.id === id ? { ...photo, uri } : photo))
+      );
+      return;
+    }
+
+    // older SDK support: result.cancelled + result.uri
+    if ((result as any).cancelled === false && (result as any).uri) {
+      const uri = (result as any).uri;
+      setPhotos((p) =>
+        p.map((photo) => (photo.id === id ? { ...photo, uri } : photo))
+      );
+    }
+  };
+
+  const handlePhotoPress = (photo: PhotoSlot) => {
+    if (photo.uri) {
+      setSelectedPhoto(photo);
+    } else {
+      pickImage(photo.id);
+    }
+  };
+
+  const handleDeletePress = (photo: PhotoSlot) => {
+    setSelectedPhoto(photo);
+    setDeleteModalVisible(true);
+  };
+
+  const confirmDelete = () => {
+    if (selectedPhoto) {
+      setPhotos((p) =>
+        p.map((photo) =>
+          photo.id === selectedPhoto.id ? { ...photo, uri: null } : photo
+        )
+      );
+      setDeleteModalVisible(false);
+      setSelectedPhoto(null);
+    }
+  };
 
   if (!fontsLoaded) {
     return (
@@ -404,9 +507,7 @@ const ProfileScreen = () => {
             style={{
               paddingHorizontal: 7.75,
             }}
-            onPress={() => {
-              /* keep for gallery navigation if needed */
-            }}
+            onPress={() => setGalleryVisible(true)}
           >
             <Text
               className="text-gray-400"
@@ -544,6 +645,447 @@ const ProfileScreen = () => {
             />
           </TouchableOpacity>
         </TouchableOpacity>
+      </Modal>
+
+      {/* Gallery Modal */}
+      <Modal visible={galleryVisible} animationType="slide">
+        <SafeAreaView className="flex-1 bg-black">
+          <StatusBar barStyle="light-content" />
+
+          <View
+            style={{
+              height: 60,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              paddingHorizontal: 20,
+              position: "relative",
+            }}
+          >
+            {/* Back Arrow */}
+            <TouchableOpacity
+              style={{ position: "absolute", left: 20 }}
+              onPress={() => router.back()}
+            >
+              <ChevronLeft size={24} color="#fff" />
+            </TouchableOpacity>
+
+            {/* Title */}
+            <Text
+              style={{
+                fontSize: 20,
+                fontFamily: FONT.SemiBold,
+                color: "#FFF",
+              }}
+            >
+              {userName ?? "User"}
+            </Text>
+          </View>
+
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20 }}
+          >
+            {/* Large Photo Grid */}
+            <View
+              style={{ flexDirection: "row", marginBottom: 12, height: 360 }}
+            >
+              {/* Large Photo Slot */}
+              <View style={{ flex: 1.4, marginRight: 12 }}>
+                <Pressable
+                  style={{ flex: 1 }}
+                  onPress={() => handlePhotoPress(photos[0])}
+                >
+                  {photos[0].uri ? (
+                    <View
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        position: "relative",
+                      }}
+                    >
+                      <Image
+                        source={{ uri: photos[0].uri }}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          borderRadius: 24,
+                        }}
+                        resizeMode="cover"
+                      />
+                      <Pressable
+                        hitSlop={8}
+                        onPressIn={(e) => {
+                          // stop parent Pressable from also handling this touch
+                          e.stopPropagation?.();
+                          handleDeletePress(photos[0]);
+                        }}
+                        style={{
+                          position: "absolute",
+                          top: 8,
+                          right: 8,
+                          width: 32,
+                          height: 32,
+                          backgroundColor: "rgba(0,0,0,0.6)",
+                          borderRadius: 16,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <X size={20} color="#fff" />
+                      </Pressable>
+                    </View>
+                  ) : (
+                    <View
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        borderWidth: 2,
+                        borderStyle: "dashed",
+                        borderColor: "#FCCD34",
+                        borderRadius: 24,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: "rgba(252, 205, 52, 0.05)",
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: 64,
+                          height: 64,
+                          backgroundColor: "#FCCD34",
+                          borderRadius: 32,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Plus size={32} color="#000" strokeWidth={3} />
+                      </View>
+                    </View>
+                  )}
+                </Pressable>
+              </View>
+
+              {/* Medium Photo Slots */}
+              <View style={{ flex: 1 }}>
+                <Pressable
+                  style={{ marginBottom: 12, flex: 1 }}
+                  onPress={() => handlePhotoPress(photos[1])}
+                >
+                  {photos[1].uri ? (
+                    <View
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        position: "relative",
+                      }}
+                    >
+                      <Image
+                        source={{ uri: photos[1].uri }}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          borderRadius: 24,
+                        }}
+                        resizeMode="cover"
+                      />
+                      <Pressable
+                        hitSlop={8}
+                        onPressIn={(e) => {
+                          e.stopPropagation?.();
+                          handleDeletePress(photos[1]);
+                        }}
+                        style={{
+                          position: "absolute",
+                          top: 8,
+                          right: 8,
+                          width: 32,
+                          height: 32,
+                          backgroundColor: "rgba(0,0,0,0.6)",
+                          borderRadius: 16,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <X size={20} color="#fff" />
+                      </Pressable>
+                    </View>
+                  ) : (
+                    <View
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        borderWidth: 2,
+                        borderStyle: "dashed",
+                        borderColor: "#FCCD34",
+                        borderRadius: 24,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: "rgba(252, 205, 52, 0.05)",
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: 48,
+                          height: 48,
+                          backgroundColor: "#FCCD34",
+                          borderRadius: 24,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Plus size={24} color="#000" strokeWidth={3} />
+                      </View>
+                    </View>
+                  )}
+                </Pressable>
+
+                <Pressable
+                  style={{ flex: 1 }}
+                  onPress={() => handlePhotoPress(photos[2])}
+                >
+                  {photos[2].uri ? (
+                    <View
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        position: "relative",
+                      }}
+                    >
+                      <Image
+                        source={{ uri: photos[2].uri }}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          borderRadius: 24,
+                        }}
+                        resizeMode="cover"
+                      />
+                      <Pressable
+                        hitSlop={8}
+                        onPressIn={(e) => {
+                          e.stopPropagation?.();
+                          handleDeletePress(photos[2]);
+                        }}
+                        style={{
+                          position: "absolute",
+                          top: 8,
+                          right: 8,
+                          width: 32,
+                          height: 32,
+                          backgroundColor: "rgba(0,0,0,0.6)",
+                          borderRadius: 16,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <X size={20} color="#fff" />
+                      </Pressable>
+                    </View>
+                  ) : (
+                    <View
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        borderWidth: 2,
+                        borderStyle: "dashed",
+                        borderColor: "#FCCD34",
+                        borderRadius: 24,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: "rgba(252, 205, 52, 0.05)",
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: 48,
+                          height: 48,
+                          backgroundColor: "#FCCD34",
+                          borderRadius: 24,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Plus size={24} color="#000" strokeWidth={3} />
+                      </View>
+                    </View>
+                  )}
+                </Pressable>
+              </View>
+            </View>
+
+            {/* Small Photo Slots Row */}
+            <View
+              style={{ flexDirection: "row", height: 170, marginBottom: 20 }}
+            >
+              {[3, 4, 5].map((index) => (
+                <Pressable
+                  key={index}
+                  style={{ flex: 1, marginHorizontal: 6 }}
+                  onPress={() => handlePhotoPress(photos[index])}
+                >
+                  {photos[index].uri ? (
+                    <View
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        position: "relative",
+                      }}
+                    >
+                      <Image
+                        source={{ uri: photos[index].uri }}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          borderRadius: 24,
+                        }}
+                        resizeMode="cover"
+                      />
+                      <Pressable
+                        hitSlop={8}
+                        onPressIn={(e) => {
+                          e.stopPropagation?.();
+                          handleDeletePress(photos[index]);
+                        }}
+                        style={{
+                          position: "absolute",
+                          top: 8,
+                          right: 8,
+                          width: 32,
+                          height: 32,
+                          backgroundColor: "rgba(0,0,0,0.6)",
+                          borderRadius: 16,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <X size={20} color="#fff" />
+                      </Pressable>
+                    </View>
+                  ) : (
+                    <View
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        borderWidth: 2,
+                        borderStyle: "dashed",
+                        borderColor: "#FCCD34",
+                        borderRadius: 24,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: "rgba(252, 205, 52, 0.05)",
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: 48,
+                          height: 48,
+                          backgroundColor: "#FCCD34",
+                          borderRadius: 24,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Plus size={24} color="#000" strokeWidth={3} />
+                      </View>
+                    </View>
+                  )}
+                </Pressable>
+              ))}
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        visible={deleteModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setDeleteModalVisible(false)}
+      >
+        {/* Tapping outside should close modal */}
+        <TouchableWithoutFeedback onPress={() => setDeleteModalVisible(false)}>
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: "rgba(0, 0, 0, 0.85)",
+              justifyContent: "flex-end",
+            }}
+          >
+            {/* Prevent taps inside dialog from closing modal */}
+            <TouchableWithoutFeedback>
+              <View
+                style={{
+                  paddingBottom: 40,
+                  paddingHorizontal: 40,
+                }}
+              >
+                {/* Selected Photo Preview */}
+                {selectedPhoto?.uri && (
+                  <View
+                    style={{
+                      width: "100%",
+                      height: 500,
+                      marginBottom: 20,
+                      borderRadius: 24,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <Image
+                      source={{ uri: selectedPhoto.uri }}
+                      style={{ width: "100%", height: "100%" }}
+                      resizeMode="cover"
+                    />
+                  </View>
+                )}
+
+                {/* Delete Button */}
+                <TouchableOpacity
+                  onPress={confirmDelete}
+                  style={{
+                    backgroundColor: "#2C2C2E",
+                    paddingVertical: 18,
+                    borderRadius: 14,
+                    marginBottom: 12,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "#FFF",
+                      fontSize: 18,
+                      fontFamily: FONT.SemiBold,
+                      textAlign: "center",
+                    }}
+                  >
+                    Delete
+                  </Text>
+                </TouchableOpacity>
+
+                {/* Cancel Button */}
+                <TouchableOpacity
+                  onPress={() => setDeleteModalVisible(false)}
+                  style={{
+                    backgroundColor: "#2C2C2E",
+                    paddingVertical: 18,
+                    borderRadius: 14,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "#FFF",
+                      fontSize: 18,
+                      fontFamily: FONT.SemiBold,
+                      textAlign: "center",
+                    }}
+                  >
+                    Cancel
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
       </Modal>
     </SafeAreaView>
   );

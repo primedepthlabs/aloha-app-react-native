@@ -58,10 +58,18 @@ interface Message {
 }
 
 export default function Chat() {
-  const params = useLocalSearchParams();
-  const conversationId = params.conversationId as string;
-  const influencerName = params.name as string;
-  const influencerImage = params.image as string;
+  // ⚠️ safer params handling
+  const params = useLocalSearchParams<{
+    conversationId?: string;
+    name?: string;
+    image?: string;
+    isOnline?: string;
+    isVerified?: string;
+  }>();
+
+  const conversationId = params.conversationId;
+  const influencerName = params.name ?? "";
+  const influencerImage = params.image ?? "";
   const isOnline = params.isOnline === "true";
   const isVerified = params.isVerified === "true";
 
@@ -102,10 +110,24 @@ export default function Chat() {
     Poppins_700Bold,
   });
 
-  // Get current user and initialize conversation
+  // 🔒 Early guard: if chat is opened without a valid conversationId, exit gracefully
   useEffect(() => {
+    if (!conversationId || conversationId === "undefined") {
+      console.warn(
+        "Chat opened without a valid conversationId:",
+        conversationId
+      );
+      Alert.alert("Error", "Unable to open chat: invalid conversation.");
+      router.back();
+    }
+  }, [conversationId]);
+
+  // Get current user and initialize conversation (only when conversationId is valid)
+  useEffect(() => {
+    if (!conversationId || conversationId === "undefined") return;
     initializeChat();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversationId]);
 
   // Enhanced real-time subscription
   useEffect(() => {
@@ -266,13 +288,7 @@ export default function Chat() {
       setCurrentUserId(currentUser.id);
       console.log("Current user ID:", currentUser.id);
 
-      // Step 3: Validate conversationId
-      if (!conversationId || conversationId === "undefined") {
-        console.error("Missing or invalid conversationId:", conversationId);
-        Alert.alert("Error", "Unable to open chat: invalid conversation.");
-        router.back();
-        return;
-      }
+      // ✅ ConversationId is already validated in the early guard, so no extra check here
 
       console.log("Conversation ID:", conversationId);
 
@@ -302,11 +318,7 @@ export default function Chat() {
       }
 
       // Step 5: Verify user has access to this conversation
-      // For regular users: check if they are the regular_user_id
-      // For influencers: check if they are the influencer's user_id
       const isRegularUser = conversation.regular_user_id === currentUser.id;
-
-      // Check if current user is the influencer by comparing with influencer's user_id
       const isInfluencer = conversation.influencer?.user_id === currentUser.id;
 
       console.log("Access check:", {
@@ -327,7 +339,7 @@ export default function Chat() {
       console.log("User has access to conversation");
 
       // Step 6: Load messages for this conversation
-      await loadMessages(conversationId, currentUser.id);
+      await loadMessages(conversationId as string, currentUser.id);
     } catch (error) {
       console.error("Error initializing chat:", error);
       Alert.alert("Error", "Failed to initialize chat");
@@ -715,12 +727,9 @@ export default function Chat() {
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <View className="bg-black pt-14 pb-3 px-4 flex-row items-center justify-between">
+      <View className="bg-black pt-12 pb-3 px-4 flex-row items-center justify-between">
         <View className="flex-row items-center flex-1">
-          <TouchableOpacity
-            className="mr-4"
-            onPress={() => router.push("/(tabs)/chats")}
-          >
+          <TouchableOpacity className="mr-4" onPress={() => router.back()}>
             <ChevronLeft size={28} color="white" />
           </TouchableOpacity>
           <View className="w-12 h-12 rounded-full bg-gray-700 mr-3 overflow-hidden">
