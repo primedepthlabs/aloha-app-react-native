@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+// app/(tabs)/profile/addFunds.tsx
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -21,6 +22,7 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
+import { supabase } from "@/supabaseClient"; // <-- adjust if different
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const FONT = {
@@ -30,12 +32,15 @@ const FONT = {
   Bold: "Poppins_700Bold",
 };
 
-const AddFunds = () => {
+export default function AddFunds() {
   const [amount, setAmount] = useState("");
   const [selectedPayment, setSelectedPayment] = useState("");
   const [showCardOptions, setShowCardOptions] = useState(false);
 
-  const balance = 12;
+  const [balance, setBalance] = useState<number | null>(null);
+  const [walletId, setWalletId] = useState<string | null>(null);
+  const [loadingWallet, setLoadingWallet] = useState(false);
+  const [processing, setProcessing] = useState(false);
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -43,6 +48,69 @@ const AddFunds = () => {
     Poppins_600SemiBold,
     Poppins_700Bold,
   });
+
+  // ----- define the function as a declaration (hoisted) so useEffect always sees it -----
+  async function loadWallet() {
+    setLoadingWallet(true);
+    try {
+      const {
+        data: { user },
+        error: userErr,
+      } = await supabase.auth.getUser();
+
+      if (userErr) {
+        console.error("getUser error:", userErr);
+        return;
+      }
+      if (!user) {
+        console.warn("No user logged in");
+        return;
+      }
+
+      // try to fetch wallet
+      const { data: walletRow, error } = await supabase
+        .from("wallets")
+        .select("*")
+        .eq("user_id", user.id)
+        .limit(1)
+        .maybeSingle();
+
+      if (error && !/No rows found/i.test(error.message ?? "")) {
+        console.error("Error fetching wallet:", error);
+      }
+
+      if (!walletRow) {
+        // create wallet with 0 balance
+        const { data: inserted, error: insertError } = await supabase
+          .from("wallets")
+          .insert({
+            user_id: user.id,
+            balance: 0,
+            currency: "USD",
+          })
+          .select()
+          .single();
+
+        if (insertError) {
+          console.error("Error creating wallet:", insertError);
+        } else {
+          setWalletId(inserted.id);
+          setBalance(Number(inserted.balance));
+        }
+      } else {
+        setWalletId(walletRow.id);
+        setBalance(Number(walletRow.balance));
+      }
+    } catch (err) {
+      console.error("Unexpected loadWallet error:", err);
+    } finally {
+      setLoadingWallet(false);
+    }
+  }
+
+  useEffect(() => {
+    loadWallet();
+  }, []);
 
   if (!fontsLoaded) {
     return (
@@ -61,15 +129,152 @@ const AddFunds = () => {
     }
   };
 
-  const handleContinue = () => {
-    console.log("Continue with amount:", amount, "payment:", selectedPayment);
+  // handle top-up
+  const handleContinue = async () => {
+    const parsed = parseFloat(amount);
+    if (isNaN(parsed) || parsed <= 0) {
+      Alert.alert(
+        "Invalid amount",
+        "Please enter a valid amount greater than 0."
+      );
+      return;
+    }
+
+    setProcessing(true);
+    try {
+      // get current user
+      const {
+        data: { user },
+        error: userErr,
+      } = await supabase.auth.getUser();
+
+      if (userErr || !user) {
+        console.error("No user or error getting user:", userErr);
+        Alert.alert("Not signed in", "Please sign in before adding funds.");
+        setProcessing(false);
+        return;
+      }
+
+      // ensure wallet exists
+      let currentWalletId = walletId;
+      if (!currentWalletId) {
+        const { data: insertData, error: insertErr } = await supabase
+          .from("wallets")
+          .insert({
+            user_id: user.id,
+            balance: 0,
+            currency: "USD",
+          })
+          .select()
+          .single();
+        if (insertErr) {
+          console.error("Error creating wallet:", insertErr);
+          Alert.alert("Error", "Unable to create wallet. Try again.");
+          setProcessing(false);
+          return;
+        }
+        currentWalletId = insertData.id;
+        setWalletId(currentWalletId);
+        setBalance(Number(insertData.balance));
+      }
+
+      // fetch latest balance
+      const { data: latestWallet, error: fetchErr } = await supabase
+        .from("wallets")
+        .select("id, balance")
+        .eq("id", currentWalletId)
+        .limit(1)
+        .maybeSingle();
+
+      if (fetchErr) {
+        console.error("Error fetching latest wallet:", fetchErr);
+        Alert.alert("Error", "Could not fetch latest wallet state.");
+        setProcessing(false);
+        return;
+      }
+
+      const currentBalance = latestWallet ? Number(latestWallet.balance) : 0;
+      const newBalance = Number((currentBalance + parsed).toFixed(2));
+
+      // Update wallet balance
+      const { data: updatedWallet, error: updateErr } = await supabase
+        .from("wallets")
+        .update({ balance: newBalance, updated_at: new Date().toISOString() })
+        .eq("id", currentWalletId)
+        .select()
+        .single();
+
+      if (updateErr) {
+        console.error("Error updating wallet:", updateErr);
+        // record failed transaction attempt (best-effort)
+        await supabase.from("transactions").insert({
+          user_id: user.id,
+          wallet_id: currentWalletId,
+          type: "top_up",
+          status: "failed",
+          amount: parsed,
+          currency: "USD",
+          payment_method: selectedPayment || null,
+          description: "Top-up failed during wallet update",
+          metadata: { note: "wallet update failed" },
+        });
+        Alert.alert("Error", "Failed to add funds. Please try again.");
+        setProcessing(false);
+        return;
+      }
+
+      // Insert transaction record (completed)
+      const { data: txInserted, error: txErr } = await supabase
+        .from("transactions")
+        .insert({
+          user_id: user.id,
+          wallet_id: currentWalletId,
+          type: "top_up", // ensure enum matches your DB
+          status: "completed",
+          amount: parsed,
+          currency: "USD",
+          payment_method: selectedPayment || null,
+          description: `Top-up via ${selectedPayment || "unknown"}`,
+          metadata: { method: selectedPayment || null },
+          completed_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (txErr) {
+        console.error("Transaction insert failed:", txErr);
+        Alert.alert(
+          "Partial success",
+          `Balance updated to ${updatedWallet.balance}, but failed to log transaction.`
+        );
+        setBalance(Number(updatedWallet.balance));
+        setAmount("");
+        setProcessing(false);
+        return;
+      }
+
+      // success
+      setBalance(Number(updatedWallet.balance));
+      setAmount("");
+      Alert.alert(
+        "Success",
+        `Funds added successfully. New balance: ${updatedWallet.balance}`
+      );
+
+      // optionally navigate back and pass param so profile can refresh
+      router.back();
+    } catch (err) {
+      console.error("Unexpected error adding funds:", err);
+      Alert.alert("Error", "An unexpected error occurred. Please try again.");
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
     <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
       <ScrollView className="flex-1">
-        {/* Header */}
         <View
           className="flex-row items-center px-4"
           style={{ height: 44, marginTop: 8 }}
@@ -90,7 +295,6 @@ const AddFunds = () => {
         </View>
 
         <View style={{ paddingHorizontal: 24, paddingTop: 20 }}>
-          {/* Current Balance Card */}
           <View
             style={{
               width: 331,
@@ -112,18 +316,21 @@ const AddFunds = () => {
             >
               Current Balance:
             </Text>
-            <Text
-              style={{
-                fontSize: 20,
-                fontFamily: FONT.Bold,
-                color: "#FCCD34",
-              }}
-            >
-              {balance} GEL
-            </Text>
+            {loadingWallet ? (
+              <ActivityIndicator />
+            ) : (
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontFamily: FONT.Bold,
+                  color: "#FCCD34",
+                }}
+              >
+                {balance !== null ? `${balance} USD` : "—"}
+              </Text>
+            )}
           </View>
 
-          {/* Enter Amount Section */}
           <Text
             style={{
               fontSize: 18,
@@ -152,9 +359,9 @@ const AddFunds = () => {
               color: "#FFFFFF",
               marginBottom: 24,
             }}
+            editable={!processing}
           />
 
-          {/* Select Payment Method Section */}
           <Text
             style={{
               fontSize: 18,
@@ -166,7 +373,7 @@ const AddFunds = () => {
             Select Payment Method
           </Text>
 
-          {/* Apple Pay Option */}
+          {/* Apple Pay */}
           <TouchableOpacity
             onPress={() => handlePaymentSelect("apple")}
             style={{
@@ -204,7 +411,7 @@ const AddFunds = () => {
             <Text className="text-gray-500 text-[20px]">›</Text>
           </TouchableOpacity>
 
-          {/* Card Option */}
+          {/* Card */}
           <TouchableOpacity
             onPress={() => handlePaymentSelect("card")}
             style={{
@@ -244,10 +451,8 @@ const AddFunds = () => {
             </Text>
           </TouchableOpacity>
 
-          {/* Card Options Expanded */}
           {showCardOptions && (
             <View style={{ marginBottom: 12 }}>
-              {/* MasterCard */}
               <TouchableOpacity
                 style={{
                   flexDirection: "row",
@@ -275,7 +480,6 @@ const AddFunds = () => {
                 </Text>
               </TouchableOpacity>
 
-              {/* Visa */}
               <TouchableOpacity
                 style={{
                   flexDirection: "row",
@@ -302,7 +506,6 @@ const AddFunds = () => {
                 </Text>
               </TouchableOpacity>
 
-              {/* Add Card Button */}
               <TouchableOpacity
                 onPress={() => router.push("/(tabs)/discover/addCard")}
                 style={{
@@ -330,10 +533,9 @@ const AddFunds = () => {
             </View>
           )}
 
-          {/* Continue Button */}
           <TouchableOpacity
-            // onPress={handleContinue}
-            onPress={() => Alert.alert("Funds added successfully!")}
+            onPress={handleContinue}
+            disabled={processing}
             style={{
               width: SCREEN_WIDTH - 48,
               height: 48,
@@ -342,26 +544,25 @@ const AddFunds = () => {
               alignItems: "center",
               justifyContent: "center",
               marginBottom: 32,
+              opacity: processing ? 0.7 : 1,
             }}
           >
-            <Text
-              style={{
-                fontSize: 18,
-                fontFamily: FONT.SemiBold,
-                color: "#000000",
-              }}
-            >
-              Continue
-            </Text>
+            {processing ? (
+              <ActivityIndicator color="#000" />
+            ) : (
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontFamily: FONT.SemiBold,
+                  color: "#000000",
+                }}
+              >
+                Continue
+              </Text>
+            )}
           </TouchableOpacity>
 
-          {/* Contact Support */}
-          <View
-            style={{
-              alignItems: "center",
-              marginBottom: 32,
-            }}
-          >
+          <View style={{ alignItems: "center", marginBottom: 32 }}>
             <Text
               style={{
                 fontSize: 15,
@@ -379,6 +580,4 @@ const AddFunds = () => {
       </ScrollView>
     </SafeAreaView>
   );
-};
-
-export default AddFunds;
+}
