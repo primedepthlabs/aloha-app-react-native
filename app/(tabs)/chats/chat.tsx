@@ -17,6 +17,8 @@ import {
   FlatList,
   Dimensions,
   RefreshControl,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { Phone, Video, ChevronLeft, Plus } from "lucide-react-native";
 import {
@@ -121,6 +123,28 @@ export default function Chat() {
       router.back();
     }
   }, [conversationId]);
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      () => {
+        setTimeout(() => {
+          scrollViewRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      }
+    );
+
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => {
+        // Keyboard hidden
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   // Get current user and initialize conversation (only when conversationId is valid)
   useEffect(() => {
@@ -721,13 +745,14 @@ export default function Chat() {
   return (
     <KeyboardAvoidingView
       className="flex-1 bg-black"
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={0}
+      behavior={Platform.OS === "ios" ? "padding" : "height"} // Changed for Android
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20} // Better offset
+      enabled={true}
     >
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <View className="bg-black pt-12 pb-3 px-4 flex-row items-center justify-between">
+      <View className="bg-black pt-14 pb-3 px-4 flex-row items-center justify-between">
         <View className="flex-row items-center flex-1">
           <TouchableOpacity className="mr-4" onPress={() => router.back()}>
             <ChevronLeft size={28} color="white" />
@@ -765,11 +790,11 @@ export default function Chat() {
               {isOnline && (
                 <View className="w-2 h-2 rounded-full bg-green-500 ml-2" />
               )}
-              {isVerified && (
+              {/* {isVerified && (
                 <View className="ml-1 w-4 h-4 bg-[#FCCD34] rounded-full items-center justify-center">
                   <Text className="text-black text-xs font-bold">✓</Text>
                 </View>
-              )}
+              )} */}
               {isRealtimeConnected && (
                 <View className="flex-row items-center ml-2">
                   <View className="w-2 h-2 rounded-full bg-green-500 mr-1" />
@@ -808,7 +833,7 @@ export default function Chat() {
       </View>
 
       {/* Balance Card */}
-      <View className="px-4 mt-4">
+      <View className="px-2 mt-4">
         <View
           style={{
             width: "100%",
@@ -844,19 +869,29 @@ export default function Chat() {
           <TouchableOpacity
             onPress={() => router.push("/(tabs)/profile/addFunds")}
             style={{
+              width: 92,
+              height: 26,
               backgroundColor: "#FCCD34",
-              borderRadius: 20,
-              paddingHorizontal: 16,
-              height: 36,
+              borderRadius: 10,
+              paddingHorizontal: 5,
               alignItems: "center",
               justifyContent: "center",
+              flexDirection: "row",
+              gap: 3, // Figma gap
             }}
           >
             <Text
               style={{
+                width: 73,
+                height: 10,
                 color: "black",
-                fontSize: 14,
-                fontFamily: FONT.SemiBold,
+                fontSize: 12,
+                fontFamily: FONT.Medium, // Poppins 500
+                fontWeight: "500",
+                lineHeight: 14, // line-height: 100%
+                letterSpacing: 0,
+                textAlignVertical: "center",
+                includeFontPadding: false, // closer to Figma
               }}
             >
               + Add funds
@@ -954,6 +989,7 @@ export default function Chat() {
             ref={scrollViewRef}
             className="flex-1 px-4 pt-4"
             contentContainerStyle={{ paddingBottom: 20 }}
+            keyboardShouldPersistTaps="handled"
             onContentSizeChange={() =>
               scrollViewRef.current?.scrollToEnd({ animated: true })
             }
@@ -1092,7 +1128,10 @@ export default function Chat() {
         <View className="flex-row items-end">
           <TouchableOpacity
             className="mr-3 mb-2"
-            onPress={() => setShowGallery(true)}
+            onPress={() => {
+              Keyboard.dismiss(); // Add this
+              setShowGallery(true);
+            }}
           >
             <Plus size={28} color="#FCCD34" />
           </TouchableOpacity>
@@ -1192,6 +1231,9 @@ export default function Chat() {
                   maxHeight: 96,
                 }}
                 multiline
+                blurOnSubmit={false} // Add this
+                returnKeyType="default" // Add this
+                enablesReturnKeyAutomatically={false}
                 onContentSizeChange={(e) => {
                   const newHeight = Math.max(
                     48,
@@ -1225,8 +1267,8 @@ export default function Chat() {
                   onPress={handleSendMessage}
                   disabled={message.trim() === ""}
                   style={{
-                    width: 28,
-                    height: 28,
+                    width: 41,
+                    height: 27,
                     borderRadius: 16,
                     backgroundColor: message.trim() ? "#FCCD34" : "#FCCD34",
                     alignItems: "center",
@@ -1234,8 +1276,8 @@ export default function Chat() {
                   }}
                 >
                   <Image
-                    source={require("../../../assets/images/Right.png")}
-                    style={{ width: 26, height: 26, resizeMode: "contain" }}
+                    source={require("../../../assets/images/send-text.png")}
+                    style={{ width: 16, height: 16, resizeMode: "contain" }}
                   />
                 </TouchableOpacity>
               </View>
@@ -1936,7 +1978,6 @@ export default function Chat() {
         </ImageBackground>
       </Modal>
 
-      {/* Audio Call Modal */}
       {/* Audio Call Modal */}
       <Modal
         visible={showAudioCall}

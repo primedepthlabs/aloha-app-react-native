@@ -26,6 +26,16 @@ export interface AppUser {
 // Cache to avoid multiple async storage calls
 let currentUserCache: AppUser | null = null;
 
+// Helper to detect the "no session" auth error
+const isAuthSessionMissingError = (err: any) => {
+  if (!err) return false;
+  return (
+    err.name === "AuthSessionMissingError" ||
+    err.__isAuthError === true ||
+    err.status === 400
+  );
+};
+
 /**
  * Get the current authenticated user from local storage (cached)
  * Fast but may not reflect recent changes
@@ -77,19 +87,45 @@ export const getCurrentUserFromServer = async (): Promise<AppUser | null> => {
     // Clear cache to force fresh data
     currentUserCache = null;
 
+    // 1) Check session first
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
+    if (sessionError) {
+      console.warn("getCurrentUserFromServer getSession error:", sessionError);
+    }
+
+    if (!session) {
+      // No Supabase session in memory -> treat as logged out
+      console.log(
+        "getCurrentUserFromServer: no active Supabase session, falling back to local user"
+      );
+      return await getCurrentUser(); // may be null
+    }
+
+    // 2) Now we are sure a session exists, we can safely call getUser
     const {
       data: { user },
       error,
     } = await supabase.auth.getUser();
 
     if (error) {
+      if (isAuthSessionMissingError(error)) {
+        console.log(
+          "getCurrentUserFromServer: AuthSessionMissingError – falling back to local user"
+        );
+        return await getCurrentUser();
+      }
+
       console.error("Error retrieving user from server:", error);
       return await getCurrentUser(); // Fallback to local storage
     }
 
     if (!user) {
-      console.log("No authenticated user found");
-      return null;
+      console.log("No authenticated user found on server");
+      return await getCurrentUser(); // or just `return null;`
     }
 
     // Update local storage with current data
@@ -106,7 +142,14 @@ export const getCurrentUserFromServer = async (): Promise<AppUser | null> => {
 
     currentUserCache = appUser;
     return appUser;
-  } catch (error) {
+  } catch (error: any) {
+    if (isAuthSessionMissingError(error)) {
+      console.log(
+        "getCurrentUserFromServer: AuthSessionMissingError in catch – falling back to local user"
+      );
+      return await getCurrentUser();
+    }
+
     console.error("Error in getCurrentUserFromServer:", error);
     return await getCurrentUser(); // Fallback to local storage
   }
@@ -193,6 +236,7 @@ export const clearUserSession = async (): Promise<void> => {
     throw error;
   }
 };
+
 export const logoutUser = async () => {
   try {
     await supabase.auth.signOut(); // Supabase logout
@@ -211,7 +255,9 @@ export const getUserProfile = async (): Promise<any> => {
     const currentUser = await getCurrentUser();
 
     if (!currentUser) {
-      throw new Error("No authenticated user found");
+      // No local user => just return null instead of throwing
+      console.log("getUserProfile: no authenticated user, returning null");
+      return null;
     }
 
     const { data: profile, error } = await supabase
@@ -222,13 +268,13 @@ export const getUserProfile = async (): Promise<any> => {
 
     if (error) {
       console.error("Error fetching user profile:", error);
-      throw error;
+      return null;
     }
 
     return profile;
   } catch (error) {
     console.error("Error in getUserProfile:", error);
-    throw error;
+    return null;
   }
 };
 
@@ -242,8 +288,20 @@ export const validateUserSession = async (): Promise<boolean> => {
       error,
     } = await supabase.auth.getSession();
 
-    if (error || !session) {
-      console.log("Session validation failed:", error);
+    if (error) {
+      if (isAuthSessionMissingError(error)) {
+        console.log(
+          "validateUserSession: AuthSessionMissingError – clearing local session"
+        );
+      } else {
+        console.log("Session validation failed:", error);
+      }
+      await clearUserSession();
+      return false;
+    }
+
+    if (!session) {
+      console.log("validateUserSession: no session – clearing local session");
       await clearUserSession();
       return false;
     }
@@ -251,13 +309,36 @@ export const validateUserSession = async (): Promise<boolean> => {
     // Update stored session with current data
     const {
       data: { user },
+      error: userError,
     } = await supabase.auth.getUser();
+
+    if (userError) {
+      if (isAuthSessionMissingError(userError)) {
+        console.log(
+          "validateUserSession: AuthSessionMissingError on getUser – clearing local session"
+        );
+        await clearUserSession();
+        return false;
+      }
+
+      console.error("validateUserSession: getUser error:", userError);
+      return false;
+    }
+
     if (user) {
       await updateStoredUserData(user);
     }
 
     return true;
-  } catch (error) {
+  } catch (error: any) {
+    if (isAuthSessionMissingError(error)) {
+      console.log(
+        "validateUserSession: AuthSessionMissingError in catch – clearing local session"
+      );
+      await clearUserSession();
+      return false;
+    }
+
     console.error("Error validating user session:", error);
     return false;
   }
