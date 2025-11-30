@@ -22,7 +22,7 @@ import {
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
 import { router } from "expo-router";
-import { supabase } from "@/supabaseClient"; // <-- adjust if different
+import { supabase } from "@/supabaseClient";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const FONT = {

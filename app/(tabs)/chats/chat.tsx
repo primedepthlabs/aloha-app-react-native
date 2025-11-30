@@ -19,6 +19,7 @@ import {
   RefreshControl,
   Keyboard,
   TouchableWithoutFeedback,
+  PermissionsAndroid,
 } from "react-native";
 import { Phone, Video, ChevronLeft, Plus } from "lucide-react-native";
 import {
@@ -35,6 +36,15 @@ import {
   getCurrentUser,
   verifyAuthentication,
 } from "../../../utils/authHelpers";
+
+import {
+  createAgoraRtcEngine,
+  IRtcEngine,
+  ChannelProfileType,
+  ClientRoleType,
+  RtcSurfaceView,
+} from "react-native-agora";
+import { AGORA_APP_ID, AGORA_DEV_TOKEN } from "../../../constants/agoraConfig";
 
 const { width } = Dimensions.get("window");
 
@@ -58,6 +68,29 @@ interface Message {
   created_at?: string;
   sender_id?: string;
 }
+
+const requestAgoraPermissions = async () => {
+  if (Platform.OS !== "android") return true;
+
+  try {
+    const granted = await PermissionsAndroid.requestMultiple([
+      PermissionsAndroid.PERMISSIONS.CAMERA,
+      PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+    ]);
+
+    const cameraGranted =
+      granted[PermissionsAndroid.PERMISSIONS.CAMERA] ===
+      PermissionsAndroid.RESULTS.GRANTED;
+    const micGranted =
+      granted[PermissionsAndroid.PERMISSIONS.RECORD_AUDIO] ===
+      PermissionsAndroid.RESULTS.GRANTED;
+
+    return cameraGranted && micGranted;
+  } catch (e) {
+    console.warn("Permission error", e);
+    return false;
+  }
+};
 
 export default function Chat() {
   // ⚠️ safer params handling
@@ -105,12 +138,75 @@ export default function Chat() {
   const [refreshing, setRefreshing] = useState(false);
   const [isRealtimeConnected, setIsRealtimeConnected] = useState(false);
 
+  // Agora
+  const agoraEngineRef = useRef<IRtcEngine | null>(null);
+  const [remoteUid, setRemoteUid] = useState<number | null>(null);
+  const [localUid] = useState<number>(() => Math.floor(Math.random() * 100000));
+  const [isVideoCall, setIsVideoCall] = useState<boolean>(true);
+
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
     Poppins_500Medium,
     Poppins_600SemiBold,
     Poppins_700Bold,
   });
+
+  const initAgoraEngine = async () => {
+    if (agoraEngineRef.current) return;
+
+    const engine = createAgoraRtcEngine();
+    engine.initialize({
+      appId: AGORA_APP_ID,
+      channelProfile: ChannelProfileType.ChannelProfileCommunication,
+    });
+
+    engine.addListener("onUserJoined", (_connection, uid) => {
+      console.log("Remote user joined", uid);
+      setRemoteUid(uid);
+    });
+
+    engine.addListener("onUserOffline", (_connection, uid) => {
+      console.log("Remote user left", uid);
+      setRemoteUid(null);
+    });
+
+    engine.addListener("onJoinChannelSuccess", (_connection, _uid) => {
+      console.log("Joined channel successfully");
+      setIsConnecting(false);
+      if (!isVideoCall) {
+        setAudioCallStatus("connected");
+      }
+    });
+
+    agoraEngineRef.current = engine;
+  };
+
+  const endAgoraCall = async () => {
+    try {
+      if (agoraEngineRef.current) {
+        await agoraEngineRef.current.leaveChannel();
+      }
+    } catch (e) {
+      console.warn("leaveChannel error", e);
+    }
+    setRemoteUid(null);
+    setCallDuration(0);
+    setIsConnecting(true);
+    setAudioCallStatus("requesting");
+    setIsMuted(false);
+    setIsVideoEnabled(true);
+  };
+
+  // destroy engine on unmount
+  useEffect(() => {
+    return () => {
+      if (agoraEngineRef.current) {
+        agoraEngineRef.current.leaveChannel();
+        agoraEngineRef.current.release();
+        agoraEngineRef.current = null;
+      }
+    };
+  }, []);
 
   // 🔒 Early guard: if chat is opened without a valid conversationId, exit gracefully
   useEffect(() => {
@@ -790,11 +886,6 @@ export default function Chat() {
               {isOnline && (
                 <View className="w-2 h-2 rounded-full bg-green-500 ml-2" />
               )}
-              {/* {isVerified && (
-                <View className="ml-1 w-4 h-4 bg-[#FCCD34] rounded-full items-center justify-center">
-                  <Text className="text-black text-xs font-bold">✓</Text>
-                </View>
-              )} */}
               {isRealtimeConnected && (
                 <View className="flex-row items-center ml-2">
                   <View className="w-2 h-2 rounded-full bg-green-500 mr-1" />
@@ -810,21 +901,94 @@ export default function Chat() {
           </View>
         </View>
         <View className="flex-row items-center">
+          {/* AUDIO CALL */}
           <TouchableOpacity
             className="mr-4"
-            onPress={() => {
+            onPress={async () => {
+              if (!conversationId || !currentUserId) return;
+
+              const ok = await requestAgoraPermissions();
+              if (!ok) {
+                Alert.alert(
+                  "Permissions",
+                  "Camera/Mic permission is required."
+                );
+                return;
+              }
+
+              setIsVideoCall(false);
               setShowAudioCall(true);
               setAudioCallStatus("requesting");
-              setTimeout(() => setAudioCallStatus("connected"), 2000);
+              setIsConnecting(true);
+              setCallDuration(0);
+
+              await initAgoraEngine();
+              const engine = agoraEngineRef.current;
+              if (!engine) return;
+
+              try {
+                await engine.enableAudio();
+                await engine.disableVideo();
+
+                await engine.joinChannel(
+                  AGORA_DEV_TOKEN,
+                  String(conversationId),
+                  localUid,
+                  {
+                    clientRoleType: ClientRoleType.ClientRoleBroadcaster,
+                  }
+                );
+              } catch (e) {
+                console.error("Join audio channel error", e);
+                Alert.alert("Call error", "Could not join audio call.");
+                setShowAudioCall(false);
+                setAudioCallStatus("requesting");
+              }
             }}
           >
             <Phone size={24} color="white" fill="white" />
           </TouchableOpacity>
+
+          {/* VIDEO CALL */}
           <TouchableOpacity
-            onPress={() => {
+            onPress={async () => {
+              if (!conversationId || !currentUserId) return;
+
+              const ok = await requestAgoraPermissions();
+              if (!ok) {
+                Alert.alert(
+                  "Permissions",
+                  "Camera/Mic permission is required."
+                );
+                return;
+              }
+
+              setIsVideoCall(true);
               setShowVideoCall(true);
               setIsConnecting(true);
-              setTimeout(() => setIsConnecting(false), 2000);
+              setCallDuration(0);
+
+              await initAgoraEngine();
+              const engine = agoraEngineRef.current;
+              if (!engine) return;
+
+              try {
+                await engine.enableVideo();
+                await engine.enableAudio();
+
+                await engine.joinChannel(
+                  AGORA_DEV_TOKEN,
+                  String(conversationId),
+                  localUid,
+                  {
+                    clientRoleType: ClientRoleType.ClientRoleBroadcaster,
+                  }
+                );
+              } catch (e) {
+                console.error("Join video channel error", e);
+                Alert.alert("Call error", "Could not join video call.");
+                setShowVideoCall(false);
+              }
             }}
           >
             <Video size={24} color="white" fill="white" />
@@ -1786,10 +1950,9 @@ export default function Chat() {
       <Modal
         visible={showVideoCall}
         animationType="fade"
-        onRequestClose={() => {
+        onRequestClose={async () => {
+          await endAgoraCall();
           setShowVideoCall(false);
-          setCallDuration(0);
-          setIsConnecting(true);
         }}
       >
         <StatusBar barStyle="light-content" />
@@ -1802,10 +1965,9 @@ export default function Chat() {
           {/* Back Button - Top Left */}
           <View className="absolute top-12 left-5 z-20">
             <TouchableOpacity
-              onPress={() => {
+              onPress={async () => {
+                await endAgoraCall();
                 setShowVideoCall(false);
-                setCallDuration(0);
-                setIsConnecting(true);
               }}
             >
               <ChevronLeft size={32} color="white" />
@@ -1839,21 +2001,24 @@ export default function Chat() {
             </Text>
           </View>
 
-          {/* Bottom Controls with Gradient Background */}
-          <View className="absolute bottom-0 left-0 right-0">
-            {/* Gradient Overlay - Behind the video preview */}
-            <View
-              style={{
-                position: "absolute",
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: 200,
-                backgroundColor: "rgba(15, 15, 16, 0.5)",
-              }}
-            />
+          {/* VIDEO AREA */}
+          <View style={{ flex: 1, marginTop: 16 }}>
+            {remoteUid !== null ? (
+              <RtcSurfaceView style={{ flex: 1 }} canvas={{ uid: remoteUid }} />
+            ) : (
+              <View className="flex-1 items-center justify-center">
+                <Text
+                  style={{
+                    color: "white",
+                    fontFamily: FONT.Regular,
+                    fontSize: 16,
+                  }}
+                >
+                  Waiting for other user to join…
+                </Text>
+              </View>
+            )}
 
-            {/* Small Video Preview - Above gradient, positioned precisely */}
             {!isConnecting && (
               <View
                 style={{
@@ -1869,13 +2034,27 @@ export default function Chat() {
                   zIndex: 10,
                 }}
               >
-                <Image
-                  source={require("../../../assets/images/boy.png")}
-                  style={{ width: "100%", height: "100%" }}
-                  resizeMode="cover"
+                <RtcSurfaceView
+                  style={{ flex: 1 }}
+                  canvas={{ uid: localUid }}
                 />
               </View>
             )}
+          </View>
+
+          {/* Bottom Controls with Gradient Background */}
+          <View className="absolute bottom-0 left-0 right-0">
+            {/* Gradient Overlay - Behind the video preview */}
+            <View
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: 200,
+                backgroundColor: "rgba(15, 15, 16, 0.5)",
+              }}
+            />
 
             <View className="pb-12 px-5" style={{ zIndex: 5 }}>
               <View className="flex-row justify-center items-center gap-8">
@@ -1884,7 +2063,13 @@ export default function Chat() {
                   <TouchableOpacity
                     className="w-16 h-16 rounded-full items-center justify-center"
                     style={{ backgroundColor: "rgba(255, 255, 255, 0.2)" }}
-                    onPress={() => setIsVideoEnabled(!isVideoEnabled)}
+                    onPress={() => {
+                      const next = !isVideoEnabled;
+                      setIsVideoEnabled(next);
+                      if (agoraEngineRef.current) {
+                        agoraEngineRef.current.enableLocalVideo(next);
+                      }
+                    }}
                   >
                     <Image
                       source={require("../../../assets/images/camera.png")}
@@ -1909,7 +2094,13 @@ export default function Chat() {
                   <TouchableOpacity
                     className="w-16 h-16 rounded-full items-center justify-center"
                     style={{ backgroundColor: "rgba(255, 255, 255, 0.2)" }}
-                    onPress={() => setIsMuted(!isMuted)}
+                    onPress={() => {
+                      const next = !isMuted;
+                      setIsMuted(next);
+                      if (agoraEngineRef.current) {
+                        agoraEngineRef.current.muteLocalAudioStream(next);
+                      }
+                    }}
                   >
                     <Image
                       source={require("../../../assets/images/Mic-off.png")}
@@ -1934,6 +2125,11 @@ export default function Chat() {
                   <TouchableOpacity
                     className="w-16 h-16 rounded-full items-center justify-center"
                     style={{ backgroundColor: "rgba(255, 255, 255, 0.2)" }}
+                    onPress={() => {
+                      if (agoraEngineRef.current) {
+                        agoraEngineRef.current.switchCamera();
+                      }
+                    }}
                   >
                     <Image
                       source={require("../../../assets/images/camera.png")}
@@ -1957,10 +2153,9 @@ export default function Chat() {
                 <View className="items-center">
                   <TouchableOpacity
                     className="w-16 h-16 rounded-full bg-red-500 items-center justify-center"
-                    onPress={() => {
+                    onPress={async () => {
+                      await endAgoraCall();
                       setShowVideoCall(false);
-                      setCallDuration(0);
-                      setIsConnecting(true);
                     }}
                   >
                     <Text className="text-white text-3xl font-bold">✕</Text>
@@ -1982,10 +2177,9 @@ export default function Chat() {
       <Modal
         visible={showAudioCall}
         animationType="fade"
-        onRequestClose={() => {
+        onRequestClose={async () => {
+          await endAgoraCall();
           setShowAudioCall(false);
-          setCallDuration(0);
-          setAudioCallStatus("requesting");
         }}
         statusBarTranslucent
       >
@@ -2003,10 +2197,9 @@ export default function Chat() {
               style={{ position: "absolute", top: 50, left: 20, zIndex: 20 }}
             >
               <TouchableOpacity
-                onPress={() => {
+                onPress={async () => {
+                  await endAgoraCall();
                   setShowAudioCall(false);
-                  setCallDuration(0);
-                  setAudioCallStatus("requesting");
                 }}
               >
                 <ChevronLeft size={32} color="white" />
@@ -2186,7 +2379,13 @@ export default function Chat() {
                           ? "rgba(255, 255, 255, 0.1)"
                           : "rgba(255, 255, 255, 0.2)",
                     }}
-                    onPress={() => setIsMuted(!isMuted)}
+                    onPress={() => {
+                      const next = !isMuted;
+                      setIsMuted(next);
+                      if (agoraEngineRef.current) {
+                        agoraEngineRef.current.muteLocalAudioStream(next);
+                      }
+                    }}
                     disabled={audioCallStatus === "ended"}
                   >
                     <Image
@@ -2222,18 +2421,17 @@ export default function Chat() {
                       alignItems: "center",
                       justifyContent: "center",
                     }}
-                    onPress={() => {
+                    onPress={async () => {
                       if (audioCallStatus === "ended") {
+                        await endAgoraCall();
                         setShowAudioCall(false);
-                        setCallDuration(0);
-                        setAudioCallStatus("requesting");
                       } else {
                         setAudioCallStatus("ended");
+                        await endAgoraCall();
                         setTimeout(() => {
                           setShowAudioCall(false);
-                          setCallDuration(0);
                           setAudioCallStatus("requesting");
-                        }, 2000);
+                        }, 1000);
                       }
                     }}
                   >
