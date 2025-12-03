@@ -67,19 +67,20 @@ export default function ProfileScreen() {
         full_name: fullName,
         phone_number: phoneNumberFromParams || null,
         avatar_url: null, // Will be updated in step 2 if user adds photos
-        user_type: "User", // Matches DB enum: Influencer, Actor, Youtuber, Doctor, User
+        user_type: "Influencer", // enum matches your DB
         is_verified: true,
         is_active: true,
         gender: selectedGender,
       };
 
-      console.log("Attempting to insert/update users row (step 1):", row);
+      console.log("Attempting to upsert users row (step 1):", row);
 
-      // Use upsert to handle both new users and updates
+      // 1) upsert into users
       const { data: upsertData, error: upsertError } = await supabase
         .from("users")
         .upsert(row, { onConflict: "id" })
-        .select();
+        .select()
+        .single();
 
       console.log("Upsert response:", { upsertData, upsertError });
 
@@ -93,7 +94,37 @@ export default function ProfileScreen() {
         return false;
       }
 
-      console.log("Basic user info saved successfully");
+      // 2) ensure influencer_profiles row exists for this user
+      const { data: profileData, error: profileError } = await supabase
+        .from("influencer_profiles")
+        .upsert(
+          {
+            user_id: finalUserId,
+            display_name: fullName,
+            bio: "",
+            profile_image_url: null, // we’ll update this in step 2 after photos
+            price_per_message: 0,
+            price_per_minute_audio: 0,
+            price_per_minute_video: 0,
+          },
+          { onConflict: "user_id" } // unique on user_id in your schema
+        )
+        .select()
+        .single();
+
+      console.log("Influencer profile upsert:", { profileData, profileError });
+
+      if (profileError) {
+        console.error("Influencer profile upsert error:", profileError);
+        Alert.alert(
+          "DB error",
+          profileError.message || JSON.stringify(profileError)
+        );
+        setLoading(false);
+        return false;
+      }
+
+      console.log("Basic user info + influencer profile saved successfully");
       return true;
     } catch (error: any) {
       console.error("Error saving basic user info:", error);
@@ -196,10 +227,28 @@ export default function ProfileScreen() {
       if (uploadedPhotos.length > 0) {
         const avatarUrl = uploadedPhotos[0];
 
-        const { error: updateError } = await supabase
+        // update users table
+        const { error: updateUserError } = await supabase
           .from("users")
           .update({ avatar_url: avatarUrl })
           .eq("id", finalUserId);
+
+        if (updateUserError) {
+          console.error("Error updating user avatar_url:", updateUserError);
+        }
+
+        // update influencer_profiles table
+        const { error: updateProfileError } = await supabase
+          .from("influencer_profiles")
+          .update({ profile_image_url: avatarUrl })
+          .eq("user_id", finalUserId);
+
+        if (updateProfileError) {
+          console.error(
+            "Error updating influencer profile image:",
+            updateProfileError
+          );
+        }
       }
 
       console.log("Attempting to insert users row:", row);
