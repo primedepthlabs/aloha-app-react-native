@@ -10,6 +10,7 @@ import {
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import { ChevronLeft } from "lucide-react-native";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -41,11 +42,10 @@ export default function WelcomeDashboard() {
                 marginBottom: 50,
               }}
             >
-              {/* Back Button */}
               <TouchableOpacity
                 onPress={() => router.push("/(tabs)/dashboard")}
               >
-                <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
+                <ChevronLeft size={26} color="#FFFFFF" strokeWidth={2} />
               </TouchableOpacity>
 
               {/* Progress Bar */}

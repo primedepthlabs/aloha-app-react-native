@@ -109,9 +109,15 @@ const EarningsDashboard = () => {
     const radius = (size - strokeWidth) / 2;
     const circumference = 2 * Math.PI * radius;
 
-    const messagesPercent = 50;
+    // Exact percentages from the design
+    const messagesPercent = 32;
     const videoPercent = 56;
     const donationsPercent = 12;
+
+    // Calculate stroke dash offset for each segment
+    const messageDashOffset = circumference * (1 - messagesPercent / 100);
+    const videoDashOffset = circumference * (1 - videoPercent / 100);
+    const donationDashOffset = circumference * (1 - donationsPercent / 100);
 
     return (
       <View style={{ alignItems: "center", marginVertical: 20 }}>
@@ -120,6 +126,7 @@ const EarningsDashboard = () => {
           height={size}
           style={{ transform: [{ rotate: "-90deg" }] }}
         >
+          {/* Messages - Yellow */}
           <Circle
             cx={center}
             cy={center}
@@ -128,11 +135,11 @@ const EarningsDashboard = () => {
             strokeWidth={strokeWidth}
             fill="none"
             strokeDasharray={circumference}
-            strokeDashoffset={
-              circumference - (messagesPercent / 100) * circumference
-            }
-            strokeLinecap="round"
+            strokeDashoffset={messageDashOffset}
+            strokeLinecap="butt"
           />
+
+          {/* Video & Audio - Blue */}
           <Circle
             cx={center}
             cy={center}
@@ -141,13 +148,13 @@ const EarningsDashboard = () => {
             strokeWidth={strokeWidth}
             fill="none"
             strokeDasharray={circumference}
-            strokeDashoffset={
-              circumference - (videoPercent / 100) * circumference
-            }
-            strokeLinecap="round"
-            rotation={-90 + (messagesPercent / 100) * 360}
+            strokeDashoffset={videoDashOffset}
+            strokeLinecap="butt"
+            rotation={(messagesPercent / 100) * 360}
             origin={`${center}, ${center}`}
           />
+
+          {/* Donations - Purple */}
           <Circle
             cx={center}
             cy={center}
@@ -156,11 +163,9 @@ const EarningsDashboard = () => {
             strokeWidth={strokeWidth}
             fill="none"
             strokeDasharray={circumference}
-            strokeDashoffset={
-              circumference - (donationsPercent / 100) * circumference
-            }
-            strokeLinecap="round"
-            rotation={-90 + ((messagesPercent + videoPercent) / 100) * 360}
+            strokeDashoffset={donationDashOffset}
+            strokeLinecap="butt"
+            rotation={((messagesPercent + videoPercent) / 100) * 360}
             origin={`${center}, ${center}`}
           />
         </Svg>
@@ -416,16 +421,18 @@ const EarningsDashboard = () => {
         }}
       >
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() => router.push("/(tabs)/dashboard")}
           style={{
             position: "absolute",
             left: 20,
             width: 40,
             height: 40,
-            justifyContent: "center",
             alignItems: "center",
+            justifyContent: "center",
           }}
-        ></TouchableOpacity>
+        >
+          <ChevronLeft size={26} color="#FFFFFF" strokeWidth={2} />
+        </TouchableOpacity>
 
         <Text
           style={{
@@ -451,7 +458,12 @@ const EarningsDashboard = () => {
       {/* BODY */}
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 20 }}
+        contentContainerStyle={{
+          paddingHorizontal: 24,
+          paddingTop: 20,
+          paddingBottom: 40,
+        }}
+        showsVerticalScrollIndicator={false}
       >
         {/* PERIOD SELECTOR */}
         <View
@@ -481,19 +493,19 @@ const EarningsDashboard = () => {
           <EarningItem
             title="Video & Audio calls"
             amount="+700 GEL"
-            percentage="32%"
+            percentage="56%"
             color="#5AC8FA"
           />
           <EarningItem
             title="Donations"
             amount="+150 GEL"
-            percentage="32%"
+            percentage="12%"
             color="#AF52DE"
           />
         </View>
 
         {/* HISTORY */}
-        <View style={{ marginTop: 20 }}>
+        <View style={{ marginTop: 20, marginBottom: 20 }}>
           <View
             style={{
               flexDirection: "row",
