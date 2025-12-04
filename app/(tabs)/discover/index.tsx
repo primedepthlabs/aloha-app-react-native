@@ -18,7 +18,7 @@ import { getCurrentUser } from "../../../utils/authHelpers";
 
 interface User {
   id: string; // users.id
-  influencerProfileId?: string; // influencer_profiles.id
+  influencerProfileId?: string; // influencer_profiles.id (for display purposes only)
   name: string;
   role: string;
   image: any;
@@ -122,14 +122,9 @@ export default function DiscoverScreen() {
   // open the block modal for a user (call from Block menu item)
   const openBlockModal = (user: User) => {
     setShowProfileMenu(false);
-
-    // store target BEFORE closing modal
     setBlockTarget(user);
-
-    // close profile modal
     setSelectedUser(null);
 
-    // wait for modal to close
     setTimeout(() => {
       setShowBlockModal(true);
     }, 180);
@@ -144,7 +139,6 @@ export default function DiscoverScreen() {
     setBlocking(true);
 
     try {
-      // get current user (blocker)
       const {
         data: { user },
         error: userError,
@@ -163,17 +157,15 @@ export default function DiscoverScreen() {
         reason: blockReason?.trim().length > 0 ? blockReason.trim() : null,
       };
 
-      const { data: inserted, error: insertError } = await supabase
+      const { error: insertError } = await supabase
         .from("blocked_users")
         .insert(payload)
         .select()
         .single();
 
-      // handle unique constraint violation (already blocked)
       if (insertError) {
         console.error("Error inserting blocked_users:", insertError);
         if ((insertError as any).code === "23505") {
-          // unique constraint violated (blocker_id + blocked_id)
           Alert.alert(
             "Already blocked",
             `${blockTarget.name} is already blocked.`
@@ -185,9 +177,7 @@ export default function DiscoverScreen() {
         return;
       }
 
-      // success
       Alert.alert("Blocked", `${blockTarget.name} has been blocked.`);
-      // close modals / selected user
       setShowBlockModal(false);
       setBlockTarget(null);
       setSelectedUser(null);
@@ -199,7 +189,6 @@ export default function DiscoverScreen() {
     }
   };
 
-  // simple UUID validator (v1-v5)
   const isValidUUID = (s?: string) =>
     !!s &&
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
@@ -215,13 +204,11 @@ export default function DiscoverScreen() {
     try {
       setLoading(true);
 
-      // Get current user first to filter out self
       const currentUser = await getCurrentUser();
       if (currentUser) {
         setCurrentUserId(currentUser.id);
       }
 
-      // Query influencer_profiles first
       const { data: profiles, error } = await supabase
         .from("influencer_profiles")
         .select(
@@ -245,24 +232,17 @@ export default function DiscoverScreen() {
         )
         .is("users.is_active", true);
 
-      console.log("fetchInfluencers - supabase error:", error);
-      console.log(
-        "fetchInfluencers - raw profiles:",
-        JSON.stringify(profiles, null, 2)
-      );
-
       if (error) {
         console.error("Error fetching influencer_profiles:", error);
         Alert.alert("Error", "Failed to load influencers");
         return;
       }
 
-      // Map to User[] and filter out current user
       const transformedUsers: User[] = (profiles || [])
         .filter((p: any) => p.user_id !== currentUser?.id)
         .map((p: any) => ({
-          id: p.user_id, // users.id
-          influencerProfileId: p.id, // influencer_profiles.id
+          id: p.user_id,
+          influencerProfileId: p.id,
           name: p.display_name || p.users?.full_name || "Unknown",
           role: "Influencer",
           image: p.profile_image_url
@@ -281,11 +261,6 @@ export default function DiscoverScreen() {
           avatar_url: p.users?.avatar_url || p.profile_image_url || undefined,
           isVerified: p.users?.is_verified ?? false,
         }));
-
-      console.log(
-        "fetchInfluencers - mapped users:",
-        JSON.stringify(transformedUsers, null, 2)
-      );
 
       setUsers(transformedUsers);
     } catch (err) {
@@ -311,12 +286,11 @@ export default function DiscoverScreen() {
     });
   };
 
-  // Check if user is current user
   const isCurrentUser = (user: User) => {
     return user.id === currentUserId;
   };
 
-  // ✅ Navigate to chat: find/create conversation and pass conversationId
+  // ✅ SIMPLIFIED: Navigate to chat using new schema
   const navigateToChat = async (user: User | null) => {
     try {
       if (!user) {
@@ -325,23 +299,11 @@ export default function DiscoverScreen() {
         return;
       }
 
-      // Don't allow chatting with yourself
       if (isCurrentUser(user)) {
         Alert.alert("Notice", "You cannot send messages to yourself.");
         return;
       }
 
-      const influencerProfileId = user.influencerProfileId;
-      if (!influencerProfileId || !isValidUUID(influencerProfileId)) {
-        console.warn("Missing influencerProfileId for user:", user);
-        Alert.alert(
-          "Error",
-          "Unable to open chat: influencer profile information is missing."
-        );
-        return;
-      }
-
-      // Get current user (regular user)
       const currentUser = await getCurrentUser();
       if (!currentUser) {
         Alert.alert("Error", "Please log in to continue");
@@ -349,58 +311,87 @@ export default function DiscoverScreen() {
       }
 
       console.log("Current user ID:", currentUser.id);
-      console.log("Influencer profile ID:", influencerProfileId);
+      console.log("Target user ID:", user.id);
 
-      // 1. Try to find existing active conversation
-      const { data: existingConv, error: convError } = await supabase
+      // 🔥 SIMPLIFIED: Find conversation between two users (order doesn't matter)
+      // Check both directions: (current → target) OR (target → current)
+      const { data: existingConvs, error: convError } = await supabase
         .from("conversations")
-        .select(
-          `
-          id,
-          regular_user_id,
-          influencer_id,
-          is_active
-        `
-        )
-        .eq("regular_user_id", currentUser.id)
-        .eq("influencer_id", influencerProfileId)
+        .select("id, last_message_at, created_at")
         .eq("is_active", true)
-        .maybeSingle();
+        .or(
+          `and(regular_user_id.eq.${currentUser.id},regular_user_id2.eq.${user.id}),and(regular_user_id.eq.${user.id},regular_user_id2.eq.${currentUser.id})`
+        )
+        .order("last_message_at", { ascending: false, nullsFirst: false })
+        .order("created_at", { ascending: false })
+        .limit(1);
 
-      if (convError && (convError as any).code !== "PGRST116") {
-        console.error("Error checking conversation:", convError);
+      if (convError) {
+        console.error("Error checking conversations:", convError);
         Alert.alert("Error", "Could not open chat. Please try again.");
         return;
       }
 
       let conversationId: string;
 
-      if (existingConv) {
-        conversationId = existingConv.id;
+      if (existingConvs && existingConvs.length > 0) {
+        conversationId = existingConvs[0].id;
         console.log("Using existing conversation:", conversationId);
       } else {
-        // 2. Create new conversation
+        // Create new conversation
         const { data: newConv, error: createError } = await supabase
           .from("conversations")
           .insert({
             regular_user_id: currentUser.id,
-            influencer_id: influencerProfileId,
+            regular_user_id2: user.id,
             is_active: true,
           })
           .select("id")
           .single();
 
-        if (createError || !newConv) {
+        if (createError) {
           console.error("Error creating conversation:", createError);
+
+          // Handle race condition
+          if (createError?.code === "23505") {
+            const { data: retryConvs, error: retryError } = await supabase
+              .from("conversations")
+              .select("id")
+              .eq("is_active", true)
+              .or(
+                `and(regular_user_id.eq.${currentUser.id},regular_user_id2.eq.${user.id}),and(regular_user_id.eq.${user.id},regular_user_id2.eq.${currentUser.id})`
+              )
+              .order("created_at", { ascending: false })
+              .limit(1);
+
+            if (retryError || !retryConvs || retryConvs.length === 0) {
+              console.error(
+                "Error fetching conversation after race condition:",
+                retryError
+              );
+              Alert.alert("Error", "Failed to start conversation");
+              return;
+            }
+
+            conversationId = retryConvs[0].id;
+            console.log(
+              "Found conversation after race condition:",
+              conversationId
+            );
+          } else {
+            Alert.alert("Error", "Failed to start conversation");
+            return;
+          }
+        } else if (newConv) {
+          conversationId = newConv.id;
+          console.log("Created new conversation:", conversationId);
+        } else {
           Alert.alert("Error", "Failed to start conversation");
           return;
         }
-
-        conversationId = newConv.id;
-        console.log("Created new conversation:", conversationId);
       }
 
-      // 3. Navigate to Chat WITH valid conversationId
+      // Navigate to Chat
       router.push({
         pathname: "/(tabs)/chats/chat",
         params: {
@@ -420,7 +411,6 @@ export default function DiscoverScreen() {
     }
   };
 
-  // Navigate to Report screen with proper params (reportedUserId must be users.id)
   const navigateToReport = (user: User | null) => {
     console.log("Report pressed, closing menu and navigating to /report", {
       userId: user?.id,
@@ -432,7 +422,6 @@ export default function DiscoverScreen() {
       return;
     }
 
-    // Don't allow reporting yourself
     if (isCurrentUser(user)) {
       Alert.alert("Notice", "You cannot report yourself.");
       return;
@@ -455,7 +444,6 @@ export default function DiscoverScreen() {
     setShowFilterModal(false);
   };
 
-  // Filter users based on selected tab, role, and search query
   const filteredUsers = users.filter((user) => {
     if (selectedTab === "favorites" && !user.isFavorite) {
       return false;
@@ -655,7 +643,6 @@ export default function DiscoverScreen() {
                       resizeMode="cover"
                     />
 
-                    {/* Blur overlay with "You" text for current user */}
                     {isSelf && (
                       <View
                         style={{
@@ -740,7 +727,6 @@ export default function DiscoverScreen() {
                         {user.role}
                       </Text>
 
-                      {/* Hide message button for current user */}
                       {!isSelf && (
                         <TouchableOpacity
                           activeOpacity={0.8}
@@ -775,7 +761,6 @@ export default function DiscoverScreen() {
           </View>
         </ScrollView>
       )}
-
       {/* Filter Modal */}
       <Modal
         visible={showFilterModal}

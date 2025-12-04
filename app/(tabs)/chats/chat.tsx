@@ -100,13 +100,15 @@ export default function Chat() {
     image?: string;
     isOnline?: string;
     isVerified?: string;
+    otherUserId?: string;
   }>();
 
   const conversationId = params.conversationId;
-  const influencerName = params.name ?? "";
-  const influencerImage = params.image ?? "";
+  const otherUserName = params.name ?? "";
+  const otherUserImage = params.image ?? "";
   const isOnline = params.isOnline === "true";
   const isVerified = params.isVerified === "true";
+  const otherUserId = params.otherUserId ?? "";
 
   const [message, setMessage] = useState("");
   const [balance, setBalance] = useState(12);
@@ -137,6 +139,7 @@ export default function Chat() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [isRealtimeConnected, setIsRealtimeConnected] = useState(false);
+  const [hasEverHadMessages, setHasEverHadMessages] = useState(false);
 
   // Agora
   const agoraEngineRef = useRef<IRtcEngine | null>(null);
@@ -311,7 +314,6 @@ export default function Chat() {
     };
   }, [conversationId, currentUserId]);
 
-  // Handle new message from real-time
   const handleNewMessage = async (newMessage: any) => {
     console.log("Processing new message:", newMessage);
 
@@ -338,6 +340,10 @@ export default function Chat() {
       }
 
       console.log("Adding new message to state:", formattedMessage.id);
+
+      // ✅ Mark that messages exist now
+      setHasEverHadMessages(true);
+
       return [...prev, formattedMessage];
     });
 
@@ -419,11 +425,8 @@ export default function Chat() {
           `
         id,
         regular_user_id,
-        influencer_id,
-        is_active,
-        influencer:influencer_id(
-          user_id
-        )
+        regular_user_id2,
+        is_active
       `
         )
         .eq("id", conversationId)
@@ -438,18 +441,18 @@ export default function Chat() {
       }
 
       // Step 5: Verify user has access to this conversation
-      const isRegularUser = conversation.regular_user_id === currentUser.id;
-      const isInfluencer = conversation.influencer?.user_id === currentUser.id;
+      const isUser1 = conversation.regular_user_id === currentUser.id;
+      const isUser2 = conversation.regular_user_id2 === currentUser.id;
 
       console.log("Access check:", {
         currentUserId: currentUser.id,
-        regularUserId: conversation.regular_user_id,
-        influencerUserId: conversation.influencer?.user_id,
-        isRegularUser,
-        isInfluencer,
+        user1Id: conversation.regular_user_id,
+        user2Id: conversation.regular_user_id2,
+        isUser1,
+        isUser2,
       });
 
-      if (!isRegularUser && !isInfluencer) {
+      if (!isUser1 && !isUser2) {
         console.error("User does not have access to this conversation");
         Alert.alert("Error", "You don't have access to this conversation");
         router.back();
@@ -493,6 +496,11 @@ export default function Chat() {
       }
 
       console.log(`Loaded ${messagesData?.length || 0} messages`);
+
+      // ✅ Track if this conversation has ever had messages
+      if (messagesData && messagesData.length > 0) {
+        setHasEverHadMessages(true);
+      }
 
       // Format messages and determine if they were sent by current user
       const formattedMessages: Message[] = (messagesData || []).map((msg) => ({
@@ -643,8 +651,8 @@ export default function Chat() {
             amount_charged: cost,
             is_delivered: true,
             delivered_at: new Date().toISOString(),
-            is_read: false, // Explicitly set to false for sent messages
-            read_at: null, // Set to null since it's not read yet
+            is_read: false,
+            read_at: null,
           })
           .select()
           .single();
@@ -666,13 +674,16 @@ export default function Chat() {
         // Update balance
         setBalance((prev) => parseFloat((prev - cost).toFixed(2)));
 
+        // ✅ Mark that this conversation now has messages
+        setHasEverHadMessages(true);
+
         // Add the new message to local state with correct read status
         const formattedMessage: Message = {
           id: newMessage.id,
           text: newMessage.content,
           timestamp: formatMessageTime(newMessage.created_at),
-          isSent: true, // This message is sent by current user
-          isRead: false, // Messages you send should show as unread until the other person reads them
+          isSent: true,
+          isRead: false,
           content_type: newMessage.content_type,
           media_url: newMessage.media_url,
           created_at: newMessage.created_at,
@@ -836,7 +847,8 @@ export default function Chat() {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const showWelcomeScreen = messages.length === 0;
+  const showWelcomeScreen =
+    !hasEverHadMessages && messages.length === 0 && !loading;
 
   return (
     <KeyboardAvoidingView
@@ -856,8 +868,8 @@ export default function Chat() {
           <View className="w-12 h-12 rounded-full bg-gray-700 mr-3 overflow-hidden">
             <Image
               source={
-                influencerImage
-                  ? { uri: influencerImage }
+                otherUserImage
+                  ? { uri: otherUserImage }
                   : require("../../../assets/images/discover.png")
               }
               style={{ width: "100%", height: "100%" }}
@@ -871,7 +883,7 @@ export default function Chat() {
                 fontFamily: FONT.SemiBold,
               }}
             >
-              {influencerName || "User"}
+              {otherUserName || "User"}
             </Text>
             <View className="flex-row items-center">
               <Text
@@ -1122,7 +1134,7 @@ export default function Chat() {
                   }}
                 >
                   You can send messages, or start a paid video/audio call with{" "}
-                  {influencerName || "this user"}.
+                  {otherUserName || "this user"}.
                 </Text>
                 <Text
                   className="text-gray-300 text-center mb-4"
@@ -1211,7 +1223,7 @@ export default function Chat() {
                             marginBottom: 2,
                           }}
                         >
-                          {msg.replyTo.isSent ? "You" : influencerName}
+                          {msg.replyTo.isSent ? "You" : otherUserName}
                         </Text>
                         <Text
                           numberOfLines={1}
@@ -1330,7 +1342,7 @@ export default function Chat() {
                       fontSize: 13,
                     }}
                   >
-                    Reply to {replyTo.isSent ? "You" : influencerName}
+                    Reply to {replyTo.isSent ? "You" : otherUserName}
                   </Text>
 
                   <TouchableOpacity onPress={() => setReplyTo(null)}>
@@ -1988,7 +2000,7 @@ export default function Chat() {
               className="text-white text-2xl mb-2"
               style={{ fontFamily: FONT.SemiBold }}
             >
-              {influencerName || "User"}
+              {otherUserName || "User"}
             </Text>
 
             <Text
@@ -2229,8 +2241,8 @@ export default function Chat() {
               >
                 <Image
                   source={
-                    influencerImage
-                      ? { uri: influencerImage }
+                    otherUserImage
+                      ? { uri: otherUserImage }
                       : require("../../../assets/images/boy.png")
                   }
                   style={{ width: "100%", height: "100%" }}
@@ -2247,7 +2259,7 @@ export default function Chat() {
                   marginBottom: 12,
                 }}
               >
-                {influencerName || "User"}
+                {otherUserName || "User"}
               </Text>
 
               {/* Status Text */}

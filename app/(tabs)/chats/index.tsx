@@ -58,7 +58,7 @@ interface Chat {
   isSupport?: boolean;
   isPinned?: boolean;
   conversationId?: string;
-  influencerId?: string;
+  otherUserId?: string;
 }
 
 export default function ChatsPerson() {
@@ -370,94 +370,38 @@ export default function ChatsPerson() {
       setCurrentUserId(currentUser.id);
       console.log("Current user ID:", currentUser.id);
 
-      // Step 3: Check if current user is an influencer or regular user
-      const { data: userProfile, error: profileError } = await supabase
-        .from("users")
-        .select("user_type")
-        .eq("id", currentUser.id)
-        .single();
-
-      if (profileError) {
-        console.error("Error fetching user profile:", profileError);
-        setLoading(false);
-        return;
-      }
-
-      console.log("User type:", userProfile.user_type);
-
-      // Step 4: Build the base query with explicit relationships
-      let query;
-
-      if (userProfile.user_type === "Influencer") {
-        // For influencers, get their influencer profile ID first
-        const { data: influencerProfile, error: influencerError } =
-          await supabase
-            .from("influencer_profiles")
-            .select("id")
-            .eq("user_id", currentUser.id)
-            .single();
-
-        if (influencerError) {
-          console.error("Error fetching influencer profile:", influencerError);
-          setLoading(false);
-          return;
-        }
-
-        console.log("Influencer profile ID:", influencerProfile.id);
-
-        // Query for conversations where current user is the influencer
-        query = supabase
-          .from("conversations")
-          .select(
-            `
+      // Step 3: Query conversations where current user is either regular_user_id or regular_user_id2
+      const { data: conversations, error } = await supabase
+        .from("conversations")
+        .select(
+          `
           id,
           regular_user_id,
-          influencer_id,
+          regular_user_id2,
           last_message_at,
           last_message_preview,
           is_active,
           created_at,
           updated_at,
-          regular_user:regular_user_id(
+          user1:regular_user_id(
+            id,
+            full_name,
+            avatar_url,
+            is_verified
+          ),
+          user2:regular_user_id2(
             id,
             full_name,
             avatar_url,
             is_verified
           )
         `
-          )
-          .eq("influencer_id", influencerProfile.id)
-          .eq("is_active", true)
-          .order("last_message_at", { ascending: false });
-      } else {
-        // For regular users, query for conversations where they are the regular user
-        query = supabase
-          .from("conversations")
-          .select(
-            `
-          id,
-          regular_user_id,
-          influencer_id,
-          last_message_at,
-          last_message_preview,
-          is_active,
-          created_at,
-          updated_at,
-          influencer:influencer_id(
-            id,
-            display_name,
-            profile_image_url,
-            is_available,
-            user_id
-          )
-        `
-          )
-          .eq("regular_user_id", currentUser.id)
-          .eq("is_active", true)
-          .order("last_message_at", { ascending: false });
-      }
-
-      const { data: conversations, error } = await query;
+        )
+        .or(
+          `regular_user_id.eq.${currentUser.id},regular_user_id2.eq.${currentUser.id}`
+        )
+        .eq("is_active", true)
+        .order("last_message_at", { ascending: false });
 
       if (error) {
         console.error("Error fetching conversations:", error);
@@ -468,55 +412,32 @@ export default function ChatsPerson() {
       console.log(`Found ${conversations?.length || 0} conversations`);
       console.log("Conversations:", conversations);
 
-      // Step 5: Transform data to Chat format
+      // Step 4: Transform data to Chat format
       const transformedChats: Chat[] = [];
 
       for (const conv of conversations || []) {
-        let chatName = "Unknown";
-        let chatImage = require("../../../assets/images/discover.png");
-        let isVerified = false;
-        let isOnline = false;
-        let influencerId = null;
+        // Determine which user is the other user (not current user)
+        let otherUser = null;
+        let otherUserId = null;
 
-        if (userProfile.user_type === "Influencer") {
-          // For influencers, show regular user's info
-          const regularUser = conv.regular_user;
-          chatName = regularUser?.full_name || "Unknown User";
-          chatImage = regularUser?.avatar_url
-            ? { uri: regularUser.avatar_url }
-            : require("../../../assets/images/discover.png");
-          isVerified = regularUser?.is_verified || false;
-          isOnline = true; // Regular users are always considered online for now
-
-          // For influencers, we need to get the influencer ID separately
-          const { data: influencerProfile } = await supabase
-            .from("influencer_profiles")
-            .select("id")
-            .eq("user_id", currentUser.id)
-            .single();
-
-          influencerId = influencerProfile?.id || null;
+        if (conv.regular_user_id === currentUser.id) {
+          otherUser = conv.user2;
+          otherUserId = conv.regular_user_id2;
         } else {
-          // For regular users, show influencer's info
-          const influencer = conv.influencer;
-          chatName = influencer?.display_name || "Unknown Influencer";
-          chatImage = influencer?.profile_image_url
-            ? { uri: influencer.profile_image_url }
-            : require("../../../assets/images/discover.png");
-          isOnline = influencer?.is_available || false;
-          influencerId = influencer?.id;
-
-          // Get verification status separately to avoid the join conflict
-          if (influencer?.user_id) {
-            const { data: influencerUser } = await supabase
-              .from("users")
-              .select("is_verified")
-              .eq("id", influencer.user_id)
-              .single();
-
-            isVerified = influencerUser?.is_verified || false;
-          }
+          otherUser = conv.user1;
+          otherUserId = conv.regular_user_id;
         }
+
+        if (!otherUser) {
+          console.warn("Could not find other user for conversation:", conv.id);
+          continue;
+        }
+
+        const chatName = otherUser?.full_name || "Unknown User";
+        const chatImage = otherUser?.avatar_url
+          ? { uri: otherUser.avatar_url }
+          : require("../../../assets/images/discover.png");
+        const isVerified = otherUser?.is_verified || false;
 
         // Only include conversations with messages or show empty ones
         const unreadCount = await getUnreadCount(conv.id, currentUser.id);
@@ -524,13 +445,13 @@ export default function ChatsPerson() {
         transformedChats.push({
           id: conv.id,
           conversationId: conv.id,
-          influencerId: influencerId,
+          otherUserId: otherUserId,
           name: chatName,
           message: conv.last_message_preview || "No messages yet",
           time: formatTime(conv.last_message_at),
           image: chatImage,
           isVerified: isVerified,
-          isOnline: isOnline,
+          isOnline: true, // For now, consider all users online
           unreadCount: unreadCount,
           isDoubleTick: unreadCount === 0, // Only show double tick if no unread messages
           isSupport: false,
@@ -538,7 +459,7 @@ export default function ChatsPerson() {
         });
       }
 
-      // Step 6: Add support chat at the beginning for all users
+      // Step 5: Add support chat at the beginning for all users
       const supportChat: Chat = {
         id: "support",
         name: "Support",
@@ -643,6 +564,7 @@ export default function ChatsPerson() {
             image: typeof chat.image === "string" ? chat.image : "",
             isOnline: chat.isOnline ? "true" : "false",
             isVerified: chat.isVerified ? "true" : "false",
+            otherUserId: chat.otherUserId || "",
           },
         });
       } else {
@@ -943,7 +865,7 @@ export default function ChatsPerson() {
                 className="text-gray-500 text-sm mt-2"
                 style={{ fontFamily: FONT.Regular }}
               >
-                Start chatting with influencers to see conversations here
+                Start chatting with users to see conversations here
               </Text>
             </View>
           ) : (
