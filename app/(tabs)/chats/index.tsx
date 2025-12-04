@@ -15,7 +15,12 @@ import {
   AppState,
   AppStateStatus,
 } from "react-native";
-import { ChevronLeft, Search } from "lucide-react-native";
+import {
+  ChevronLeft,
+  Search,
+  Archive,
+  ArchiveRestore,
+} from "lucide-react-native";
 import {
   useFonts,
   Poppins_400Regular,
@@ -57,6 +62,7 @@ interface Chat {
   isDoubleTick?: boolean;
   isSupport?: boolean;
   isPinned?: boolean;
+  isArchived?: boolean;
   conversationId?: string;
   otherUserId?: string;
 }
@@ -70,10 +76,13 @@ export default function ChatsPerson() {
   const [longPressedChat, setLongPressedChat] = useState<Chat | null>(null);
   const [showUnreadModal, setShowUnreadModal] = useState(false);
   const [chats, setChats] = useState<Chat[]>([]);
+  const [archivedChats, setArchivedChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [appState, setAppState] = useState(AppState.currentState);
   const [realTimeSubscription, setRealTimeSubscription] = useState<any>(null);
+  const [showArchivedModal, setShowArchivedModal] = useState(false);
+  const [archiveSearchText, setArchiveSearchText] = useState("");
 
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
@@ -263,6 +272,23 @@ export default function ChatsPerson() {
             return chat;
           })
         );
+        setArchivedChats((prevChats) =>
+          prevChats.map((chat) => {
+            if (chat.conversationId === newMessage.conversation_id) {
+              return {
+                ...chat,
+                message:
+                  newMessage.message_text ||
+                  newMessage.message_content ||
+                  "New message",
+                time: formatTime(newMessage.created_at),
+                unreadCount: (chat.unreadCount || 0) + 1,
+                isDoubleTick: false,
+              };
+            }
+            return chat;
+          })
+        );
       } else {
         // If message is from me, just update the last message preview
         setChats((prevChats) =>
@@ -276,6 +302,22 @@ export default function ChatsPerson() {
                   "New message",
                 time: formatTime(newMessage.created_at),
                 isDoubleTick: true, // Double tick for my sent messages
+              };
+            }
+            return chat;
+          })
+        );
+        setArchivedChats((prevChats) =>
+          prevChats.map((chat) => {
+            if (chat.conversationId === newMessage.conversation_id) {
+              return {
+                ...chat,
+                message:
+                  newMessage.message_text ||
+                  newMessage.message_content ||
+                  "New message",
+                time: formatTime(newMessage.created_at),
+                isDoubleTick: true,
               };
             }
             return chat;
@@ -313,6 +355,13 @@ export default function ChatsPerson() {
                         : c
                     )
                   );
+                  setArchivedChats((prev) =>
+                    prev.map((c) =>
+                      c.conversationId === updatedMessage.conversation_id
+                        ? { ...c, unreadCount: newUnreadCount }
+                        : c
+                    )
+                  );
                 }, 100);
 
                 return chat;
@@ -330,18 +379,60 @@ export default function ChatsPerson() {
   const handleConversationUpdate = async (updatedConversation: any) => {
     try {
       // Handle conversation updates (like last_message_preview changes)
-      setChats((prevChats) =>
-        prevChats.map((chat) => {
-          if (chat.conversationId === updatedConversation.id) {
-            return {
-              ...chat,
-              message: updatedConversation.last_message_preview || chat.message,
-              time: formatTime(updatedConversation.last_message_at),
-            };
-          }
-          return chat;
-        })
-      );
+      if (updatedConversation.is_archived) {
+        // If conversation is archived, move from chats to archivedChats
+        const chatToMove = chats.find(
+          (c) => c.conversationId === updatedConversation.id
+        );
+        if (chatToMove) {
+          setChats((prev) =>
+            prev.filter((c) => c.conversationId !== updatedConversation.id)
+          );
+          setArchivedChats((prev) => [
+            ...prev,
+            { ...chatToMove, isArchived: true },
+          ]);
+        }
+      } else if (updatedConversation.is_archived === false) {
+        // If conversation is unarchived, move from archivedChats to chats
+        const chatToMove = archivedChats.find(
+          (c) => c.conversationId === updatedConversation.id
+        );
+        if (chatToMove) {
+          setArchivedChats((prev) =>
+            prev.filter((c) => c.conversationId !== updatedConversation.id)
+          );
+          setChats((prev) => [...prev, { ...chatToMove, isArchived: false }]);
+        }
+      } else {
+        // Just update the message preview
+        setChats((prevChats) =>
+          prevChats.map((chat) => {
+            if (chat.conversationId === updatedConversation.id) {
+              return {
+                ...chat,
+                message:
+                  updatedConversation.last_message_preview || chat.message,
+                time: formatTime(updatedConversation.last_message_at),
+              };
+            }
+            return chat;
+          })
+        );
+        setArchivedChats((prevChats) =>
+          prevChats.map((chat) => {
+            if (chat.conversationId === updatedConversation.id) {
+              return {
+                ...chat,
+                message:
+                  updatedConversation.last_message_preview || chat.message,
+                time: formatTime(updatedConversation.last_message_at),
+              };
+            }
+            return chat;
+          })
+        );
+      }
     } catch (error) {
       console.error("Error handling conversation update:", error);
     }
@@ -381,6 +472,7 @@ export default function ChatsPerson() {
           last_message_at,
           last_message_preview,
           is_active,
+          is_archived,
           created_at,
           updated_at,
           user1:regular_user_id(
@@ -401,6 +493,7 @@ export default function ChatsPerson() {
           `regular_user_id.eq.${currentUser.id},regular_user_id2.eq.${currentUser.id}`
         )
         .eq("is_active", true)
+        .order("is_archived", { ascending: true })
         .order("last_message_at", { ascending: false });
 
       if (error) {
@@ -413,7 +506,8 @@ export default function ChatsPerson() {
       console.log("Conversations:", conversations);
 
       // Step 4: Transform data to Chat format
-      const transformedChats: Chat[] = [];
+      const activeChats: Chat[] = [];
+      const archivedChatsList: Chat[] = [];
 
       for (const conv of conversations || []) {
         // Determine which user is the other user (not current user)
@@ -442,7 +536,7 @@ export default function ChatsPerson() {
         // Only include conversations with messages or show empty ones
         const unreadCount = await getUnreadCount(conv.id, currentUser.id);
 
-        transformedChats.push({
+        const chatObj = {
           id: conv.id,
           conversationId: conv.id,
           otherUserId: otherUserId,
@@ -456,7 +550,14 @@ export default function ChatsPerson() {
           isDoubleTick: unreadCount === 0, // Only show double tick if no unread messages
           isSupport: false,
           isPinned: false,
-        });
+          isArchived: conv.is_archived || false,
+        };
+
+        if (conv.is_archived) {
+          archivedChatsList.push(chatObj);
+        } else {
+          activeChats.push(chatObj);
+        }
       }
 
       // Step 5: Add support chat at the beginning for all users
@@ -471,9 +572,11 @@ export default function ChatsPerson() {
         unreadCount: 0,
         isDoubleTick: true,
         isSupport: true,
+        isArchived: false,
       };
 
-      setChats([supportChat, ...transformedChats]);
+      setChats([supportChat, ...activeChats]);
+      setArchivedChats(archivedChatsList);
       setLoading(false);
     } catch (err) {
       console.error("Error in fetchConversations:", err);
@@ -542,34 +645,40 @@ export default function ChatsPerson() {
         useNativeDriver: true,
       }).start(() => setSwipedChatId(null));
     } else {
-      // Mark messages as read when opening chat
-      if (
-        chat.conversationId &&
-        currentUserId &&
-        chat.unreadCount &&
-        chat.unreadCount > 0
-      ) {
-        await markMessagesAsRead(chat.conversationId, currentUserId);
-      }
+      await openChat(chat);
+    }
+  };
 
-      if (chat.isSupport) {
-        router.push("/(tabs)/dashboard/support?chat=true");
-        return;
-      } else if (chat.conversationId) {
-        router.push({
-          pathname: "/(tabs)/chats/chat",
-          params: {
-            conversationId: chat.conversationId,
-            name: chat.name,
-            image: typeof chat.image === "string" ? chat.image : "",
-            isOnline: chat.isOnline ? "true" : "false",
-            isVerified: chat.isVerified ? "true" : "false",
-            otherUserId: chat.otherUserId || "",
-          },
-        });
-      } else {
-        console.error("No conversation ID found for chat:", chat.id);
-      }
+  // Open chat (common function for both active and archived chats)
+  const openChat = async (chat: Chat) => {
+    // Mark messages as read when opening chat
+    if (
+      chat.conversationId &&
+      currentUserId &&
+      chat.unreadCount &&
+      chat.unreadCount > 0
+    ) {
+      await markMessagesAsRead(chat.conversationId, currentUserId);
+    }
+
+    if (chat.isSupport) {
+      router.push("/(tabs)/dashboard/support?chat=true");
+      return;
+    } else if (chat.conversationId) {
+      router.push({
+        pathname: "/(tabs)/chats/chat",
+        params: {
+          conversationId: chat.conversationId,
+          name: chat.name,
+          image: typeof chat.image === "string" ? chat.image : "",
+          isOnline: chat.isOnline ? "true" : "false",
+          isVerified: chat.isVerified ? "true" : "false",
+          otherUserId: chat.otherUserId || "",
+          isArchived: chat.isArchived ? "true" : "false",
+        },
+      });
+    } else {
+      console.error("No conversation ID found for chat:", chat.id);
     }
   };
 
@@ -589,6 +698,13 @@ export default function ChatsPerson() {
       if (!error) {
         // Update local state immediately
         setChats((prev) =>
+          prev.map((chat) =>
+            chat.conversationId === conversationId
+              ? { ...chat, unreadCount: 0, isDoubleTick: true }
+              : chat
+          )
+        );
+        setArchivedChats((prev) =>
           prev.map((chat) =>
             chat.conversationId === conversationId
               ? { ...chat, unreadCount: 0, isDoubleTick: true }
@@ -615,6 +731,9 @@ export default function ChatsPerson() {
 
         if (!error) {
           setChats((prev) => prev.filter((c) => c.id !== longPressedChat.id));
+          setArchivedChats((prev) =>
+            prev.filter((c) => c.id !== longPressedChat.id)
+          );
           console.log("Chat deleted successfully");
         } else {
           console.error("Error deleting chat:", error);
@@ -641,6 +760,67 @@ export default function ChatsPerson() {
     setShowUnreadModal(false);
     setLongPressedChat(null);
   };
+
+  // Handle archive chat
+  const handleArchiveChat = async (chatId: string, archive = true) => {
+    try {
+      if (!chatId || chatId === "support") return;
+
+      const { error } = await supabase
+        .from("conversations")
+        .update({ is_archived: archive, updated_at: new Date().toISOString() })
+        .eq("id", chatId);
+
+      if (!error) {
+        if (archive) {
+          // Move to archived
+          const chatToArchive = chats.find((c) => c.conversationId === chatId);
+          if (chatToArchive) {
+            setChats((prev) => prev.filter((c) => c.conversationId !== chatId));
+            setArchivedChats((prev) => [
+              ...prev,
+              { ...chatToArchive, isArchived: true },
+            ]);
+          }
+        } else {
+          // Unarchive - move back to active
+          const chatToUnarchive = archivedChats.find(
+            (c) => c.conversationId === chatId
+          );
+          if (chatToUnarchive) {
+            setArchivedChats((prev) =>
+              prev.filter((c) => c.conversationId !== chatId)
+            );
+            setChats((prev) => [
+              ...prev,
+              { ...chatToUnarchive, isArchived: false },
+            ]);
+          }
+        }
+        console.log(`Chat ${archive ? "archived" : "unarchived"} successfully`);
+      } else {
+        console.error("Error archiving chat:", error);
+      }
+    } catch (err) {
+      console.error("Error in handleArchiveChat:", err);
+    }
+  };
+
+  // Handle archive from long press
+  const handleArchivePress = async () => {
+    if (longPressedChat?.conversationId) {
+      await handleArchiveChat(longPressedChat.conversationId, true);
+    }
+    setShowUnreadModal(false);
+    setLongPressedChat(null);
+  };
+
+  // Filter archived chats based on search
+  const filteredArchivedChats = archivedChats.filter(
+    (chat) =>
+      chat.name.toLowerCase().includes(archiveSearchText.toLowerCase()) ||
+      chat.message.toLowerCase().includes(archiveSearchText.toLowerCase())
+  );
 
   if (!fontsLoaded || loading) {
     return (
@@ -793,6 +973,14 @@ export default function ChatsPerson() {
           <TouchableOpacity
             className="p-2"
             activeOpacity={0.8}
+            onPress={() => setShowArchivedModal(true)}
+          >
+            <Archive size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className="p-2"
+            activeOpacity={0.8}
             onPress={() => setShowFilterModal(true)}
           >
             <Image
@@ -850,6 +1038,38 @@ export default function ChatsPerson() {
             </View>
           </ScrollView>
         </View>
+
+        {/* Archived Chats Quick Access Card */}
+        {archivedChats.length > 0 && (
+          <TouchableOpacity
+            className="mx-5 mb-4 p-3 bg-gray-900 rounded-xl flex-row items-center"
+            onPress={() => setShowArchivedModal(true)}
+          >
+            <View className="w-10 h-10 rounded-full bg-gray-800 items-center justify-center mr-3">
+              <Archive size={20} color="#FCCD34" />
+            </View>
+            <View className="flex-1">
+              <Text
+                className="text-white text-base"
+                style={{ fontFamily: FONT.SemiBold }}
+              >
+                Archived Chats
+              </Text>
+              <Text
+                className="text-gray-400 text-sm"
+                style={{ fontFamily: FONT.Regular }}
+              >
+                {archivedChats.length} conversation
+                {archivedChats.length !== 1 ? "s" : ""}
+              </Text>
+            </View>
+            <ChevronLeft
+              size={20}
+              color="#FCCD34"
+              style={{ transform: [{ rotate: "180deg" }] }}
+            />
+          </TouchableOpacity>
+        )}
 
         {/* Chat List */}
         <View className="flex-1">
@@ -972,39 +1192,23 @@ export default function ChatsPerson() {
                             justifyContent: "center",
                           }}
                           onPress={() => {
+                            handleArchiveChat(chat.conversationId!, true);
                             Animated.spring(anim, {
                               toValue: 0,
                               useNativeDriver: true,
                             }).start(() => setSwipedChatId(null));
                           }}
                         >
-                          <Image
-                            source={require("../../../assets/images/dashboard/star.png")}
-                            style={{
-                              width: 18,
-                              height: 18,
-                              resizeMode: "contain",
-                              tintColor: "#FFFFFF",
-                            }}
-                          />
+                          <Archive size={18} color="#FFFFFF" />
                           <Text
                             style={{
-                              fontSize: 10,
-                              fontFamily: FONT.Regular,
+                              fontSize: 12,
+                              fontFamily: FONT.SemiBold,
                               color: "#FFFFFF",
                               marginTop: 4,
                             }}
                           >
-                            Add to
-                          </Text>
-                          <Text
-                            style={{
-                              fontSize: 10,
-                              fontFamily: FONT.Regular,
-                              color: "#FFFFFF",
-                            }}
-                          >
-                            favorites
+                            Archive
                           </Text>
                         </TouchableOpacity>
 
@@ -1385,6 +1589,163 @@ export default function ChatsPerson() {
         </View>
       </Modal>
 
+      {/* Archived Chats Modal */}
+      <Modal
+        visible={showArchivedModal}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setShowArchivedModal(false)}
+      >
+        <View className="flex-1 bg-black">
+          <StatusBar barStyle="light-content" />
+
+          <View className="pt-12 pb-4 px-5">
+            <View className="flex-row items-center justify-between mb-5">
+              <TouchableOpacity onPress={() => setShowArchivedModal(false)}>
+                <ChevronLeft size={28} color="white" />
+              </TouchableOpacity>
+              <Text
+                className="text-white text-xl"
+                style={{ fontFamily: FONT.SemiBold }}
+              >
+                Archived Chats
+              </Text>
+              <View style={{ width: 28 }} />
+            </View>
+
+            {/* Search Bar for archived chats */}
+            <View className="flex-row items-center gap-3">
+              <View
+                className="flex-row items-center bg-[#000000]"
+                style={{
+                  flex: 1,
+                  height: 40,
+                  borderRadius: 15,
+                  paddingHorizontal: 12,
+                  gap: 13,
+                  opacity: 1,
+                  borderWidth: 0.3,
+                  borderColor: "rgba(255,255,255,0.2)",
+                }}
+              >
+                <Search size={20} color="#FFFFFF" />
+                <TextInput
+                  placeholder="Search archived chats"
+                  placeholderTextColor="#7C8089"
+                  className="flex-1 text-white"
+                  style={{ fontFamily: FONT.Regular, fontSize: 16 }}
+                  value={archiveSearchText}
+                  onChangeText={setArchiveSearchText}
+                />
+              </View>
+            </View>
+          </View>
+
+          <ScrollView className="flex-1 px-5">
+            {filteredArchivedChats.length === 0 ? (
+              <View className="items-center justify-center py-10">
+                <Text
+                  className="text-gray-400 text-base"
+                  style={{ fontFamily: FONT.Regular }}
+                >
+                  {archiveSearchText
+                    ? "No matching archived chats"
+                    : "No archived conversations"}
+                </Text>
+                <Text
+                  className="text-gray-500 text-sm mt-2"
+                  style={{ fontFamily: FONT.Regular }}
+                >
+                  {archiveSearchText
+                    ? "Try a different search term"
+                    : "Archived chats will appear here"}
+                </Text>
+              </View>
+            ) : (
+              filteredArchivedChats.map((chat) => (
+                <View
+                  key={chat.id}
+                  className="flex-row items-center py-3 border-b border-gray-800"
+                >
+                  <TouchableOpacity
+                    className="flex-row items-center flex-1"
+                    onPress={() => {
+                      openChat(chat);
+                      setShowArchivedModal(false);
+                    }}
+                  >
+                    {/* Profile Picture */}
+                    <View className="relative mr-4 w-[60px] h-[60px]">
+                      {chat.image ? (
+                        <Image
+                          source={
+                            typeof chat.image === "string"
+                              ? { uri: chat.image }
+                              : chat.image
+                          }
+                          style={{ width: 60, height: 60 }}
+                          className="rounded-full opacity-70"
+                          resizeMode="cover"
+                        />
+                      ) : (
+                        <View className="w-[60px] h-[60px] rounded-full bg-gray-600 items-center justify-center opacity-70">
+                          <Text
+                            className="text-white text-2xl"
+                            style={{ fontFamily: FONT.SemiBold }}
+                          >
+                            {chat.name.charAt(0).toUpperCase()}
+                          </Text>
+                        </View>
+                      )}
+                      {/* Archive icon overlay */}
+                      <View className="absolute inset-0 bg-black/50 rounded-full items-center justify-center">
+                        <Archive size={24} color="#FCCD34" />
+                      </View>
+                    </View>
+
+                    {/* Chat Info */}
+                    <View className="flex-1">
+                      <View className="flex-row items-center mb-1">
+                        <Text
+                          className="text-gray-400 text-base"
+                          style={{ fontFamily: FONT.SemiBold }}
+                        >
+                          {chat.name}
+                        </Text>
+                        {chat.isVerified && (
+                          <View className="ml-1 w-4 h-4 bg-[#FCCD34] rounded-full items-center justify-center opacity-70">
+                            <Text className="text-black text-xs font-bold">
+                              ✓
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text
+                        className="text-gray-500 text-sm"
+                        style={{ fontFamily: FONT.Regular }}
+                        numberOfLines={1}
+                      >
+                        {chat.message}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  {/* Unarchive Button */}
+                  <TouchableOpacity
+                    className="ml-3 p-2"
+                    onPress={() =>
+                      handleArchiveChat(chat.conversationId!, false)
+                    }
+                  >
+                    <ArchiveRestore size={20} color="#FCCD34" />
+                  </TouchableOpacity>
+                </View>
+              ))
+            )}
+          </ScrollView>
+        </View>
+      </Modal>
+
       {/* Unread Messages Modal */}
       <Modal
         visible={showUnreadModal}
@@ -1697,6 +2058,39 @@ export default function ChatsPerson() {
                   }}
                 >
                   Pin
+                </Text>
+              </TouchableOpacity>
+
+              <View
+                style={{
+                  height: 1,
+                  backgroundColor: "rgba(255,255,255,0.03)",
+                  marginHorizontal: 8,
+                }}
+              />
+
+              <TouchableOpacity
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingVertical: 8,
+                  paddingHorizontal: 14,
+                }}
+                onPress={handleArchivePress}
+              >
+                <Archive
+                  size={18}
+                  color="#FFFFFF"
+                  style={{ marginRight: 10 }}
+                />
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontFamily: FONT.Regular,
+                    fontSize: 14,
+                  }}
+                >
+                  Archive
                 </Text>
               </TouchableOpacity>
 
