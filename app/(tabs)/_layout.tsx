@@ -112,12 +112,7 @@ export default function TabLayout() {
           href: null,
         }}
       />
-      <Tabs.Screen
-        name="chats/chatExclusive"
-        options={{
-          href: null,
-        }}
-      />
+
       <Tabs.Screen
         name="chats/chat"
         options={{

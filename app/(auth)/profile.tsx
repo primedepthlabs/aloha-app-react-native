@@ -67,7 +67,7 @@ export default function ProfileScreen() {
         full_name: fullName,
         phone_number: phoneNumberFromParams || null,
         avatar_url: null, // Will be updated in step 2 if user adds photos
-        user_type: "Influencer", // enum matches your DB
+        user_type: "User", // enum matches your DB
         is_verified: true,
         is_active: true,
         gender: selectedGender,

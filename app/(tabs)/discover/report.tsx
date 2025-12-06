@@ -30,9 +30,9 @@ const REPORT_REASONS: ReportReason[] = [
 // Map UI reason IDs to DB enum values — update these if your DB enum differs
 const REASON_TO_REPORT_TYPE: Record<number, string> = {
   1: "harassment",
-  2: "scam",
+  2: "fraud",
   3: "impersonation",
-  4: "sexual",
+  4: "inappropriate_content",
 };
 
 export default function ReportScreen() {

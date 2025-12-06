@@ -9,6 +9,7 @@ import {
   Modal,
   Alert,
   ActivityIndicator,
+  Platform,
 } from "react-native";
 import { Search, Star, MoreVertical, ChevronLeft } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
@@ -17,8 +18,8 @@ import { supabase } from "../../../supabaseClient";
 import { getCurrentUser } from "../../../utils/authHelpers";
 
 interface User {
-  id: string; // users.id
-  influencerProfileId?: string; // influencer_profiles.id (for display purposes only)
+  id: string;
+  influencerProfileId?: string;
   name: string;
   role: string;
   image: any;
@@ -415,29 +416,38 @@ export default function DiscoverScreen() {
     console.log("Report pressed, closing menu and navigating to /report", {
       userId: user?.id,
     });
+
+    // Close the profile menu first
     setShowProfileMenu(false);
 
-    if (!user || !user.id) {
-      Alert.alert("Error", "Unable to report: missing user id.");
-      return;
-    }
+    // Close the profile detail modal
+    setSelectedUser(null);
 
-    if (isCurrentUser(user)) {
-      Alert.alert("Notice", "You cannot report yourself.");
-      return;
-    }
+    // Add a small delay to ensure modal is closed before navigation
+    setTimeout(() => {
+      if (!user || !user.id) {
+        Alert.alert("Error", "Unable to report: missing user id.");
+        return;
+      }
 
-    router.push({
-      pathname: "/(tabs)/discover/report",
-      params: {
-        reportedUserId: user.id,
-        name: user.name ?? "",
-        image:
-          user.avatar_url ??
-          (user.image && typeof user.image === "string" ? user.image : ""),
-        influencerProfileId: user.influencerProfileId ?? "",
-      },
-    } as any);
+      if (isCurrentUser(user)) {
+        Alert.alert("Notice", "You cannot report yourself.");
+        return;
+      }
+
+      // Navigate to report screen
+      router.push({
+        pathname: "/(tabs)/discover/report",
+        params: {
+          reportedUserId: user.id,
+          name: user.name ?? "",
+          image:
+            user.avatar_url ??
+            (user.image && typeof user.image === "string" ? user.image : ""),
+          influencerProfileId: user.influencerProfileId ?? "",
+        },
+      });
+    }, 350); // Wait for modal animation to complete
   };
 
   const applyFilter = () => {
@@ -652,7 +662,6 @@ export default function DiscoverScreen() {
                           right: 0,
                           bottom: 0,
                           backgroundColor: "rgba(0, 0, 0, 0.6)",
-                          backdropFilter: "blur(4px)" as any,
                           justifyContent: "center",
                           alignItems: "center",
                           zIndex: 5,
@@ -761,6 +770,7 @@ export default function DiscoverScreen() {
           </View>
         </ScrollView>
       )}
+
       {/* Filter Modal */}
       <Modal
         visible={showFilterModal}
@@ -819,7 +829,7 @@ export default function DiscoverScreen() {
       <Modal
         visible={showNotificationModal}
         animationType="slide"
-        presentationStyle="fullScreen"
+        presentationStyle={Platform.OS === "ios" ? "fullScreen" : undefined}
         onRequestClose={() => setShowNotificationModal(false)}
       >
         <View className="flex-1 bg-black">
@@ -986,8 +996,11 @@ export default function DiscoverScreen() {
       <Modal
         visible={selectedUser !== null}
         animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setSelectedUser(null)}
+        presentationStyle={Platform.OS === "ios" ? "pageSheet" : undefined}
+        onRequestClose={() => {
+          setSelectedUser(null);
+          setShowProfileMenu(false);
+        }}
       >
         {selectedUser && (
           <View className="flex-1 bg-black">
@@ -1094,11 +1107,13 @@ export default function DiscoverScreen() {
                       <Text className="text-white text-2xl font-bold mr-2">
                         {selectedUser.name}
                       </Text>
-                      <Image
-                        source={require("../../../assets/images/verified-badge.png")}
-                        style={{ width: 20, height: 20 }}
-                        resizeMode="contain"
-                      />
+                      {selectedUser.isVerified && (
+                        <Image
+                          source={require("../../../assets/images/verified-badge.png")}
+                          style={{ width: 20, height: 20 }}
+                          resizeMode="contain"
+                        />
+                      )}
                     </View>
                     <TouchableOpacity
                       className="w-12 h-12 bg-[#2C2C2E] rounded-full items-center justify-center"
