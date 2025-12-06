@@ -20,6 +20,7 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   PermissionsAndroid,
+  Clipboard,
 } from "react-native";
 import { Phone, Video, ChevronLeft, Plus } from "lucide-react-native";
 import {
@@ -317,7 +318,29 @@ export default function Chat() {
   const handleNewMessage = async (newMessage: any) => {
     console.log("Processing new message:", newMessage);
 
-    // Format the new message
+    // Fetch the replied message data if this is a reply
+    let replyToMessage = null;
+    if (newMessage.reply_to_message_id) {
+      const { data: repliedMsg } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("id", newMessage.reply_to_message_id)
+        .single();
+
+      if (repliedMsg) {
+        replyToMessage = {
+          id: repliedMsg.id,
+          text: repliedMsg.content,
+          timestamp: formatMessageTime(repliedMsg.created_at),
+          isSent: repliedMsg.sender_id === currentUserId,
+          isRead: false,
+          content_type: "text",
+          sender_id: repliedMsg.sender_id,
+          created_at: repliedMsg.created_at,
+        };
+      }
+    }
+
     const formattedMessage: Message = {
       id: newMessage.id,
       text: newMessage.content,
@@ -328,11 +351,10 @@ export default function Chat() {
       media_url: newMessage.media_url,
       created_at: newMessage.created_at,
       sender_id: newMessage.sender_id,
+      replyTo: replyToMessage, // NOW INCLUDES REPLY DATA
     };
 
-    // Add to messages state, avoiding duplicates
     setMessages((prev) => {
-      // Check if message already exists to avoid duplicates
       const exists = prev.some((msg) => msg.id === formattedMessage.id);
       if (exists) {
         console.log("Message already exists, skipping:", formattedMessage.id);
@@ -340,19 +362,14 @@ export default function Chat() {
       }
 
       console.log("Adding new message to state:", formattedMessage.id);
-
-      // ✅ Mark that messages exist now
       setHasEverHadMessages(true);
-
       return [...prev, formattedMessage];
     });
 
-    // If message is from other user, mark as read immediately
     if (newMessage.sender_id !== currentUserId) {
       console.log("Marking message as read:", newMessage.id);
       await markMessageAsRead(newMessage.id);
 
-      // Update the message read status in state
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === newMessage.id ? { ...msg, isRead: true } : msg
@@ -360,27 +377,29 @@ export default function Chat() {
       );
     }
 
-    // Scroll to bottom
     setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }, 100);
   };
 
-  // Handle updated message from real-time
   const handleUpdatedMessage = async (updatedMessage: any) => {
     console.log("Processing updated message:", updatedMessage);
 
     setMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === updatedMessage.id
-          ? {
-              ...msg,
-              text: updatedMessage.content,
-              isRead: updatedMessage.is_read,
-              isEdited: false,
-            }
-          : msg
-      )
+      prev.map((msg) => {
+        if (msg.id !== updatedMessage.id) return msg;
+
+        // Only mark as edited if the content actually changed
+        const contentChanged = msg.text !== updatedMessage.content;
+
+        return {
+          ...msg,
+          text: updatedMessage.content,
+          isRead: updatedMessage.is_read,
+          // Only set isEdited to true if content changed, otherwise keep existing value
+          isEdited: contentChanged ? true : msg.isEdited || false,
+        };
+      })
     );
   };
 
@@ -484,7 +503,17 @@ export default function Chat() {
 
       const { data: messagesData, error } = await supabase
         .from("messages")
-        .select("*")
+        .select(
+          `
+        *,
+        replied_message:reply_to_message_id (
+          id,
+          content,
+          sender_id,
+          created_at
+        )
+      `
+        )
         .eq("conversation_id", convId)
         .is("deleted_at", null)
         .order("created_at", { ascending: true });
@@ -497,27 +526,51 @@ export default function Chat() {
 
       console.log(`Loaded ${messagesData?.length || 0} messages`);
 
-      // ✅ Track if this conversation has ever had messages
       if (messagesData && messagesData.length > 0) {
         setHasEverHadMessages(true);
       }
 
-      // Format messages and determine if they were sent by current user
-      const formattedMessages: Message[] = (messagesData || []).map((msg) => ({
-        id: msg.id,
-        text: msg.content,
-        timestamp: formatMessageTime(msg.created_at),
-        isSent: msg.sender_id === userId,
-        isRead: msg.is_read,
-        content_type: msg.content_type,
-        media_url: msg.media_url,
-        created_at: msg.created_at,
-        sender_id: msg.sender_id,
-      }));
+      const formattedMessages: Message[] = (messagesData || []).map((msg) => {
+        let replyToMessage = null;
+
+        // If this message is a reply to another message
+        if (msg.replied_message) {
+          replyToMessage = {
+            id: msg.replied_message.id,
+            text: msg.replied_message.content,
+            timestamp: formatMessageTime(msg.replied_message.created_at),
+            isSent: msg.replied_message.sender_id === userId,
+            isRead: false,
+            content_type: "text",
+            sender_id: msg.replied_message.sender_id,
+            created_at: msg.replied_message.created_at,
+          };
+        }
+
+        // Check if message was edited by comparing timestamps
+        const isEdited =
+          msg.updated_at &&
+          msg.content && // Make sure content exists
+          new Date(msg.updated_at).getTime() >
+            new Date(msg.created_at).getTime() + 2000;
+
+        return {
+          id: msg.id,
+          text: msg.content,
+          timestamp: formatMessageTime(msg.created_at),
+          isSent: msg.sender_id === userId,
+          isRead: msg.is_read,
+          isEdited: msg.is_edited ?? false, // Show edited if timestamps differ
+          content_type: msg.content_type,
+          media_url: msg.media_url,
+          created_at: msg.created_at,
+          sender_id: msg.sender_id,
+          replyTo: replyToMessage,
+        };
+      });
 
       setMessages(formattedMessages);
 
-      // Mark unread messages from other user as read
       const unreadMessageIds = messagesData
         ?.filter((msg) => msg.sender_id !== userId && !msg.is_read)
         .map((msg) => msg.id);
@@ -526,7 +579,6 @@ export default function Chat() {
         console.log(`Marking ${unreadMessageIds.length} messages as read`);
         await markMessagesAsRead(unreadMessageIds);
 
-        // Update local state to reflect read status
         setMessages((prev) =>
           prev.map((msg) =>
             unreadMessageIds.includes(msg.id) ? { ...msg, isRead: true } : msg
@@ -534,7 +586,6 @@ export default function Chat() {
         );
       }
 
-      // Scroll to bottom after loading
       setTimeout(() => {
         scrollViewRef.current?.scrollToEnd({ animated: false });
       }, 100);
@@ -618,17 +669,18 @@ export default function Chat() {
 
     try {
       if (editingMessage) {
-        // Update existing message
         const { error } = await supabase
           .from("messages")
           .update({
             content: message,
             updated_at: new Date().toISOString(),
+            is_edited: true, // 👈 add this
           })
           .eq("id", editingMessage.id);
 
         if (error) throw error;
 
+        // Update local state immediately for the sender
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === editingMessage.id
@@ -636,10 +688,11 @@ export default function Chat() {
               : msg
           )
         );
+
         setEditingMessage(null);
         setReplyTo(null);
       } else {
-        // Create new message - set is_read to false by default
+        // CREATE NEW MESSAGE
         const { data: newMessage, error } = await supabase
           .from("messages")
           .insert({
@@ -653,13 +706,13 @@ export default function Chat() {
             delivered_at: new Date().toISOString(),
             is_read: false,
             read_at: null,
+            reply_to_message_id: replyTo?.id || null,
           })
           .select()
           .single();
 
         if (error) throw error;
 
-        // Update conversation last message
         await supabase
           .from("conversations")
           .update({
@@ -671,13 +724,9 @@ export default function Chat() {
 
         console.log("Message sent successfully:", newMessage.id);
 
-        // Update balance
         setBalance((prev) => parseFloat((prev - cost).toFixed(2)));
-
-        // ✅ Mark that this conversation now has messages
         setHasEverHadMessages(true);
 
-        // Add the new message to local state with correct read status
         const formattedMessage: Message = {
           id: newMessage.id,
           text: newMessage.content,
@@ -688,6 +737,7 @@ export default function Chat() {
           media_url: newMessage.media_url,
           created_at: newMessage.created_at,
           sender_id: newMessage.sender_id,
+          replyTo: replyTo || null,
         };
 
         setMessages((prev) => [...prev, formattedMessage]);
@@ -698,7 +748,6 @@ export default function Chat() {
       setInputHeight(48);
       setReplyTo(null);
 
-      // Scroll to bottom
       setTimeout(() => {
         scrollViewRef.current?.scrollToEnd({ animated: true });
       }, 100);
@@ -718,9 +767,17 @@ export default function Chat() {
     textInputRef.current?.focus();
   };
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
+    if (contextMenu) {
+      try {
+        await Clipboard.setString(contextMenu.text);
+        Alert.alert("Copied", "Message copied to clipboard");
+      } catch (error) {
+        console.error("Copy error:", error);
+        Alert.alert("Error", "Unable to copy message");
+      }
+    }
     setContextMenu(null);
-    Alert.alert("Copied", "Message copied to clipboard");
   };
 
   const handleEdit = () => {
@@ -730,6 +787,15 @@ export default function Chat() {
       setContextMenu(null);
       textInputRef.current?.focus();
     }
+  };
+  const cancelEdit = () => {
+    setEditingMessage(null);
+    setMessage("");
+    setCharCount(0);
+  };
+
+  const cancelReply = () => {
+    setReplyTo(null);
   };
 
   const handleDelete = async () => {
@@ -1202,6 +1268,7 @@ export default function Chat() {
                       paddingHorizontal: 16,
                     }}
                   >
+                    {/* Reply Preview - THIS IS THE KEY PART */}
                     {msg.replyTo && (
                       <View
                         style={{
@@ -1212,12 +1279,13 @@ export default function Chat() {
                           paddingHorizontal: 10,
                           borderRadius: 8,
                           marginBottom: 8,
-                          alignSelf: "stretch",
+                          borderLeftWidth: 3,
+                          borderLeftColor: "#FCCD34",
                         }}
                       >
                         <Text
                           style={{
-                            color: "#FFFFFF",
+                            color: "#FCCD34",
                             fontFamily: FONT.SemiBold,
                             fontSize: 12,
                             marginBottom: 2,
@@ -1226,10 +1294,10 @@ export default function Chat() {
                           {msg.replyTo.isSent ? "You" : otherUserName}
                         </Text>
                         <Text
-                          numberOfLines={1}
+                          numberOfLines={2}
                           ellipsizeMode="tail"
                           style={{
-                            color: "rgba(255,255,255,0.8)",
+                            color: "rgba(255,255,255,0.7)",
                             fontFamily: FONT.Regular,
                             fontSize: 12,
                           }}
@@ -1239,6 +1307,7 @@ export default function Chat() {
                       </View>
                     )}
 
+                    {/* Message Text */}
                     <Text
                       style={{
                         color: "white",
@@ -1250,6 +1319,7 @@ export default function Chat() {
                       {msg.text}
                     </Text>
 
+                    {/* Timestamp and Status */}
                     <View
                       style={{
                         flexDirection: "row",
@@ -1305,7 +1375,7 @@ export default function Chat() {
           <TouchableOpacity
             className="mr-3 mb-2"
             onPress={() => {
-              Keyboard.dismiss(); // Add this
+              Keyboard.dismiss();
               setShowGallery(true);
             }}
           >
@@ -1313,15 +1383,14 @@ export default function Chat() {
           </TouchableOpacity>
 
           <View style={{ flex: 1 }}>
-            {replyTo && (
+            {/* Edit Message Header */}
+            {editingMessage && (
               <View
                 style={{
-                  backgroundColor: "black",
+                  backgroundColor: "#19191B",
                   borderTopLeftRadius: 16,
                   borderTopRightRadius: 16,
-                  borderBottomLeftRadius: 0,
-                  borderBottomRightRadius: 0,
-                  paddingVertical: 8,
+                  paddingVertical: 10,
                   paddingHorizontal: 16,
                   borderColor: "#585858",
                   borderWidth: 0.3,
@@ -1335,17 +1404,49 @@ export default function Chat() {
                     justifyContent: "space-between",
                   }}
                 >
-                  <Text
+                  <View
                     style={{
-                      color: "#FCCD34",
-                      fontFamily: FONT.SemiBold,
-                      fontSize: 13,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      flex: 1,
                     }}
                   >
-                    Reply to {replyTo.isSent ? "You" : otherUserName}
-                  </Text>
+                    <Image
+                      source={require("../../../assets/images/edit-icon.png")}
+                      style={{
+                        width: 16,
+                        height: 16,
+                        marginRight: 8,
+                        tintColor: "#FCCD34",
+                      }}
+                      resizeMode="contain"
+                    />
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={{
+                          color: "#FCCD34",
+                          fontFamily: FONT.SemiBold,
+                          fontSize: 13,
+                        }}
+                      >
+                        Edit message
+                      </Text>
+                      <Text
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                        style={{
+                          color: "rgba(255,255,255,0.5)",
+                          fontFamily: FONT.Regular,
+                          fontSize: 12,
+                          marginTop: 2,
+                        }}
+                      >
+                        {editingMessage.text}
+                      </Text>
+                    </View>
+                  </View>
 
-                  <TouchableOpacity onPress={() => setReplyTo(null)}>
+                  <TouchableOpacity onPress={cancelEdit}>
                     <Image
                       source={require("../../../assets/images/white-cross.png")}
                       style={{
@@ -1358,28 +1459,106 @@ export default function Chat() {
                   </TouchableOpacity>
                 </View>
 
+                {/* Cost Display */}
                 <Text
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
                   style={{
-                    color: "rgba(255,255,255,0.5)",
+                    color: "rgba(255,255,255,0.4)",
                     fontFamily: FONT.Regular,
-                    fontSize: 12,
-                    marginTop: 2,
+                    fontSize: 11,
+                    marginTop: 4,
                   }}
                 >
-                  {replyTo.text}
+                  ({calculateCost(message).toFixed(2)} Gel)
                 </Text>
               </View>
             )}
 
+            {/* Reply Header */}
+            {replyTo && !editingMessage && (
+              <View
+                style={{
+                  backgroundColor: "#19191B",
+                  borderTopLeftRadius: 16,
+                  borderTopRightRadius: 16,
+                  paddingVertical: 10,
+                  paddingHorizontal: 16,
+                  borderColor: "#585858",
+                  borderWidth: 0.3,
+                  marginBottom: 0,
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      flex: 1,
+                    }}
+                  >
+                    <Image
+                      source={require("../../../assets/images/reply-icon.png")}
+                      style={{
+                        width: 16,
+                        height: 16,
+                        marginRight: 8,
+                        tintColor: "#FCCD34",
+                      }}
+                      resizeMode="contain"
+                    />
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={{
+                          color: "#FCCD34",
+                          fontFamily: FONT.SemiBold,
+                          fontSize: 13,
+                        }}
+                      >
+                        Reply to {replyTo.isSent ? "You" : otherUserName}
+                      </Text>
+                      <Text
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                        style={{
+                          color: "rgba(255,255,255,0.5)",
+                          fontFamily: FONT.Regular,
+                          fontSize: 12,
+                          marginTop: 2,
+                        }}
+                      >
+                        {replyTo.text}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <TouchableOpacity onPress={cancelReply}>
+                    <Image
+                      source={require("../../../assets/images/white-cross.png")}
+                      style={{
+                        width: 14,
+                        height: 14,
+                        tintColor: "rgba(255,255,255,0.6)",
+                      }}
+                      resizeMode="contain"
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
+            {/* Text Input Container */}
             <View
               style={{
                 minHeight: 48,
                 maxHeight: 120,
-                borderRadius: replyTo ? 0 : 24,
-                borderTopLeftRadius: replyTo ? 0 : 24,
-                borderTopRightRadius: replyTo ? 0 : 24,
+                borderRadius: editingMessage || replyTo ? 0 : 24,
+                borderTopLeftRadius: editingMessage || replyTo ? 0 : 24,
+                borderTopRightRadius: editingMessage || replyTo ? 0 : 24,
                 borderBottomLeftRadius: 24,
                 borderBottomRightRadius: 24,
                 borderWidth: 1,
@@ -1395,7 +1574,13 @@ export default function Chat() {
                 ref={textInputRef}
                 value={message}
                 onChangeText={handleTextChange}
-                placeholder="Type your message (0.05 Gel)"
+                placeholder={
+                  editingMessage
+                    ? "Edit your message..."
+                    : `Type your message (${calculateCost(message).toFixed(
+                        2
+                      )} Gel)`
+                }
                 placeholderTextColor="#6B7280"
                 style={{
                   flex: 1,
@@ -1407,8 +1592,8 @@ export default function Chat() {
                   maxHeight: 96,
                 }}
                 multiline
-                blurOnSubmit={false} // Add this
-                returnKeyType="default" // Add this
+                blurOnSubmit={false}
+                returnKeyType="default"
                 enablesReturnKeyAutomatically={false}
                 onContentSizeChange={(e) => {
                   const newHeight = Math.max(
